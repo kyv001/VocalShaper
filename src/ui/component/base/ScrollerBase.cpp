@@ -204,7 +204,9 @@ void ScrollerBase::scale(double centerPer, double thumbPer, double delta) {
 
 void ScrollerBase::mouseWheelOutside(float deltaY, bool reversed) {
 	/** Get Wheel Delta */
-	double delta = (1.0 + ((this->itemSize - this->itemMinSize) / (this->itemMaxSize - this->itemMinSize)))
+	double sizeP = (this->itemMaxSize == this->itemMinSize) ? 1
+		: ((this->itemSize - this->itemMinSize) / (this->itemMaxSize - this->itemMinSize));
+	double delta = (1.0 + sizeP)
 		* deltaY * (reversed ? 1 : -1) * 100.0;
 	
 	/** Set Pos */

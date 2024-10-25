@@ -26,6 +26,17 @@ MIDISourceEditor::MIDISourceEditor() {
 		Scroller::PaintPreviewFunc{},
 		Scroller::PaintItemPreviewFunc{});
 	this->addAndMakeVisible(this->vScroller.get());
+
+	/** Piano */
+	this->piano = std::make_unique<PianoComponent>();
+	this->addAndMakeVisible(this->piano.get());
+
+	/** Set Default V Pos */
+	juce::MessageManager::callAsync([scroller = Scroller::SafePointer{ this->vScroller.get() }] {
+		if (scroller) {
+			scroller->setPos((128 - 6 * 12) * scroller->getItemSize());
+		}
+		});
 }
 
 void MIDISourceEditor::resized() {
@@ -58,10 +69,16 @@ void MIDISourceEditor::resized() {
 	this->adsorbButton->setBounds(adsorbRect);*/
 
 	/** Time Ruler */
-	/*juce::Rectangle<int> rulerRect(
-		headWidth, 0,
+	juce::Rectangle<int> rulerRect(
+		pianoWidth, 0,
 		hScrollerRect.getWidth(), rulerHeight);
-	this->ruler->setBounds(rulerRect);*/
+	//this->ruler->setBounds(rulerRect);
+
+	/** Piano */
+	juce::Rectangle<int> pianoRect(
+		0, rulerRect.getBottom(),
+		pianoWidth, hScrollerRect.getY() - rulerRect.getBottom());
+	this->piano->setBounds(pianoRect);
 
 	/** Track List */
 	/*juce::Rectangle<int> listRect(
@@ -174,9 +191,9 @@ int MIDISourceEditor::getKeyNum() const {
 
 std::tuple<double, double> MIDISourceEditor::getKeyHeightLimit() const {
 	auto screenSize = utils::getScreenSize(this);
-	return { screenSize.getHeight() * 0.01, screenSize.getHeight() * 0.01 };
+	return { screenSize.getHeight() * 0.02, screenSize.getHeight() * 0.035 };
 }
 
 void MIDISourceEditor::updateVPos(double pos, double itemSize) {
-	/** TODO */
+	this->piano->setPos(pos, itemSize);
 }

@@ -27,6 +27,7 @@
 #include "sequencer/SeqBlockLookAndFeel.h"
 #include "editor/EditorLookAndFeel.h"
 #include "editor/EditorSwitchBarLookAndFeel.h"
+#include "editor/PianoLookAndFeel.h"
 #include "../misc/ColorMap.h"
 #include <FlowUI.h>
 
@@ -142,6 +143,9 @@ void LookAndFeelFactory::initialise() {
 
 	/** Editor Switch Bar */
 	this->editorSwitchBarLAF = std::make_unique<EditorSwitchBarLookAndFeel>();
+
+	/** Piano */
+	this->pianoLAF = std::make_unique<PianoLookAndFeel>();
 }
 
 void LookAndFeelFactory::setDefaultSansSerifTypeface(juce::Typeface::Ptr typeface) {
@@ -255,6 +259,10 @@ juce::LookAndFeel_V4* LookAndFeelFactory::forSeqBlock() const {
 
 juce::LookAndFeel_V4* LookAndFeelFactory::forEditorSwitchBar() const {
 	return this->editorSwitchBarLAF.get();
+}
+
+juce::LookAndFeel_V4* LookAndFeelFactory::forPiano() const {
+	return this->pianoLAF.get();
 }
 
 LookAndFeelFactory* LookAndFeelFactory::getInstance() {

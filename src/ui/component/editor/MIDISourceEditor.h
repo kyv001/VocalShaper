@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include <JuceHeader.h>
+#include "PianoComponent.h"
 #include "../base/Scroller.h"
 
 class MIDISourceEditor final : public juce::Component {
@@ -18,6 +19,8 @@ private:
 
 	std::unique_ptr<Scroller> hScroller = nullptr;
 	std::unique_ptr<Scroller> vScroller = nullptr;
+
+	std::unique_ptr<PianoComponent> piano = nullptr;
 
 	int getViewWidth() const;
 	double getTimeLength() const;
