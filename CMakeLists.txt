@@ -169,7 +169,7 @@ add_dependencies (lame_copy
 )
 
 # Plugin Searcher Target
-file (GLOB_RECURSE PLUGINSEARCHER_SRC CONFIGURE_DEPENDS "./pluginSearcher/*.cpp")
+file (GLOB_RECURSE PLUGINSEARCHER_SRC CONFIGURE_DEPENDS "./pluginSearcher/*.cpp" "./pluginSearcher/*.h")
 add_executable (PluginSearcher ${PLUGINSEARCHER_SRC})
 target_compile_definitions (PluginSearcher PRIVATE
 	"PROJECT_VERSION_MAJOR=${PROJECT_VERSION_MAJOR}"
@@ -195,7 +195,7 @@ endif ()
 set_target_properties (PluginSearcher PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${OUTPUT_DIR}")
 
 # File Registrar Target
-file (GLOB_RECURSE FILEREGISTRAR_SRC CONFIGURE_DEPENDS "./fileRegistrar/*.cpp")
+file (GLOB_RECURSE FILEREGISTRAR_SRC CONFIGURE_DEPENDS "./fileRegistrar/*.cpp" "./fileRegistrar/*.h")
 add_executable (FileRegistrar ${FILEREGISTRAR_SRC})
 target_compile_definitions (FileRegistrar PRIVATE
 	"PROJECT_VERSION_MAJOR=${PROJECT_VERSION_MAJOR}"
@@ -221,7 +221,7 @@ endif ()
 set_target_properties (FileRegistrar PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${OUTPUT_DIR}")
 
 # Main Target
-file (GLOB_RECURSE VOCALSHAPER_SRC CONFIGURE_DEPENDS "./src/*.cpp" "./src/*.c" "./src/*.rc")
+file (GLOB_RECURSE VOCALSHAPER_SRC CONFIGURE_DEPENDS "./src/*.cpp" "./src/*.c" "./src/*.rc" "./src/*.hpp" "./src/*.h")
 add_executable (VocalShaper ${VOCALSHAPER_SRC})
 target_include_directories (VocalShaper PRIVATE ${LUA_INCLUDE_DIR} "./src")
 target_compile_definitions (VocalShaper PRIVATE ${COMPILE_SYS_DEF})
