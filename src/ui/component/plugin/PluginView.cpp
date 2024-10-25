@@ -258,7 +258,10 @@ void PluginView::searchEnd() {
 }
 
 void PluginView::searchMessage(const juce::String& mes) {
-	this->searchingOutput.append(mes, mes.length());
+	/** Control characters cannot be processed correctly by the renderer */
+	juce::String mesSafe = mes.replaceCharacter('\x01b', ' ');
+
+	this->searchingOutput.append(mesSafe, mesSafe.length());
 	this->updateSearchTextTemp();
 	this->repaint();
 }
