@@ -27,8 +27,66 @@ MIDISourceEditor::MIDISourceEditor() {
 		Scroller::PaintItemPreviewFunc{});
 	this->addAndMakeVisible(this->vScroller.get());
 
+	/** Ruler */
+	this->ruler = std::make_unique<SourceTimeRuler>(
+		[comp = ScrollerBase::SafePointer(this->hScroller.get())]
+		(double delta) {
+			if (comp) {
+				comp->scroll(delta);
+			}
+		},
+		[comp = ScrollerBase::SafePointer(this->hScroller.get())]
+		(double centerPer, double thumbPer, double delta) {
+			if (comp) {
+				comp->scale(centerPer, thumbPer, delta);
+			}
+		},
+		[comp = ScrollerBase::SafePointer(this->hScroller.get())]
+		(float deltaY, bool reversed) {
+			if (comp) {
+				comp->mouseWheelOutside(deltaY, reversed);
+			}
+		},
+		[comp = ScrollerBase::SafePointer(this->hScroller.get())]
+		(double centerNum, double thumbPer, float deltaY, bool reversed) {
+			if (comp) {
+				comp->mouseWheelOutsideWithAlt(centerNum, thumbPer, deltaY, reversed);
+			}
+		},
+		[comp = ScrollerBase::SafePointer(this)] {
+			if (comp) {
+				comp->processAreaDragStart();
+			}
+		},
+		[comp = ScrollerBase::SafePointer(this)]
+		(int distanceX, int distanceY, bool moveX, bool moveY) {
+			if (comp) {
+				comp->processAreaDragTo(
+					distanceX, distanceY, moveX, moveY);
+			}
+		},
+		[comp = ScrollerBase::SafePointer(this)] {
+			if (comp) {
+				comp->processAreaDragEnd();
+			}
+		});
+	this->addAndMakeVisible(this->ruler.get());
+
 	/** Piano */
-	this->piano = std::make_unique<PianoComponent>();
+	this->piano = std::make_unique<PianoComponent>(
+		[comp = ScrollerBase::SafePointer(this->vScroller.get())]
+		(float deltaY, bool reversed) {
+			if (comp) {
+				comp->mouseWheelOutside(deltaY, reversed);
+			}
+		},
+		[comp = ScrollerBase::SafePointer(this->vScroller.get())]
+		(double centerNum, double thumbPer, float deltaY, bool reversed) {
+			if (comp) {
+				comp->mouseWheelOutsideWithAlt(centerNum, thumbPer, deltaY, reversed);
+			}
+		}
+	);
 	this->addAndMakeVisible(this->piano.get());
 
 	/** Set Default V Pos */
@@ -72,7 +130,7 @@ void MIDISourceEditor::resized() {
 	juce::Rectangle<int> rulerRect(
 		pianoWidth, 0,
 		hScrollerRect.getWidth(), rulerHeight);
-	//this->ruler->setBounds(rulerRect);
+	this->ruler->setBounds(rulerRect);
 
 	/** Piano */
 	juce::Rectangle<int> pianoRect(
@@ -152,7 +210,14 @@ void MIDISourceEditor::update(uint64_t ref) {
 	/** Total Length */
 	this->totalLength = quickAPI::getMIDISourceLength(ref) + MIDI_TAIL_SEC;
 
-	/** TODO */
+	/** Update View Pos */
+	this->vScroller->update();
+	this->hScroller->update();
+}
+
+void MIDISourceEditor::updateTempo() {
+	/** Update Time Ruler */
+	this->ruler->updateTempoLabel();
 }
 
 int MIDISourceEditor::getViewWidth() const {
@@ -165,7 +230,7 @@ double MIDISourceEditor::getTimeLength() const {
 
 std::tuple<double, double> MIDISourceEditor::getTimeWidthLimit() const {
 	auto screenSize = utils::getScreenSize(this);
-	return { screenSize.getWidth() * 0.01, screenSize.getWidth() * 0.5 };
+	return { screenSize.getWidth() * 0.02, screenSize.getWidth() * 0.5 };
 }
 
 double MIDISourceEditor::getPlayPos() const {
@@ -173,7 +238,8 @@ double MIDISourceEditor::getPlayPos() const {
 }
 
 void MIDISourceEditor::updateHPos(double pos, double itemSize) {
-	/** TODO */
+	/** Update Comp */
+	this->ruler->updateHPos(pos, itemSize);
 }
 
 void MIDISourceEditor::paintNotePreview(juce::Graphics& g,
@@ -196,4 +262,26 @@ std::tuple<double, double> MIDISourceEditor::getKeyHeightLimit() const {
 
 void MIDISourceEditor::updateVPos(double pos, double itemSize) {
 	this->piano->setPos(pos, itemSize);
+}
+
+void MIDISourceEditor::processAreaDragStart() {
+	this->viewMoving = true;
+	this->moveStartPosX = this->hScroller->getViewPos();
+	this->moveStartPosY = this->vScroller->getViewPos();
+}
+
+void MIDISourceEditor::processAreaDragTo(int distanceX, int distanceY, bool moveX, bool moveY) {
+	if (this->viewMoving) {
+		if (moveX) {
+			this->hScroller->setPos(this->moveStartPosX - distanceX);
+		}
+		if (moveY) {
+			this->vScroller->setPos(this->moveStartPosY - distanceY);
+		}
+	}
+}
+
+void MIDISourceEditor::processAreaDragEnd() {
+	this->viewMoving = false;
+	this->moveStartPosX = this->moveStartPosY = 0;
 }

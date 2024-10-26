@@ -15,5 +15,7 @@ PianoLookAndFeel::PianoLookAndFeel()
 	this->setColour(juce::MidiKeyboardComponent::ColourIds::keyDownOverlayColourId,
 		ColorMap::getInstance()->get("ThemeColorB5").withAlpha(0.5f));
 	this->setColour(juce::MidiKeyboardComponent::ColourIds::textLabelColourId,
-		ColorMap::getInstance()->get("ThemeColorB5"));
+		ColorMap::getInstance()->get("ThemeColorB4"));
+	this->setColour(juce::MidiKeyboardComponent::ColourIds::textLabelColourId + 2,
+		ColorMap::getInstance()->get("ThemeColorB8"));/**< Black Key Label */
 }

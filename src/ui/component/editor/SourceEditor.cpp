@@ -28,6 +28,20 @@ SourceEditor::SourceEditor()
 	this->emptyStr = TRANS("Please select a data source for editing.");
 
 	/** Callback */
+	CoreCallbacks::getInstance()->addSeqDataRefChanged(
+		[comp = SourceEditor::SafePointer(this)](int trackIndex) {
+			if (comp) {
+				comp->update(trackIndex);
+			}
+		}
+	);
+	CoreCallbacks::getInstance()->addSourceRecord(
+		[comp = SourceEditor::SafePointer(this)](const std::set<int>& trackList) {
+			if (comp) {
+				comp->updateRecorded(trackList);
+			}
+		}
+	);
 	CoreCallbacks::getInstance()->addSourceChanged(
 		[comp = SourceEditor::SafePointer(this)](int trackIndex) {
 			if (comp) {
@@ -46,6 +60,13 @@ SourceEditor::SourceEditor()
 		[comp = SourceEditor::SafePointer(this)](int trackIndex) {
 			if (comp) {
 				comp->setTrack(trackIndex);
+			}
+		}
+	);
+	CoreCallbacks::getInstance()->addTempoChanged(
+		[comp = SourceEditor::SafePointer(this)] {
+			if (comp) {
+				comp->updateTempo();
 			}
 		}
 	);
@@ -127,6 +148,17 @@ void SourceEditor::update(uint64_t audioRef, uint64_t midiRef) {
 	this->switchBar->update(this->trackIndex, audioRef, midiRef);
 	this->midiEditor->update(midiRef);
 	this->audioEditor->update(audioRef);
+}
+
+void SourceEditor::updateTempo() {
+	this->midiEditor->updateTempo();
+	//this->audioEditor->updateTempo();
+}
+
+void SourceEditor::updateRecorded(const std::set<int>& trackList) {
+	if (trackList.contains(this->trackIndex)) {
+		this->update();
+	}
 }
 
 void SourceEditor::switchEditor(SourceSwitchBar::SwitchState state) {

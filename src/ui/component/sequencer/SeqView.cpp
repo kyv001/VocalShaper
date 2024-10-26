@@ -774,9 +774,6 @@ void SeqView::update(int index) {
 }
 
 void SeqView::updateBlock(int track, int index) {
-	/** Update Time Ruler */
-	this->ruler->updateBlock(track, index);
-
 	/** Update Tracks */
 	this->trackList->updateBlock(track, index);
 

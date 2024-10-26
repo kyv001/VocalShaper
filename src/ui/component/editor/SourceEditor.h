@@ -17,6 +17,8 @@ public:
 	void setTrack(int trackIndex);
 	void update(int trackIndex);
 	void update(uint64_t audioRef, uint64_t midiRef);
+	void updateTempo();
+	void updateRecorded(const std::set<int>& trackList);
 
 private:
 	std::unique_ptr<SourceSwitchBar> switchBar = nullptr;

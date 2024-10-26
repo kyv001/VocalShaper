@@ -3,7 +3,7 @@
 #include <JuceHeader.h>
 #include "../../misc/LevelMeterHub.h"
 
-class SeqTimeRuler final
+class SourceTimeRuler final
 	: public juce::Component,
 	public LevelMeterHub::Target {
 public:
@@ -14,7 +14,7 @@ public:
 	using DragStartFunc = std::function<void(void)>;
 	using DragProcessFunc = std::function<void(int, int, bool, bool)>;
 	using DragEndFunc = std::function<void(void)>;
-	SeqTimeRuler(const ScrollFunc& scrollFunc,
+	SourceTimeRuler(const ScrollFunc& scrollFunc,
 		const ScaleFunc& scaleFunc,
 		const WheelFunc& wheelFunc,
 		const WheelAltFunc& wheelAltFunc,
@@ -83,5 +83,5 @@ private:
 	void setTempoLabelTime(int index, double timeSec);
 	void editTempoLabel(int index);
 
-	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SeqTimeRuler)
+	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SourceTimeRuler)
 };

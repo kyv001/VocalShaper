@@ -1,11 +1,11 @@
-﻿#include "SeqTimeRuler.h"
+﻿#include "SourceTimeRuler.h"
 #include "../../lookAndFeel/LookAndFeelFactory.h"
 #include "../../misc/Tools.h"
 #include "../../misc/CoreActions.h"
 #include "../../Utils.h"
 #include "../../../audioCore/AC_API.h"
 
-SeqTimeRuler::SeqTimeRuler(
+SourceTimeRuler::SourceTimeRuler(
 	const ScrollFunc& scrollFunc,
 	const ScaleFunc& scaleFunc,
 	const WheelFunc& wheelFunc,
@@ -25,7 +25,7 @@ SeqTimeRuler::SeqTimeRuler(
 		juce::Image::ARGB, 1, 1, false);
 }
 
-void SeqTimeRuler::updateTempoLabel() {
+void SourceTimeRuler::updateTempoLabel() {
 	/** Update Tempo Temp */
 	this->tempoTemp = quickAPI::getLabelDataList();
 
@@ -34,7 +34,7 @@ void SeqTimeRuler::updateTempoLabel() {
 	this->updateRulerTemp();
 }
 
-void SeqTimeRuler::updateHPos(double pos, double itemSize) {
+void SourceTimeRuler::updateHPos(double pos, double itemSize) {
 	/** Set Pos */
 	this->pos = pos;
 	this->itemSize = itemSize;
@@ -45,7 +45,7 @@ void SeqTimeRuler::updateHPos(double pos, double itemSize) {
 	this->updateRulerTemp();
 }
 
-void SeqTimeRuler::updateRulerTemp() {
+void SourceTimeRuler::updateRulerTemp() {
 	/** Temp Size */
 	juce::Graphics g(*(this->rulerTemp.get()));
 
@@ -170,7 +170,7 @@ void SeqTimeRuler::updateRulerTemp() {
 	}
 }
 
-void SeqTimeRuler::updateLevelMeter() {
+void SourceTimeRuler::updateLevelMeter() {
 	/** Get Play Position */
 	this->playPosSec = quickAPI::getTimeInSecond();
 
@@ -181,7 +181,7 @@ void SeqTimeRuler::updateLevelMeter() {
 	this->repaint();
 }
 
-void SeqTimeRuler::resized() {
+void SourceTimeRuler::resized() {
 	/** Update Line Temp */
 	std::tie(this->secStart, this->secEnd) = this->getViewArea(this->pos, this->itemSize);
 	std::tie(this->lineTemp, this->minInterval) = this->createRulerLine(pos, itemSize);
@@ -195,7 +195,7 @@ void SeqTimeRuler::resized() {
 	this->updateRulerTemp();
 }
 
-void SeqTimeRuler::paint(juce::Graphics& g) {
+void SourceTimeRuler::paint(juce::Graphics& g) {
 	/** Size */
 	auto screenSize = utils::getScreenSize(this);
 	float cursorThickness = screenSize.getWidth() * 0.00075;
@@ -291,7 +291,7 @@ void SeqTimeRuler::paint(juce::Graphics& g) {
 	}
 }
 
-void SeqTimeRuler::mouseDown(const juce::MouseEvent& event) {
+void SourceTimeRuler::mouseDown(const juce::MouseEvent& event) {
 	float xPos = event.position.getX();
 
 	/** Size */
@@ -369,7 +369,7 @@ void SeqTimeRuler::mouseDown(const juce::MouseEvent& event) {
 	}
 }
 
-void SeqTimeRuler::mouseDrag(const juce::MouseEvent& event) {
+void SourceTimeRuler::mouseDrag(const juce::MouseEvent& event) {
 	/** Auto Scroll */
 	float xPos = event.position.getX();
 	if (!this->viewMoving) {
@@ -429,7 +429,7 @@ void SeqTimeRuler::mouseDrag(const juce::MouseEvent& event) {
 	}
 }
 
-void SeqTimeRuler::mouseUp(const juce::MouseEvent& event) {
+void SourceTimeRuler::mouseUp(const juce::MouseEvent& event) {
 	/** Play Position Changed */
 	/*if (event.mods.isLeftButtonDown()) {
 		double per = event.position.getX() / (double)this->getWidth();
@@ -482,7 +482,7 @@ void SeqTimeRuler::mouseUp(const juce::MouseEvent& event) {
 	}
 }
 
-void SeqTimeRuler::mouseMove(const juce::MouseEvent& event) {
+void SourceTimeRuler::mouseMove(const juce::MouseEvent& event) {
 	/** Current Method Also Invoked by mouseUp() */
 
 	/** Size */
@@ -513,7 +513,7 @@ void SeqTimeRuler::mouseMove(const juce::MouseEvent& event) {
 	}
 }
 
-void SeqTimeRuler::mouseWheelMove(const juce::MouseEvent& event,
+void SourceTimeRuler::mouseWheelMove(const juce::MouseEvent& event,
 	const juce::MouseWheelDetails& wheel) {
 	if (event.mods.isAltDown()) {
 		double thumbPer = event.position.getX() / (double)this->getWidth();
@@ -526,19 +526,19 @@ void SeqTimeRuler::mouseWheelMove(const juce::MouseEvent& event,
 	}
 }
 
-std::tuple<double, double> SeqTimeRuler::getViewArea(
+std::tuple<double, double> SourceTimeRuler::getViewArea(
 	double pos, double itemSize) const {
 	double secStart = pos / itemSize;
 	double secLength = this->getWidth() / itemSize;
 	return { secStart, secStart + secLength };
 }
 
-const std::tuple<juce::Array<SeqTimeRuler::LineItem>, double> SeqTimeRuler::getLineTemp() const {
+const std::tuple<juce::Array<SourceTimeRuler::LineItem>, double> SourceTimeRuler::getLineTemp() const {
 	return { this->lineTemp, this->minInterval };
 }
 
-const std::tuple<juce::Array<SeqTimeRuler::LineItem>, double>
-SeqTimeRuler::createRulerLine(double pos, double itemSize) const {
+const std::tuple<juce::Array<SourceTimeRuler::LineItem>, double>
+SourceTimeRuler::createRulerLine(double pos, double itemSize) const {
 	/** Get View Area */
 	auto [secStart, secEnd] = this->getViewArea(pos, itemSize);
 	double width = this->getWidth();
@@ -618,14 +618,14 @@ SeqTimeRuler::createRulerLine(double pos, double itemSize) const {
 	return { result, minInterval };
 }
 
-double SeqTimeRuler::limitTimeSec(double timeSec) {
+double SourceTimeRuler::limitTimeSec(double timeSec) {
 	timeSec = std::max(timeSec, 0.0);
 
 	double level = Tools::getInstance()->getAdsorb();
 	return quickAPI::limitTimeSec(timeSec, level);
 }
 
-int SeqTimeRuler::selectTempoLabel(const juce::Point<float> pos) {
+int SourceTimeRuler::selectTempoLabel(const juce::Point<float> pos) {
 	/** Size */
 	auto screenSize = utils::getScreenSize(this);
 
@@ -655,18 +655,18 @@ int SeqTimeRuler::selectTempoLabel(const juce::Point<float> pos) {
 	return -1;
 }
 
-void SeqTimeRuler::removeTempoLabel(int index) {
+void SourceTimeRuler::removeTempoLabel(int index) {
 	CoreActions::removeLabelGUI(index);
 }
 
-void SeqTimeRuler::addTempoLabel(double timeSec) {
+void SourceTimeRuler::addTempoLabel(double timeSec) {
 	CoreActions::addLabelGUI(timeSec);
 }
 
-void SeqTimeRuler::setTempoLabelTime(int index, double timeSec) {
+void SourceTimeRuler::setTempoLabelTime(int index, double timeSec) {
 	CoreActions::setLabelTimeGUI(index, timeSec);
 }
 
-void SeqTimeRuler::editTempoLabel(int index) {
+void SourceTimeRuler::editTempoLabel(int index) {
 	CoreActions::editLabelGUI(index);
 }
