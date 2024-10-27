@@ -401,7 +401,7 @@ void MainGraph::processBlock(juce::AudioBuffer<float>& audio, juce::MidiBuffer& 
 	/** Lock */
 	juce::ScopedWriteLock levelLocker(audioLock::getLevelMeterLock());
 	juce::ScopedTryReadLock audioLocker(audioLock::getAudioLock());
-	juce::ScopedTryWriteLock sourceLocker(audioLock::getAudioLock());
+	juce::ScopedTryWriteLock sourceLocker(audioLock::getSourceLock());
 	juce::ScopedTryReadLock pluginLocker(audioLock::getPluginLock());
 	juce::ScopedTryWriteLock positionLocker(audioLock::getPositionLock());
 	juce::ScopedTryReadLock mackieLocker(audioLock::getMackieLock());
