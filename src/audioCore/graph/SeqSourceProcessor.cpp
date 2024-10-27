@@ -565,6 +565,11 @@ void SeqSourceProcessor::syncARAContext() {
 	}
 }
 
+void SeqSourceProcessor::sendDirectMidiMessages(const juce::MidiMessage& message) {
+	juce::ScopedWriteLock locker(audioLock::getAudioControlLock());
+	this->directMessages.add(message);
+}
+
 void SeqSourceProcessor::prepareToPlay(
 	double sampleRate, int maximumExpectedSamplesPerBlock) {
 	this->juce::AudioProcessorGraph::prepareToPlay(
@@ -652,6 +657,12 @@ void SeqSourceProcessor::processBlock(
 			}
 		}
 	}
+
+	/** Direct MIDI Messages */
+	for (auto& i : this->directMessages) {
+		midiMessages.addEvent(i, 0);
+	}
+	this->directMessages.clear();
 
 	/** Set Note State */
 	for (auto i : midiMessages) {

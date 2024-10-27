@@ -14,7 +14,8 @@ void AudioSourceEditor::paint(juce::Graphics& g) {
 	g.fillAll(backgroundColor);
 }
 
-void AudioSourceEditor::update(uint64_t ref) {
+void AudioSourceEditor::update(int index, uint64_t ref) {
+	this->index = index;
 	this->ref = ref;
 	/** TODO */
 }

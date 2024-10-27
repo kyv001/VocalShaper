@@ -79,6 +79,8 @@ public:
 
 	void syncARAContext();
 
+	void sendDirectMidiMessages(const juce::MidiMessage& message);
+
 public:
 	void prepareToPlay(double sampleRate, int maximumExpectedSamplesPerBlock) override;
 	void releaseResources() override {};
@@ -141,6 +143,8 @@ private:
 	std::atomic_bool isMute = false;
 
 	juce::Array<float> outputLevels;
+
+	juce::Array<juce::MidiMessage> directMessages;
 
 	struct SourceInfo final {
 		double audioSampleRate = 0;

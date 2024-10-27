@@ -85,6 +85,12 @@ MIDISourceEditor::MIDISourceEditor() {
 			if (comp) {
 				comp->mouseWheelOutsideWithAlt(centerNum, thumbPer, deltaY, reversed);
 			}
+		},
+		[comp = MIDISourceEditor::SafePointer(this)]
+		(int noteNum, bool isDown, float vel) {
+			if (comp) {
+				comp->sendKeyUpDown(noteNum, isDown, vel);
+			}
 		}
 	);
 	this->addAndMakeVisible(this->piano.get());
@@ -204,7 +210,8 @@ void MIDISourceEditor::paint(juce::Graphics& g) {
 	g.fillRect(bottomRightRect);
 }
 
-void MIDISourceEditor::update(uint64_t ref) {
+void MIDISourceEditor::update(int index, uint64_t ref) {
+	this->index = index;
 	this->ref = ref;
 	
 	/** Total Length */
@@ -284,4 +291,15 @@ void MIDISourceEditor::processAreaDragTo(int distanceX, int distanceY, bool move
 void MIDISourceEditor::processAreaDragEnd() {
 	this->viewMoving = false;
 	this->moveStartPosX = this->moveStartPosY = 0;
+}
+
+void MIDISourceEditor::sendKeyUpDown(int noteNum, bool isDown, float vel) {
+	if (this->index > -1) {
+		if (isDown) {
+			quickAPI::sendDirectNoteOn(this->index, noteNum, vel * UINT8_MAX);
+		}
+		else {
+			quickAPI::sendDirectNoteOff(this->index, noteNum);
+		}
+	}
 }

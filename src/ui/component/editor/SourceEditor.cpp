@@ -146,8 +146,8 @@ void SourceEditor::update(uint64_t audioRef, uint64_t midiRef) {
 	this->audioRef = audioRef;
 	this->midiRef = midiRef;
 	this->switchBar->update(this->trackIndex, audioRef, midiRef);
-	this->midiEditor->update(midiRef);
-	this->audioEditor->update(audioRef);
+	this->midiEditor->update(this->trackIndex, midiRef);
+	this->audioEditor->update(this->trackIndex, audioRef);
 }
 
 void SourceEditor::updateTempo() {

@@ -12,10 +12,11 @@ public:
 	void resized() override;
 	void paint(juce::Graphics& g) override;
 
-	void update(uint64_t ref);
+	void update(int index, uint64_t ref);
 	void updateTempo();
 
 private:
+	int index = -1;
 	uint64_t ref = 0;
 	double totalLength = 0;
 
@@ -46,6 +47,8 @@ private:
 	void processAreaDragStart();
 	void processAreaDragTo(int distanceX, int distanceY, bool moveX = true, bool moveY = true);
 	void processAreaDragEnd();
+
+	void sendKeyUpDown(int noteNum, bool isDown, float vel);
 
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(MIDISourceEditor)
 };

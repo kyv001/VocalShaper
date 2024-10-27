@@ -4,8 +4,9 @@
 
 PianoComponent::PianoComponent(
 	const WheelFunc& wheelFunc,
-	const WheelAltFunc& wheelAltFunc)
-	: wheelFunc(wheelFunc), wheelAltFunc(wheelAltFunc),
+	const WheelAltFunc& wheelAltFunc,
+	const KeyUpDownFunc& keyUpDownFunc)
+	: wheelFunc(wheelFunc), wheelAltFunc(wheelAltFunc), keyUpDownFunc(keyUpDownFunc),
 	keysPerOctave(this->blackKeys.size() + this->whiteKeys.size()) {
 	/** Look And Feel */
 	this->setLookAndFeel(
@@ -41,6 +42,8 @@ void PianoComponent::paint(juce::Graphics& g) {
 		juce::MidiKeyboardComponent::ColourIds::textLabelColourId + 2);
 	juce::Colour hoveredColor = laf.findColour(
 		juce::MidiKeyboardComponent::ColourIds::mouseOverKeyOverlayColourId);
+	juce::Colour pressedColor = laf.findColour(
+		juce::MidiKeyboardComponent::ColourIds::keyDownOverlayColourId);
 
 	/** Font */
 	juce::Font labelFont(juce::FontOptions{ keyLabelFontHeight });
@@ -64,6 +67,10 @@ void PianoComponent::paint(juce::Graphics& g) {
 				g.fillRoundedRectangle(keyRect, whiteCornerSize);
 				if (keyNumber == this->keyHovered) {
 					g.setColour(hoveredColor);
+					g.fillRoundedRectangle(keyRect, whiteCornerSize);
+				}
+				if (keyNumber == this->keyPressed) {
+					g.setColour(pressedColor);
 					g.fillRoundedRectangle(keyRect, whiteCornerSize);
 				}
 				g.setColour(lineColor);
@@ -98,6 +105,10 @@ void PianoComponent::paint(juce::Graphics& g) {
 					g.setColour(hoveredColor);
 					g.fillRoundedRectangle(keyRect, blackCornerSize);
 				}
+				if (keyNumber == this->keyPressed) {
+					g.setColour(pressedColor);
+					g.fillRoundedRectangle(keyRect, blackCornerSize);
+				}
 				g.setColour(lineColor);
 				g.drawRoundedRectangle(keyRect, blackCornerSize, lineThickness);
 
@@ -127,25 +138,32 @@ void PianoComponent::setPos(double pos, double itemSize) {
 	this->updateKeysInternal();
 }
 
-void PianoComponent::mouseMove(const juce::MouseEvent& event) {
-	float posX = event.position.getX(), posY = event.position.getY();
+void PianoComponent::mouseDown(const juce::MouseEvent& event) {
+	if (event.mods.isLeftButtonDown()) {
+		auto [key, vel] = this->findCurrentKey(event.position);
+		if (this->keyPressed == -1 && key != -1) {
+			this->keyPressed = key;
+			this->keyUpDownFunc(key, true, vel);
 
+			this->repaint();
+		}
+	}
+}
+
+void PianoComponent::mouseUp(const juce::MouseEvent& event) {
+	if (event.mods.isLeftButtonDown()) {
+		if (this->keyPressed != -1) {
+			this->keyUpDownFunc(this->keyPressed, false, 0);
+			this->keyPressed = -1;
+
+			this->repaint();
+		}
+	}
+}
+
+void PianoComponent::mouseMove(const juce::MouseEvent& event) {
 	/** Check Mouse Hovered Key */
-	float blackLength = 0.7;
-	float blackWidth = blackLength * this->getWidth();
-	if (posX <= blackWidth) {
-		int keyDistance = std::floor((this->startOctavePos - posY) / this->itemSize);
-		int keyBase = this->startOctave * this->keysPerOctave;
-		this->keyHovered = keyBase + keyDistance;
-	}
-	else {
-		int whiteKeyDistance = std::floor((this->startOctavePos - posY) / this->sizePerWhiteKey);
-		int keyBase = this->startOctave * this->keysPerOctave;
-		int octaveDistance = whiteKeyDistance / this->whiteKeys.size();
-		int keyInOctave = this->whiteKeys[whiteKeyDistance % this->whiteKeys.size()];
-		int keyDistance = octaveDistance * this->keysPerOctave + keyInOctave;
-		this->keyHovered = keyBase + keyDistance;
-	}
+	std::tie(this->keyHovered, std::ignore) = this->findCurrentKey(event.position);
 
 	/** Repaint */
 	this->repaint();
@@ -153,10 +171,26 @@ void PianoComponent::mouseMove(const juce::MouseEvent& event) {
 
 void PianoComponent::mouseDrag(const juce::MouseEvent& event) {
 	this->mouseMove(event);
+
+	/** Check Key Pressed */
+	auto [key, vel] = this->findCurrentKey(event.position);
+	if (this->keyPressed != -1 && key != -1 && this->keyPressed != key) {
+		this->keyUpDownFunc(this->keyPressed, false, 0);
+		this->keyUpDownFunc(key, true, vel);
+		this->keyPressed = key;
+
+		this->repaint();
+	}
 }
 
 void PianoComponent::mouseExit(const juce::MouseEvent& event) {
 	this->keyHovered = -1;
+
+	if (this->keyPressed != -1) {
+		this->keyUpDownFunc(this->keyPressed, false, 0);
+		this->keyPressed = -1;
+	}
+
 	this->repaint();
 }
 
@@ -171,6 +205,28 @@ void PianoComponent::mouseWheelMove(
 	}
 	else {
 		this->wheelFunc(wheel.deltaY, wheel.isReversed);
+	}
+}
+
+std::tuple<int, float> PianoComponent::findCurrentKey(const juce::Point<float>& pos) const {
+	float posX = pos.getX(), posY = pos.getY();
+
+	float blackLength = 0.7;
+	float blackWidth = blackLength * this->getWidth();
+	if (posX <= blackWidth) {
+		int keyDistance = std::floor((this->startOctavePos - posY) / this->itemSize);
+		int keyBase = this->startOctave * this->keysPerOctave;
+		bool isBlack = std::find(this->blackKeys.begin(), this->blackKeys.end(), keyDistance % this->keysPerOctave) != this->blackKeys.end();
+		float vel = isBlack ? (posX / blackWidth) : (posX / this->getWidth());
+		return { keyBase + keyDistance, vel };
+	}
+	else {
+		int whiteKeyDistance = std::floor((this->startOctavePos - posY) / this->sizePerWhiteKey);
+		int keyBase = this->startOctave * this->keysPerOctave;
+		int octaveDistance = whiteKeyDistance / this->whiteKeys.size();
+		int keyInOctave = this->whiteKeys[whiteKeyDistance % this->whiteKeys.size()];
+		int keyDistance = octaveDistance * this->keysPerOctave + keyInOctave;
+		return { keyBase + keyDistance, posX / this->getWidth() };
 	}
 }
 

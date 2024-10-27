@@ -130,4 +130,20 @@ namespace quickAPI {
 	void setAudioDeviceInitState(std::unique_ptr<juce::XmlElement> state) {
 		AudioStartupConfig::getInstance()->setConfig(std::move(state));
 	}
+
+	void sendDirectNoteOn(int trackIndex, int noteNum, uint8_t vel) {
+		if (auto graph = AudioCore::getInstance()->getGraph()) {
+			if (auto track = graph->getSourceProcessor(trackIndex)) {
+				track->sendDirectMidiMessages(juce::MidiMessage::noteOn(1, noteNum, vel));
+			}
+		}
+	}
+
+	void sendDirectNoteOff(int trackIndex, int noteNum) {
+		if (auto graph = AudioCore::getInstance()->getGraph()) {
+			if (auto track = graph->getSourceProcessor(trackIndex)) {
+				track->sendDirectMidiMessages(juce::MidiMessage::noteOff(1, noteNum));
+			}
+		}
+	}
 }

@@ -404,9 +404,9 @@ void MainGraph::processBlock(juce::AudioBuffer<float>& audio, juce::MidiBuffer& 
 	juce::ScopedTryWriteLock sourceLocker(audioLock::getSourceLock());
 	juce::ScopedTryReadLock pluginLocker(audioLock::getPluginLock());
 	juce::ScopedTryWriteLock positionLocker(audioLock::getPositionLock());
-	juce::ScopedTryReadLock mackieLocker(audioLock::getMackieLock());
+	juce::ScopedTryReadLock controlLocker(audioLock::getAudioControlLock());
 	if (!(audioLocker.isLocked() && pluginLocker.isLocked() 
-		&& sourceLocker.isLocked()  && positionLocker.isLocked() && mackieLocker.isLocked())) {
+		&& sourceLocker.isLocked()  && positionLocker.isLocked() && controlLocker.isLocked())) {
 		vMath::zeroAllAudioData(audio);
 		midi.clear();
 		return;

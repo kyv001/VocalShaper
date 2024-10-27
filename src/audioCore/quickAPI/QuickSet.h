@@ -39,4 +39,7 @@ namespace quickAPI {
 	using AudioDeviceCallback = Device::AudioDeviceCallback;
 	void setAudioDeviceCallback(const AudioDeviceCallback& callback);
 	void setAudioDeviceInitState(std::unique_ptr<juce::XmlElement> state);
+
+	void sendDirectNoteOn(int trackIndex, int noteNum, uint8_t vel);
+	void sendDirectNoteOff(int trackIndex, int noteNum);
 }
