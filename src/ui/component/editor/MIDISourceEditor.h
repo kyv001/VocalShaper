@@ -3,6 +3,7 @@
 #include <JuceHeader.h>
 #include "PianoComponent.h"
 #include "SourceTimeRuler.h"
+#include "MIDIContentViewer.h"
 #include "../base/Scroller.h"
 
 class MIDISourceEditor final : public juce::Component {
@@ -25,6 +26,7 @@ private:
 
 	std::unique_ptr<SourceTimeRuler> ruler = nullptr;
 	std::unique_ptr<PianoComponent> piano = nullptr;
+	std::unique_ptr<MIDIContentViewer> content = nullptr;
 
 	bool viewMoving = false;
 	double moveStartPosX = 0, moveStartPosY = 0;

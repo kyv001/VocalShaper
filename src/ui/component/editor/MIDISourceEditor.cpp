@@ -95,6 +95,10 @@ MIDISourceEditor::MIDISourceEditor() {
 	);
 	this->addAndMakeVisible(this->piano.get());
 
+	/** Content */
+	this->content = std::make_unique<MIDIContentViewer>();
+	this->addAndMakeVisible(this->content.get());
+
 	/** Set Default V Pos */
 	juce::MessageManager::callAsync([scroller = Scroller::SafePointer{ this->vScroller.get() }] {
 		if (scroller) {
@@ -144,11 +148,11 @@ void MIDISourceEditor::resized() {
 		pianoWidth, hScrollerRect.getY() - rulerRect.getBottom());
 	this->piano->setBounds(pianoRect);
 
-	/** Track List */
-	/*juce::Rectangle<int> listRect(
-		0, vScrollerRect.getY(),
-		vScrollerRect.getX(), vScrollerRect.getHeight());
-	this->trackList->setBounds(listRect);*/
+	/** Content */
+	juce::Rectangle<int> contentRect(
+		hScrollerRect.getX(), vScrollerRect.getY(),
+		hScrollerRect.getWidth(), vScrollerRect.getHeight());
+	this->content->setBounds(contentRect);
 
 	/** Update View Pos */
 	this->hScroller->update();
