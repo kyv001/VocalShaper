@@ -215,7 +215,7 @@ void MIDISourceEditor::update(int index, uint64_t ref) {
 	this->ref = ref;
 	
 	/** Total Length */
-	this->totalLength = quickAPI::getMIDISourceLength(ref) + MIDI_TAIL_SEC;
+	this->totalLength = quickAPI::getTotalLength() + MIDI_TAIL_SEC;
 
 	/** Update View Pos */
 	this->vScroller->update();

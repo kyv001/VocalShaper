@@ -49,6 +49,13 @@ SourceEditor::SourceEditor()
 			}
 		}
 	);
+	CoreCallbacks::getInstance()->addSeqBlockChanged(
+		[comp = SourceEditor::SafePointer(this)](int track, int /*index*/) {
+			if (comp) {
+				comp->update(track);
+			}
+		}
+	);
 	CoreCallbacks::getInstance()->addSeqChanged(
 		[comp = SourceEditor::SafePointer(this)](int trackIndex) {
 			if (comp) {
