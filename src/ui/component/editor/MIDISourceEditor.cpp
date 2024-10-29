@@ -229,6 +229,9 @@ void MIDISourceEditor::update(int index, uint64_t ref) {
 void MIDISourceEditor::updateTempo() {
 	/** Update Time Ruler */
 	this->ruler->updateTempoLabel();
+
+	/** Update Content */
+	this->content->updateTempoLabel();
 }
 
 int MIDISourceEditor::getViewWidth() const {
@@ -251,6 +254,7 @@ double MIDISourceEditor::getPlayPos() const {
 void MIDISourceEditor::updateHPos(double pos, double itemSize) {
 	/** Update Comp */
 	this->ruler->updateHPos(pos, itemSize);
+	this->content->updateHPos(pos, itemSize);
 }
 
 void MIDISourceEditor::paintNotePreview(juce::Graphics& g,
@@ -273,6 +277,7 @@ std::tuple<double, double> MIDISourceEditor::getKeyHeightLimit() const {
 
 void MIDISourceEditor::updateVPos(double pos, double itemSize) {
 	this->piano->setPos(pos, itemSize);
+	this->content->updateVPos(pos, itemSize);
 }
 
 void MIDISourceEditor::processAreaDragStart() {

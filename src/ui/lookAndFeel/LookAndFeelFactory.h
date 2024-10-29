@@ -37,6 +37,7 @@ public:
 	juce::LookAndFeel_V4* forEditor() const;
 	juce::LookAndFeel_V4* forEditorSwitchBar() const;
 	juce::LookAndFeel_V4* forPiano() const;
+	juce::LookAndFeel_V4* forMidiContent() const;
 
 private:
 	std::unique_ptr<juce::LookAndFeel> mainLAF = nullptr;
@@ -68,6 +69,7 @@ private:
 	std::unique_ptr<juce::LookAndFeel_V4> editorLAF = nullptr;
 	std::unique_ptr<juce::LookAndFeel_V4> editorSwitchBarLAF = nullptr;
 	std::unique_ptr<juce::LookAndFeel_V4> pianoLAF = nullptr;
+	std::unique_ptr<juce::LookAndFeel_V4> midiContentLAF = nullptr;
 
 public:
 	static LookAndFeelFactory* getInstance();

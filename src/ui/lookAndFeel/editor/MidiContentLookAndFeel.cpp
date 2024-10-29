@@ -1,0 +1,31 @@
+#include "MidiContentLookAndFeel.h"
+#include "../../misc/ColorMap.h"
+
+MidiContentLookAndFeel::MidiContentLookAndFeel()
+	: MainLookAndFeel() {
+	/** Background */
+	this->setColour(juce::ResizableWindow::ColourIds::backgroundColourId,
+		ColorMap::getInstance()->get("ThemeColorB1"));
+
+	/** Ruler Line */
+	this->setColour(juce::TableListBox::ColourIds::backgroundColourId,
+		ColorMap::getInstance()->get("ThemeColorB1"));
+	this->setColour(juce::TableListBox::ColourIds::outlineColourId,
+		ColorMap::getInstance()->get("ThemeColorB5"));/** Line */
+	this->setColour(juce::TableListBox::ColourIds::textColourId,
+		ColorMap::getInstance()->get("ThemeColorB10"));
+
+	/** Key Line */
+	this->setColour(juce::MidiKeyboardComponent::ColourIds::whiteNoteColourId,
+		ColorMap::getInstance()->get("ThemeColorB3"));
+	this->setColour(juce::MidiKeyboardComponent::ColourIds::blackNoteColourId,
+		ColorMap::getInstance()->get("ThemeColorB2"));
+	this->setColour(juce::MidiKeyboardComponent::ColourIds::keySeparatorLineColourId,
+		ColorMap::getInstance()->get("ThemeColorB1"));
+	this->setColour(juce::MidiKeyboardComponent::ColourIds::mouseOverKeyOverlayColourId,
+		ColorMap::getInstance()->get("ThemeColorB5").withAlpha(0.5f));
+	this->setColour(juce::MidiKeyboardComponent::ColourIds::keyDownOverlayColourId,
+		ColorMap::getInstance()->get("ThemeColorB5").withAlpha(0.5f));
+	this->setColour(juce::MidiKeyboardComponent::ColourIds::textLabelColourId,
+		ColorMap::getInstance()->get("ThemeColorB4"));
+}

@@ -28,6 +28,7 @@
 #include "editor/EditorLookAndFeel.h"
 #include "editor/EditorSwitchBarLookAndFeel.h"
 #include "editor/PianoLookAndFeel.h"
+#include "editor/MidiContentLookAndFeel.h"
 #include "../misc/ColorMap.h"
 #include <FlowUI.h>
 
@@ -146,6 +147,9 @@ void LookAndFeelFactory::initialise() {
 
 	/** Piano */
 	this->pianoLAF = std::make_unique<PianoLookAndFeel>();
+
+	/** MIDI Content */
+	this->midiContentLAF = std::make_unique<MidiContentLookAndFeel>();
 }
 
 void LookAndFeelFactory::setDefaultSansSerifTypeface(juce::Typeface::Ptr typeface) {
@@ -263,6 +267,10 @@ juce::LookAndFeel_V4* LookAndFeelFactory::forEditorSwitchBar() const {
 
 juce::LookAndFeel_V4* LookAndFeelFactory::forPiano() const {
 	return this->pianoLAF.get();
+}
+
+juce::LookAndFeel_V4* LookAndFeelFactory::forMidiContent() const {
+	return this->midiContentLAF.get();
 }
 
 LookAndFeelFactory* LookAndFeelFactory::getInstance() {
