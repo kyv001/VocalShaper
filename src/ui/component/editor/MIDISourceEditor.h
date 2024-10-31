@@ -40,6 +40,12 @@ private:
 	double secStart = 0, secEnd = 0;
 	double playPosSec = 0;
 
+	/** Start, End */
+	using BlockItem = std::tuple<double, double>;
+	juce::Array<BlockItem> blockItemTemp;
+
+	juce::Colour trackColor;
+
 	int getViewWidth() const;
 	double getTimeLength() const;
 	std::tuple<double, double> getTimeWidthLimit() const;
@@ -60,6 +66,8 @@ private:
 	void processAreaDragEnd();
 
 	void sendKeyUpDown(int noteNum, bool isDown, float vel);
+
+	void updateBlockTemp();
 
 	std::tuple<double, double> getViewArea(double pos, double itemSize) const;
 

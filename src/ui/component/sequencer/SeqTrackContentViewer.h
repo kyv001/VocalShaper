@@ -28,6 +28,7 @@ public:
 	void updateData();
 	void updateDataImage();
 
+	void resized() override;
 	void paint(juce::Graphics& g) override;
 
 	void mouseMove(const juce::MouseEvent& event) override;
@@ -101,6 +102,8 @@ private:
 
 	void showMenu(double seconds, int blockIndex);
 	juce::PopupMenu createMenu(double seconds, int blockIndex);
+
+	std::tuple<double, double> getViewArea(double pos, double itemSize) const;
 
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SeqTrackContentViewer)
 };

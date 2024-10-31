@@ -132,6 +132,9 @@ void MIDISourceEditor::resized() {
 	int adsorbButtonPaddingWidth = screenSize.getWidth() * 0.005;
 	int adsorbButtonPaddingHeight = screenSize.getHeight() * 0.005;
 
+	/** Update Time */
+	std::tie(this->secStart, this->secEnd) = this->getViewArea(this->pos, this->itemSize);
+
 	/** Scroller */
 	juce::Rectangle<int> hScrollerRect(
 		pianoWidth, this->getHeight() - scrollerHeight,
@@ -231,6 +234,9 @@ void MIDISourceEditor::update(int index, uint64_t ref) {
 	this->index = index;
 	this->ref = ref;
 
+	/** Color */
+	this->trackColor = quickAPI::getSeqTrackColor(index);
+
 	/** Content */
 	this->content->update(index, ref);
 
@@ -249,6 +255,9 @@ void MIDISourceEditor::updateTempo() {
 void MIDISourceEditor::updateBlocks() {
 	/** Total Length */
 	this->totalLength = quickAPI::getTotalLength() + MIDI_TAIL_SEC;
+
+	/** Update Block Temp */
+	this->updateBlockTemp();
 
 	/** Update Content */
 	this->content->updateBlocks();
@@ -302,8 +311,23 @@ void MIDISourceEditor::updateHPos(double pos, double itemSize) {
 }
 
 void MIDISourceEditor::paintNotePreview(juce::Graphics& g,
-	int width, int height, bool vertical) {
-	/** TODO */
+	int width, int height, bool /*vertical*/) {
+	/** Size */
+	auto screenSize = utils::getScreenSize(this);
+	float blockRectHeight = screenSize.getHeight() * 0.003;
+
+	/** Blocks */
+	g.setColour(this->trackColor);
+	double totalLength = this->getTimeLength();
+	for (int i = 0; i < this->blockItemTemp.size(); i++) {
+		auto [start, end] = this->blockItemTemp.getUnchecked(i);
+		float startPos = start / totalLength * width;
+		float endPos = end / totalLength * width;
+
+		juce::Rectangle<float> blockRect(
+			startPos, 0, endPos - startPos, blockRectHeight);
+		g.fillRect(blockRect);
+	}
 }
 
 int MIDISourceEditor::getViewHeight() const {
@@ -354,6 +378,17 @@ void MIDISourceEditor::sendKeyUpDown(int noteNum, bool isDown, float vel) {
 		else {
 			quickAPI::sendDirectNoteOff(this->index, noteNum);
 		}
+	}
+}
+
+void MIDISourceEditor::updateBlockTemp() {
+	/** Clear Temp */
+	this->blockItemTemp.clear();
+
+	/** Update Block Temp */
+	auto list = quickAPI::getBlockList(this->index);
+	for (auto [startTime, endTime, offset] : list) {
+		this->blockItemTemp.add({ startTime, endTime });
 	}
 }
 

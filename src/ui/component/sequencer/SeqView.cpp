@@ -489,6 +489,9 @@ void SeqView::resized() {
 	int adsorbButtonPaddingWidth = screenSize.getWidth() * 0.005;
 	int adsorbButtonPaddingHeight = screenSize.getHeight() * 0.005;
 
+	/** Update Time */
+	std::tie(this->secStart, this->secEnd) = this->getViewArea(this->pos, this->itemSize);
+
 	/** Scroller */
 	juce::Rectangle<int> hScrollerRect(
 		headWidth, this->getHeight() - scrollerHeight,
@@ -518,10 +521,6 @@ void SeqView::resized() {
 		vScrollerRect.getX(), vScrollerRect.getHeight());
 	this->trackList->setBounds(listRect);
 
-	/** Update View Pos */
-	this->hScroller->update();
-	this->vScroller->update();
-
 	/** Update Line Temp */
 	std::tie(this->lineTemp, this->minInterval) = this->ruler->getLineTemp();
 
@@ -534,6 +533,10 @@ void SeqView::resized() {
 			juce::Image::ARGB, width, height, true);
 		this->updateGridTemp();
 	}
+
+	/** Update View Pos */
+	this->hScroller->update();
+	this->vScroller->update();
 }
 
 void SeqView::paint(juce::Graphics& g) {
@@ -766,19 +769,24 @@ void SeqView::update(int index) {
 	}
 
 	/** Update Block Temp */
-	this->updateBlockTemp();
+	this->updateBlock(index, -1);
 
 	/** Update View Pos */
 	this->vScroller->update();
-	this->hScroller->update();
 }
 
 void SeqView::updateBlock(int track, int index) {
+	/** Update Length */
+	this->totalLength = quickAPI::getTotalLength() + SEQ_TAIL_SEC;
+
 	/** Update Tracks */
 	this->trackList->updateBlock(track, index);
 
 	/** Update Block Temp */
 	this->updateBlockTemp();
+
+	/** Update View Pos */
+	this->hScroller->update();
 }
 
 void SeqView::updateTempo() {
@@ -893,13 +901,15 @@ void SeqView::paintBlockPreview(juce::Graphics& g,
 	float trackHeight = (height - paddingHeight * 2) / (double)(trackNum);
 	trackHeight = std::min(trackHeight, trackMaxHeight);
 
-	for (auto [trackIndex, startPos, endPos] : this->blockTemp) {
+	double totalLength = this->getTimeLength();
+	for (auto [trackIndex, start, end] : this->blockTemp) {
 		if (trackIndex < trackNum) {
+			float startPos = start / totalLength * width;
+			float endPos = end / totalLength * width;
+
 			juce::Rectangle<float> blockRect(
-				startPos / this->totalLength * width,
-				paddingHeight + trackIndex * trackHeight,
-				(endPos - startPos) / this->totalLength * width,
-				trackHeight);
+				startPos, paddingHeight + trackIndex * trackHeight,
+				endPos - startPos, trackHeight);
 			juce::Colour blockColor = this->colorTemp[trackIndex];
 
 			g.setColour(blockColor);
@@ -1027,12 +1037,6 @@ void SeqView::updateBlockTemp() {
 			this->blockTemp.add({ i, startTime, endTime });
 		}
 	}
-
-	/** Update Length */
-	this->totalLength = quickAPI::getTotalLength() + SEQ_TAIL_SEC;
-
-	/** Update View Pos */
-	this->hScroller->update();
 }
 
 void SeqView::processAreaDragStart() {

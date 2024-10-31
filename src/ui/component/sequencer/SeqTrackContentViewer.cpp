@@ -122,8 +122,7 @@ void SeqTrackContentViewer::updateHPos(double pos, double itemSize) {
 	this->pos = pos;
 	this->itemSize = itemSize;
 
-	this->secStart = pos / itemSize;
-	this->secEnd = this->secStart + (this->getWidth() / itemSize);
+	std::tie(this->secStart, this->secEnd) = this->getViewArea(pos, itemSize);
 
 	if (shouldRepaintDataImage) {
 		this->updateDataImage();
@@ -206,6 +205,11 @@ void SeqTrackContentViewer::updateDataImage() {
 		/** Repaint */
 		this->repaint();
 	}
+}
+
+void SeqTrackContentViewer::resized() {
+	/** Update Time */
+	std::tie(this->secStart, this->secEnd) = this->getViewArea(this->pos, this->itemSize);
 }
 
 void SeqTrackContentViewer::paint(juce::Graphics& g) {
@@ -978,4 +982,10 @@ juce::PopupMenu SeqTrackContentViewer::createMenu(double seconds, int blockIndex
 	menu.addItem(SeqBlockMenuActionType::OpenInEditor, TRANS("Open Source In Editor"), true);
 
 	return menu;
+}
+
+std::tuple<double, double> SeqTrackContentViewer::getViewArea(double pos, double itemSize) const {
+	double secStart = pos / itemSize;
+	double secLength = this->getWidth() / itemSize;
+	return { secStart, secStart + secLength };
 }
