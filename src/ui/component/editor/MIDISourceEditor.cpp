@@ -230,13 +230,12 @@ void MIDISourceEditor::paint(juce::Graphics& g) {
 void MIDISourceEditor::update(int index, uint64_t ref) {
 	this->index = index;
 	this->ref = ref;
-	
-	/** Total Length */
-	this->totalLength = quickAPI::getTotalLength() + MIDI_TAIL_SEC;
 
-	/** Update View Pos */
-	this->vScroller->update();
-	this->hScroller->update();
+	/** Content */
+	this->content->update(index, ref);
+
+	/** Blocks */
+	this->updateBlocks();
 }
 
 void MIDISourceEditor::updateTempo() {
@@ -245,6 +244,18 @@ void MIDISourceEditor::updateTempo() {
 
 	/** Update Content */
 	this->content->updateTempoLabel();
+}
+
+void MIDISourceEditor::updateBlocks() {
+	/** Total Length */
+	this->totalLength = quickAPI::getTotalLength() + MIDI_TAIL_SEC;
+
+	/** Update Content */
+	this->content->updateBlocks();
+
+	/** Update View Pos */
+	this->vScroller->update();
+	this->hScroller->update();
 }
 
 void MIDISourceEditor::updateLevelMeter() {

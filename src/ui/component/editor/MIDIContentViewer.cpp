@@ -16,6 +16,15 @@ MIDIContentViewer::MIDIContentViewer(
 		juce::Image::ARGB, 1, 1, false);
 	this->keyTemp = std::make_unique<juce::Image>(
 		juce::Image::ARGB, 1, 1, false);
+	this->blockTemp = std::make_unique<juce::Image>(
+		juce::Image::ARGB, 1, 1, false);
+}
+
+void MIDIContentViewer::update(int index, uint64_t ref) {
+	this->index = index;
+	this->ref = ref;
+
+	this->updateBlocks();
 }
 
 void MIDIContentViewer::updateTempoLabel() {
@@ -25,12 +34,27 @@ void MIDIContentViewer::updateTempoLabel() {
 	this->repaint();
 }
 
+void MIDIContentViewer::updateBlocks() {
+	/** Clear Temp */
+	this->blockItemTemp.clear();
+
+	/** Update Block Temp */
+	auto list = quickAPI::getBlockList(this->index);
+	for (auto [startTime, endTime, offset] : list) {
+		this->blockItemTemp.add({ startTime, endTime });
+	}
+
+	/** Update UI */
+	this->updateBlockImageTemp();
+	this->repaint();
+}
+
 void MIDIContentViewer::updateLevelMeter() {
 	/** Get Play Position */
 	this->playPosSec = quickAPI::getTimeInSecond();
 
 	/** Get Loop Time */
-	//std::tie(this->loopStartSec, this->loopEndSec) = quickAPI::getLoopTimeSec();
+	std::tie(this->loopStartSec, this->loopEndSec) = quickAPI::getLoopTimeSec();
 
 	/** Repaint */
 	this->repaint();
@@ -46,6 +70,7 @@ void MIDIContentViewer::updateHPos(double pos, double itemSize) {
 	std::tie(this->lineTemp, this->minInterval) = this->createRulerLine(pos, itemSize);
 
 	this->updateRulerImageTemp();
+	this->updateBlockImageTemp();
 	this->updateDataImageTemp();
 	this->repaint();
 }
@@ -81,6 +106,11 @@ void MIDIContentViewer::resized() {
 	this->keyTemp = std::make_unique<juce::Image>(
 		juce::Image::ARGB, width, height, false);
 	this->updateKeyImageTemp();
+
+	/** Update Block Temp */
+	this->blockTemp = std::make_unique<juce::Image>(
+		juce::Image::ARGB, width, height, false);
+	this->updateBlockImageTemp();
 }
 
 void MIDIContentViewer::paint(juce::Graphics& g) {
@@ -92,6 +122,11 @@ void MIDIContentViewer::paint(juce::Graphics& g) {
 	/** Ruler Temp */
 	if (this->rulerTemp) {
 		g.drawImageAt(*(this->rulerTemp.get()), 0, 0);
+	}
+
+	/** Block Temp */
+	if (this->blockTemp) {
+		g.drawImageAt(*(this->blockTemp.get()), 0, 0);
 	}
 }
 
@@ -105,6 +140,8 @@ void MIDIContentViewer::paintOverChildren(juce::Graphics& g) {
 	auto& laf = this->getLookAndFeel();
 	juce::Colour cursorColor = laf.findColour(
 		juce::Label::ColourIds::textColourId);
+	/*juce::Colour offColor = laf.findColour(
+		juce::Label::ColourIds::textWhenEditingColourId);*/
 
 	/** Cursor */
 	int width = this->getWidth(), height = this->getHeight();
@@ -117,6 +154,27 @@ void MIDIContentViewer::paintOverChildren(juce::Graphics& g) {
 		g.setColour(cursorColor);
 		g.fillRect(cursorRect);
 	}
+
+	/** Time Off */
+	//if (this->loopEndSec > this->loopStartSec) {
+	//	/** Left */
+	//	if (this->loopStartSec > this->secStart) {
+	//		float xPos = (this->loopStartSec - this->secStart) / (this->secEnd - this->secStart) * width;
+	//		juce::Rectangle<float> offRect(0, 0, xPos, height);
+
+	//		g.setColour(offColor);
+	//		g.fillRect(offRect);
+	//	}
+
+	//	/** Right */
+	//	if (this->loopEndSec < this->secEnd) {
+	//		float xPos = (this->loopEndSec - this->secStart) / (this->secEnd - this->secStart) * width;
+	//		juce::Rectangle<float> offRect(xPos, 0, width - xPos, height);
+
+	//		g.setColour(offColor);
+	//		g.fillRect(offRect);
+	//	}
+	//}
 }
 
 void MIDIContentViewer::mouseWheelMove(
@@ -213,6 +271,41 @@ void MIDIContentViewer::updateRulerImageTemp() {
 
 		g.setColour(lineColor);
 		g.fillRect(lineRect);
+	}
+}
+
+void MIDIContentViewer::updateBlockImageTemp() {
+	/** Clear Temp */
+	this->blockTemp->clear(this->blockTemp->getBounds());
+	juce::Graphics g(*(this->blockTemp.get()));
+
+	/** Colors */
+	auto& laf = this->getLookAndFeel();
+	juce::Colour offColor = laf.findColour(
+		juce::Label::ColourIds::textWhenEditingColourId);
+
+	/** Paint Each Area */
+	{
+		double startSec = 0;
+		for (int i = 0; i < this->blockItemTemp.size() + 1; i++) {
+			double endSec = (i < this->blockItemTemp.size())
+				? std::get<0>(this->blockItemTemp.getUnchecked(i))
+				: std::max(startSec, this->secEnd);
+
+			if (startSec < this->secEnd && endSec > this->secStart) {
+				float startPos = (startSec - this->secStart) / (this->secEnd - this->secStart) * this->getWidth();
+				float endPos = (endSec - this->secStart) / (this->secEnd - this->secStart) * this->getWidth();
+
+				juce::Rectangle<float> areaRect(
+					startPos, 0, endPos - startPos, this->blockTemp->getHeight());
+				g.setColour(offColor);
+				g.fillRect(areaRect);
+			}
+
+			if (i < this->blockItemTemp.size()) {
+				startSec = std::get<1>(this->blockItemTemp.getUnchecked(i));
+			}
+		}
 	}
 }
 

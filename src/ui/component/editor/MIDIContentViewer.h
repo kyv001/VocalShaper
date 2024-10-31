@@ -13,7 +13,9 @@ public:
 		const WheelFunc& wheelFunc,
 		const WheelAltFunc& wheelAltFunc);
 
+	void update(int index, uint64_t ref);
 	void updateTempoLabel();
+	void updateBlocks();
 	void updateLevelMeter() override;
 
 	void updateHPos(double pos, double itemSize);
@@ -34,6 +36,9 @@ private:
 	const std::array<int, 12> keyMasks{ 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0 };
 	const int totalKeys = 128;
 
+	int index = -1;
+	uint64_t ref = 0;
+
 	double hPos = 0, hItemSize = 0;
 	double secStart = 0, secEnd = 0;
 
@@ -41,17 +46,24 @@ private:
 	double keyTop = 0, keyBottom = 0;
 
 	double playPosSec = 0;
+	double loopStartSec = 0, loopEndSec = 0;
 
 	/** Place, IsBar, barId */
 	using LineItem = std::tuple<double, bool, int>;
 	juce::Array<LineItem> lineTemp;
 	double minInterval = 0;
-	std::unique_ptr<juce::Image> rulerTemp = nullptr;
 
+	/** Start, End */
+	using BlockItem = std::tuple<double, double>;
+	juce::Array<BlockItem> blockItemTemp;
+
+	std::unique_ptr<juce::Image> rulerTemp = nullptr;
 	std::unique_ptr<juce::Image> keyTemp = nullptr;
+	std::unique_ptr<juce::Image> blockTemp = nullptr;
 
 	void updateKeyImageTemp();
 	void updateRulerImageTemp();
+	void updateBlockImageTemp();
 	void updateDataImageTemp();
 
 	std::tuple<double, double> getHViewArea(double pos, double itemSize) const;

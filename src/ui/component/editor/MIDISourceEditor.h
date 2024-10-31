@@ -18,6 +18,7 @@ public:
 
 	void update(int index, uint64_t ref);
 	void updateTempo();
+	void updateBlocks();
 	void updateLevelMeter() override;
 
 private:

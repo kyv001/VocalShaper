@@ -39,7 +39,7 @@ MidiContentLookAndFeel::MidiContentLookAndFeel()
 	this->setColour(juce::Label::ColourIds::backgroundWhenEditingColourId,
 		ColorMap::getInstance()->get("ThemeColorB2"));
 	this->setColour(juce::Label::ColourIds::textWhenEditingColourId,
-		ColorMap::getInstance()->get("ThemeColorB1").withAlpha(0.8f));/**< Time Off */
+		ColorMap::getInstance()->get("ThemeColorB1").withAlpha(0.8f));/**< Time Out of Blocks */
 	this->setColour(juce::Label::ColourIds::outlineWhenEditingColourId,
 		ColorMap::getInstance()->get("ThemeColorA2"));
 }

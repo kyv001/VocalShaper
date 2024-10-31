@@ -50,9 +50,9 @@ SourceEditor::SourceEditor()
 		}
 	);
 	CoreCallbacks::getInstance()->addSeqBlockChanged(
-		[comp = SourceEditor::SafePointer(this)](int track, int /*index*/) {
+		[comp = SourceEditor::SafePointer(this)](int /*track*/, int /*index*/) {
 			if (comp) {
-				comp->update(track);
+				comp->updateBlocks();
 			}
 		}
 	);
@@ -149,6 +149,9 @@ void SourceEditor::update(uint64_t audioRef, uint64_t midiRef) {
 		midiRef = 0;
 	}
 
+	/** Update Blocks */
+	this->updateBlocks();
+
 	/** Update Refs */
 	this->audioRef = audioRef;
 	this->midiRef = midiRef;
@@ -160,6 +163,11 @@ void SourceEditor::update(uint64_t audioRef, uint64_t midiRef) {
 void SourceEditor::updateTempo() {
 	this->midiEditor->updateTempo();
 	//this->audioEditor->updateTempo();
+}
+
+void SourceEditor::updateBlocks() {
+	this->midiEditor->updateBlocks();
+	//this->audioEditor->updateBlocks();
 }
 
 void SourceEditor::updateRecorded(const std::set<int>& trackList) {
