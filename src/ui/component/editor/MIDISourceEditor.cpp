@@ -1,4 +1,5 @@
 ﻿#include "MIDISourceEditor.h"
+#include "../../misc/Tools.h"
 #include "../../Utils.h"
 #include "../../../audioCore/AC_API.h"
 
@@ -96,7 +97,19 @@ MIDISourceEditor::MIDISourceEditor() {
 	this->addAndMakeVisible(this->piano.get());
 
 	/** Content */
-	this->content = std::make_unique<MIDIContentViewer>();
+	this->content = std::make_unique<MIDIContentViewer>(
+		[comp = ScrollerBase::SafePointer(this->hScroller.get())]
+		(float deltaY, bool reversed) {
+			if (comp) {
+				comp->mouseWheelOutside(deltaY, reversed);
+			}
+		},
+		[comp = ScrollerBase::SafePointer(this->hScroller.get())]
+		(double centerNum, double thumbPer, float deltaY, bool reversed) {
+			if (comp) {
+				comp->mouseWheelOutsideWithAlt(centerNum, thumbPer, deltaY, reversed);
+			}
+		});
 	this->addAndMakeVisible(this->content.get());
 
 	/** Set Default V Pos */
@@ -234,6 +247,21 @@ void MIDISourceEditor::updateTempo() {
 	this->content->updateTempoLabel();
 }
 
+void MIDISourceEditor::updateLevelMeter() {
+	/** Get Play Position */
+	this->playPosSec = quickAPI::getTimeInSecond();
+
+	/** Get Play State */
+	bool isPlaying = quickAPI::isPlaying();
+
+	/** Follow */
+	if (isPlaying && Tools::getInstance()->getFollow()) {
+		if ((this->playPosSec < this->secStart) || (this->playPosSec > this->secEnd)) {
+			this->hScroller->setPos(this->playPosSec * this->itemSize);
+		}
+	}
+}
+
 int MIDISourceEditor::getViewWidth() const {
 	return this->hScroller->getWidth();
 }
@@ -252,6 +280,11 @@ double MIDISourceEditor::getPlayPos() const {
 }
 
 void MIDISourceEditor::updateHPos(double pos, double itemSize) {
+	/** Set Pos */
+	this->pos = pos;
+	this->itemSize = itemSize;
+	std::tie(this->secStart, this->secEnd) = this->getViewArea(pos, itemSize);
+
 	/** Update Comp */
 	this->ruler->updateHPos(pos, itemSize);
 	this->content->updateHPos(pos, itemSize);
@@ -311,4 +344,10 @@ void MIDISourceEditor::sendKeyUpDown(int noteNum, bool isDown, float vel) {
 			quickAPI::sendDirectNoteOff(this->index, noteNum);
 		}
 	}
+}
+
+std::tuple<double, double> MIDISourceEditor::getViewArea(double pos, double itemSize) const {
+	double secStart = pos / itemSize;
+	double secLength = this->getViewWidth() / itemSize;
+	return { secStart, secStart + secLength };
 }

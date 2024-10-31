@@ -3,7 +3,10 @@
 #include "../../Utils.h"
 #include "../../../audioCore/AC_API.h"
 
-MIDIContentViewer::MIDIContentViewer() {
+MIDIContentViewer::MIDIContentViewer(
+	const WheelFunc& wheelFunc,
+	const WheelAltFunc& wheelAltFunc)
+	: wheelFunc(wheelFunc), wheelAltFunc(wheelAltFunc) {
 	/** Look And Feel */
 	this->setLookAndFeel(
 		LookAndFeelFactory::getInstance()->forMidiContent());
@@ -19,6 +22,17 @@ void MIDIContentViewer::updateTempoLabel() {
 	/** Update Ruler Temp */
 	std::tie(this->lineTemp, this->minInterval) = this->createRulerLine(this->hPos, this->hItemSize);
 	this->updateRulerImageTemp();
+	this->repaint();
+}
+
+void MIDIContentViewer::updateLevelMeter() {
+	/** Get Play Position */
+	this->playPosSec = quickAPI::getTimeInSecond();
+
+	/** Get Loop Time */
+	//std::tie(this->loopStartSec, this->loopEndSec) = quickAPI::getLoopTimeSec();
+
+	/** Repaint */
 	this->repaint();
 }
 
@@ -78,6 +92,44 @@ void MIDIContentViewer::paint(juce::Graphics& g) {
 	/** Ruler Temp */
 	if (this->rulerTemp) {
 		g.drawImageAt(*(this->rulerTemp.get()), 0, 0);
+	}
+}
+
+void MIDIContentViewer::paintOverChildren(juce::Graphics& g) {
+	/** Size */
+	auto screenSize = utils::getScreenSize(this);
+
+	float cursorThickness = screenSize.getWidth() * 0.00075;
+
+	/** Color */
+	auto& laf = this->getLookAndFeel();
+	juce::Colour cursorColor = laf.findColour(
+		juce::Label::ColourIds::textColourId);
+
+	/** Cursor */
+	int width = this->getWidth(), height = this->getHeight();
+	float cursorPosX = ((this->playPosSec - this->secStart) / (this->secEnd - this->secStart)) * width;
+	juce::Rectangle<float> cursorRect(
+		cursorPosX - cursorThickness / 2, 0,
+		cursorThickness, height);
+
+	if (cursorPosX >= 0 && cursorPosX <= width) {
+		g.setColour(cursorColor);
+		g.fillRect(cursorRect);
+	}
+}
+
+void MIDIContentViewer::mouseWheelMove(
+	const juce::MouseEvent& event,
+	const juce::MouseWheelDetails& wheel) {
+	if (event.mods.isAltDown()) {
+		double thumbPer = event.position.getX() / (double)this->getWidth();
+		double centerNum = this->secStart + (this->secEnd - this->secStart) * thumbPer;
+
+		this->wheelAltFunc(centerNum, thumbPer, wheel.deltaY, wheel.isReversed);
+	}
+	else {
+		this->wheelFunc(wheel.deltaY, wheel.isReversed);
 	}
 }
 

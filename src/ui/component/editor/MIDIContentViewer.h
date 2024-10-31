@@ -1,20 +1,35 @@
 #pragma once
 
 #include <JuceHeader.h>
+#include "../../misc/LevelMeterHub.h"
 
-class MIDIContentViewer final : public juce::Component {
+class MIDIContentViewer final
+	: public juce::Component,
+	public LevelMeterHub::Target {
 public:
-	MIDIContentViewer();
+	using WheelFunc = std::function<void(float, bool)>;
+	using WheelAltFunc = std::function<void(double, double, float, bool)>;
+	MIDIContentViewer(
+		const WheelFunc& wheelFunc,
+		const WheelAltFunc& wheelAltFunc);
 
 	void updateTempoLabel();
+	void updateLevelMeter() override;
 
 	void updateHPos(double pos, double itemSize);
 	void updateVPos(double pos, double itemSize);
 
 	void resized() override;
 	void paint(juce::Graphics& g) override;
+	void paintOverChildren(juce::Graphics& g) override;
+
+	void mouseWheelMove(const juce::MouseEvent& event,
+		const juce::MouseWheelDetails& wheel) override;
 
 private:
+	const WheelFunc wheelFunc;
+	const WheelAltFunc wheelAltFunc;
+
 	/** 0 for white key and 1 for black key */
 	const std::array<int, 12> keyMasks{ 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0 };
 	const int totalKeys = 128;
@@ -24,6 +39,8 @@ private:
 
 	double vPos = 0, vItemSize = 0;
 	double keyTop = 0, keyBottom = 0;
+
+	double playPosSec = 0;
 
 	/** Place, IsBar, barId */
 	using LineItem = std::tuple<double, bool, int>;

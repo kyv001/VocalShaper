@@ -5,8 +5,11 @@
 #include "SourceTimeRuler.h"
 #include "MIDIContentViewer.h"
 #include "../base/Scroller.h"
+#include "../../misc/LevelMeterHub.h"
 
-class MIDISourceEditor final : public juce::Component {
+class MIDISourceEditor final
+	: public juce::Component,
+	public LevelMeterHub::Target {
 public:
 	MIDISourceEditor();
 
@@ -15,6 +18,7 @@ public:
 
 	void update(int index, uint64_t ref);
 	void updateTempo();
+	void updateLevelMeter() override;
 
 private:
 	int index = -1;
@@ -30,6 +34,10 @@ private:
 
 	bool viewMoving = false;
 	double moveStartPosX = 0, moveStartPosY = 0;
+
+	double pos = 0, itemSize = 0;
+	double secStart = 0, secEnd = 0;
+	double playPosSec = 0;
 
 	int getViewWidth() const;
 	double getTimeLength() const;
@@ -51,6 +59,8 @@ private:
 	void processAreaDragEnd();
 
 	void sendKeyUpDown(int noteNum, bool isDown, float vel);
+
+	std::tuple<double, double> getViewArea(double pos, double itemSize) const;
 
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(MIDISourceEditor)
 };
