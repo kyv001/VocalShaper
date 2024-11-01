@@ -260,8 +260,8 @@ SeqView::SeqView()
 		[this] { return this->getTimeLength(); },
 		[this] { return this->getTimeWidthLimit(); },
 		[this](double pos, double itemSize) { this->updateHPos(pos, itemSize); },
-		[this](juce::Graphics& g, int width, int height, bool vertical) {
-				this->paintBlockPreview(g, width, height, vertical); },
+		[this](juce::Graphics& g, int width, int height, bool vertical, double totalNum) {
+				this->paintBlockPreview(g, width, height, vertical, totalNum); },
 		Scroller::PaintItemPreviewFunc{},
 		[this] { return this->getPlayPos(); });
 	this->hScroller->setShouldShowPlayPos(true);
@@ -891,7 +891,7 @@ void SeqView::updateHPos(double pos, double itemSize) {
 }
 
 void SeqView::paintBlockPreview(juce::Graphics& g,
-	int width, int height, bool /*vertical*/) {
+	int width, int height, bool /*vertical*/, double totalNum) {
 	/** Size */
 	auto screenSize = utils::getScreenSize(this);
 	int paddingHeight = screenSize.getHeight() * 0.0035;
@@ -901,11 +901,10 @@ void SeqView::paintBlockPreview(juce::Graphics& g,
 	float trackHeight = (height - paddingHeight * 2) / (double)(trackNum);
 	trackHeight = std::min(trackHeight, trackMaxHeight);
 
-	double totalLength = this->getTimeLength();
 	for (auto [trackIndex, start, end] : this->blockTemp) {
 		if (trackIndex < trackNum) {
-			float startPos = start / totalLength * width;
-			float endPos = end / totalLength * width;
+			float startPos = start / totalNum * width;
+			float endPos = end / totalNum * width;
 
 			juce::Rectangle<float> blockRect(
 				startPos, paddingHeight + trackIndex * trackHeight,

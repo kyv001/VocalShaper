@@ -12,8 +12,8 @@ MIDISourceEditor::MIDISourceEditor() {
 		[this] { return this->getTimeLength(); },
 		[this] { return this->getTimeWidthLimit(); },
 		[this](double pos, double itemSize) { this->updateHPos(pos, itemSize); },
-		[this](juce::Graphics& g, int width, int height, bool vertical) {
-			this->paintNotePreview(g, width, height, vertical); },
+		[this](juce::Graphics& g, int width, int height, bool vertical, double totalNum) {
+			this->paintNotePreview(g, width, height, vertical, totalNum); },
 			Scroller::PaintItemPreviewFunc{},
 			[this] { return this->getPlayPos(); });
 	this->hScroller->setShouldShowPlayPos(true);
@@ -311,18 +311,17 @@ void MIDISourceEditor::updateHPos(double pos, double itemSize) {
 }
 
 void MIDISourceEditor::paintNotePreview(juce::Graphics& g,
-	int width, int height, bool /*vertical*/) {
+	int width, int height, bool /*vertical*/, double totalNum) {
 	/** Size */
 	auto screenSize = utils::getScreenSize(this);
 	float blockRectHeight = screenSize.getHeight() * 0.003;
 
 	/** Blocks */
 	g.setColour(this->trackColor);
-	double totalLength = this->getTimeLength();
 	for (int i = 0; i < this->blockItemTemp.size(); i++) {
 		auto [start, end] = this->blockItemTemp.getUnchecked(i);
-		float startPos = start / totalLength * width;
-		float endPos = end / totalLength * width;
+		float startPos = start / totalNum * width;
+		float endPos = end / totalNum * width;
 
 		juce::Rectangle<float> blockRect(
 			startPos, 0, endPos - startPos, blockRectHeight);

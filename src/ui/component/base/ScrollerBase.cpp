@@ -566,7 +566,8 @@ void ScrollerBase::updateBackTemp() {
 
 	/** Paint Preview */
 	this->paintPreview(g,
-		this->getWidth(), this->getHeight(), this->vertical);
+		this->getWidth(), this->getHeight(),
+		this->vertical, this->itemNum);
 
 	/** Paint Item Preview */
 	double itemAreaSize = this->getTrackLength() / this->itemNum;

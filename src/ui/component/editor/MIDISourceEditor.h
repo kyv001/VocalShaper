@@ -53,7 +53,7 @@ private:
 
 	void updateHPos(double pos, double itemSize);
 	void paintNotePreview(juce::Graphics& g,
-		int width, int height, bool vertical);
+		int width, int height, bool vertical, double totalNum);
 
 	int getViewHeight() const;
 	int getKeyNum() const;

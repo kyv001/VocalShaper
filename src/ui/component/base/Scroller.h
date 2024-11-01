@@ -9,7 +9,7 @@ public:
 	using ItemNumFunc = std::function<double(void)>;
 	using ItemSizeLimitFunc = std::function<std::tuple<double, double>(void)>;
 	using UpdatePosFunc = std::function<void(double, double)>;
-	using PaintPreviewFunc = std::function<void(juce::Graphics&, int, int, bool)>;
+	using PaintPreviewFunc = std::function<void(juce::Graphics&, int, int, bool, double)>;
 	using PaintItemPreviewFunc = std::function<void(juce::Graphics&, int, int, int, bool)>;
 	using PlayPosFunc = std::function<double(void)>;
 
@@ -31,7 +31,7 @@ protected:
 
 	void updatePos(double pos, double itemSize) override;
 
-	void paintPreview(juce::Graphics& g, int width, int height, bool vertical) override;
+	void paintPreview(juce::Graphics& g, int width, int height, bool vertical, double totalNum) override;
 	void paintItemPreview(juce::Graphics& g, int itemIndex,
 		int width, int height, bool vertical) override;
 

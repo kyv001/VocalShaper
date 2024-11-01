@@ -36,9 +36,9 @@ void Scroller::updatePos(double pos, double itemSize) {
 }
 
 void Scroller::paintPreview(juce::Graphics& g,
-	int width, int height, bool vertical) {
+	int width, int height, bool vertical, double totalNum) {
 	if (this->paintPreviewCallback) {
-		this->paintPreviewCallback(g, width, height, vertical);
+		this->paintPreviewCallback(g, width, height, vertical, totalNum);
 	}
 }
 
