@@ -5,8 +5,11 @@
 
 MIDIContentViewer::MIDIContentViewer(
 	const WheelFunc& wheelFunc,
-	const WheelAltFunc& wheelAltFunc)
-	: wheelFunc(wheelFunc), wheelAltFunc(wheelAltFunc) {
+	const WheelAltFunc& wheelAltFunc,
+	const MouseYPosFunc& mouseYPosFunc,
+	const MouseLeaveFunc& mouseLeaveFunc)
+	: wheelFunc(wheelFunc), wheelAltFunc(wheelAltFunc),
+	mouseYPosFunc(mouseYPosFunc), mouseLeaveFunc(mouseLeaveFunc) {
 	/** Look And Feel */
 	this->setLookAndFeel(
 		LookAndFeelFactory::getInstance()->forMidiContent());
@@ -175,6 +178,21 @@ void MIDIContentViewer::paintOverChildren(juce::Graphics& g) {
 	//		g.fillRect(offRect);
 	//	}
 	//}
+}
+
+void MIDIContentViewer::mouseMove(const juce::MouseEvent& event) {
+	/** Send Y Pos */
+	this->mouseYPosFunc(event.position.getY());
+}
+
+void MIDIContentViewer::mouseDrag(const juce::MouseEvent& event) {
+	/** Send Y Pos */
+	this->mouseYPosFunc(event.position.getY());
+}
+
+void MIDIContentViewer::mouseExit(const juce::MouseEvent& event) {
+	/** Send Mouse Exit */
+	this->mouseLeaveFunc();
 }
 
 void MIDIContentViewer::mouseWheelMove(

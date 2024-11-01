@@ -109,6 +109,17 @@ MIDISourceEditor::MIDISourceEditor() {
 			if (comp) {
 				comp->mouseWheelOutsideWithAlt(centerNum, thumbPer, deltaY, reversed);
 			}
+		},
+		[comp = PianoComponent::SafePointer(this->piano.get())]
+		(float posY) {
+			if (comp) {
+				comp->mouseYPosChangedOutside(posY);
+			}
+		},
+		[comp = PianoComponent::SafePointer(this->piano.get())] {
+			if (comp) {
+				comp->mouseLeaveOutside();
+			}
 		});
 	this->addAndMakeVisible(this->content.get());
 

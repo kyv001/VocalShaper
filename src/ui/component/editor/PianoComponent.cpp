@@ -162,11 +162,8 @@ void PianoComponent::mouseUp(const juce::MouseEvent& event) {
 }
 
 void PianoComponent::mouseMove(const juce::MouseEvent& event) {
-	/** Check Mouse Hovered Key */
-	std::tie(this->keyHovered, std::ignore) = this->findCurrentKey(event.position);
-
-	/** Repaint */
-	this->repaint();
+	this->mouseYPosChangedOutside(
+		event.position.getY(), event.position.getX());
 }
 
 void PianoComponent::mouseDrag(const juce::MouseEvent& event) {
@@ -184,14 +181,12 @@ void PianoComponent::mouseDrag(const juce::MouseEvent& event) {
 }
 
 void PianoComponent::mouseExit(const juce::MouseEvent& event) {
-	this->keyHovered = -1;
-
 	if (this->keyPressed != -1) {
 		this->keyUpDownFunc(this->keyPressed, false, 0);
 		this->keyPressed = -1;
 	}
 
-	this->repaint();
+	this->mouseLeaveOutside();
 }
 
 void PianoComponent::mouseWheelMove(
@@ -206,6 +201,19 @@ void PianoComponent::mouseWheelMove(
 	else {
 		this->wheelFunc(wheel.deltaY, wheel.isReversed);
 	}
+}
+
+void PianoComponent::mouseYPosChangedOutside(float posY, float posX) {
+	/** Check Mouse Hovered Key */
+	std::tie(this->keyHovered, std::ignore) = this->findCurrentKey(juce::Point{ posX, posY });
+
+	/** Repaint */
+	this->repaint();
+}
+
+void PianoComponent::mouseLeaveOutside() {
+	this->keyHovered = -1;
+	this->repaint();
 }
 
 std::tuple<int, float> PianoComponent::findCurrentKey(const juce::Point<float>& pos) const {

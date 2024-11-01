@@ -9,9 +9,13 @@ class MIDIContentViewer final
 public:
 	using WheelFunc = std::function<void(float, bool)>;
 	using WheelAltFunc = std::function<void(double, double, float, bool)>;
+	using MouseYPosFunc = std::function<void(float)>;
+	using MouseLeaveFunc = std::function<void()>;
 	MIDIContentViewer(
 		const WheelFunc& wheelFunc,
-		const WheelAltFunc& wheelAltFunc);
+		const WheelAltFunc& wheelAltFunc,
+		const MouseYPosFunc& mouseYPosFunc,
+		const MouseLeaveFunc& mouseLeaveFunc);
 
 	void update(int index, uint64_t ref);
 	void updateTempoLabel();
@@ -25,12 +29,17 @@ public:
 	void paint(juce::Graphics& g) override;
 	void paintOverChildren(juce::Graphics& g) override;
 
+	void mouseMove(const juce::MouseEvent& event) override;
+	void mouseDrag(const juce::MouseEvent& event) override;
+	void mouseExit(const juce::MouseEvent& event) override;
 	void mouseWheelMove(const juce::MouseEvent& event,
 		const juce::MouseWheelDetails& wheel) override;
 
 private:
 	const WheelFunc wheelFunc;
 	const WheelAltFunc wheelAltFunc;
+	const MouseYPosFunc mouseYPosFunc;
+	const MouseLeaveFunc mouseLeaveFunc;
 
 	/** 0 for white key and 1 for black key */
 	const std::array<int, 12> keyMasks{ 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0 };

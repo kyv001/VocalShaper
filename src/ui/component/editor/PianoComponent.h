@@ -25,6 +25,9 @@ public:
 	void mouseWheelMove(const juce::MouseEvent& event,
 		const juce::MouseWheelDetails& wheel) override;
 
+	void mouseYPosChangedOutside(float posY, float posX = 0);
+	void mouseLeaveOutside();
+
 private:
 	const WheelFunc wheelFunc;
 	const WheelAltFunc wheelAltFunc;
