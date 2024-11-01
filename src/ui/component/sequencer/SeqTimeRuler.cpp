@@ -576,7 +576,7 @@ SeqTimeRuler::createRulerLine(double pos, double itemSize) const {
 	/** Line Start */
 	double realSecStart = secStart;
 	int tempIndex = 0;
-	auto& [timeInSec, timeInQuarter, timeInBar, secPerQuarter, numerator, denominator] = tempoTempList.getReference(tempIndex);
+	auto [timeInSec, timeInQuarter, timeInBar, secPerQuarter, numerator, denominator] = tempoTempList.getUnchecked(tempIndex);
 	{
 		/** Get Real Quarter */
 		double quarterStart = timeInQuarter + (secStart - timeInSec) / secPerQuarter;
@@ -587,9 +587,9 @@ SeqTimeRuler::createRulerLine(double pos, double itemSize) const {
 
 		/** Next Temp */
 		while ((tempoTempList.size() > (tempIndex + 1)) &&
-			(realQuarterStart > std::get<1>(tempoTempList.getReference(tempIndex + 1)))) {
+			(realQuarterStart > std::get<1>(tempoTempList.getUnchecked(tempIndex + 1)))) {
 			realQuarterStart -= (4.0 / denominator);
-			std::tie(timeInSec, timeInQuarter, timeInBar, secPerQuarter, numerator, denominator) = tempoTempList.getReference(++tempIndex);
+			std::tie(timeInSec, timeInQuarter, timeInBar, secPerQuarter, numerator, denominator) = tempoTempList.getUnchecked(++tempIndex);
 			realQuarterStart += (4.0 / denominator);
 		}
 
@@ -614,9 +614,9 @@ SeqTimeRuler::createRulerLine(double pos, double itemSize) const {
 		/** Next Line */
 		double nextQuarter = currentQuarter + (4.0 / denominator);
 		while ((tempoTempList.size() > (tempIndex + 1)) &&
-			(nextQuarter > std::get<1>(tempoTempList.getReference(tempIndex + 1)))) {
+			(nextQuarter > std::get<1>(tempoTempList.getUnchecked(tempIndex + 1)))) {
 			nextQuarter -= (4.0 / denominator);
-			std::tie(timeInSec, timeInQuarter, timeInBar, secPerQuarter, numerator, denominator) = tempoTempList.getReference(++tempIndex);
+			std::tie(timeInSec, timeInQuarter, timeInBar, secPerQuarter, numerator, denominator) = tempoTempList.getUnchecked(++tempIndex);
 			nextQuarter += (4.0 / denominator);
 		}
 
