@@ -526,6 +526,23 @@ void SourceTimeRuler::mouseWheelMove(const juce::MouseEvent& event,
 	}
 }
 
+void SourceTimeRuler::mouseExit(const juce::MouseEvent& event) {
+	/** Move Label */
+	if (this->dragLabelIndex > -1) {
+		/** Reset State */
+		this->dragLabelIndex = -1;
+		this->labelDragOffset = 0;
+		this->labelDragPos = 0;
+	}
+
+	/** Move View */
+	else if (this->viewMoving) {
+		this->viewMoving = false;
+		this->mouseMove(event);/**< Update Mouse Cursor */
+		this->dragEndFunc();
+	}
+}
+
 std::tuple<double, double> SourceTimeRuler::getViewArea(
 	double pos, double itemSize) const {
 	double secStart = pos / itemSize;

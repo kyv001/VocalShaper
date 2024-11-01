@@ -79,6 +79,7 @@ private:
 		void mouseDrag(const juce::MouseEvent& event) override;
 		void mouseWheelMove(const juce::MouseEvent& event,
 			const juce::MouseWheelDetails& wheel) override;
+		void mouseExit(const juce::MouseEvent& event) override;
 
 	private:
 		juce::OwnedArray<SeqTrackComponent> list;

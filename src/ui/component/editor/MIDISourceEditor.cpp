@@ -54,19 +54,19 @@ MIDISourceEditor::MIDISourceEditor() {
 				comp->mouseWheelOutsideWithAlt(centerNum, thumbPer, deltaY, reversed);
 			}
 		},
-		[comp = ScrollerBase::SafePointer(this)] {
+		[comp = MIDISourceEditor::SafePointer(this)] {
 			if (comp) {
 				comp->processAreaDragStart();
 			}
 		},
-		[comp = ScrollerBase::SafePointer(this)]
+		[comp = MIDISourceEditor::SafePointer(this)]
 		(int distanceX, int distanceY, bool moveX, bool moveY) {
 			if (comp) {
 				comp->processAreaDragTo(
 					distanceX, distanceY, moveX, moveY);
 			}
 		},
-		[comp = ScrollerBase::SafePointer(this)] {
+		[comp = MIDISourceEditor::SafePointer(this)] {
 			if (comp) {
 				comp->processAreaDragEnd();
 			}
@@ -99,6 +99,12 @@ MIDISourceEditor::MIDISourceEditor() {
 	/** Content */
 	this->content = std::make_unique<MIDIContentViewer>(
 		[comp = ScrollerBase::SafePointer(this->hScroller.get())]
+		(double delta) {
+			if (comp) {
+				comp->scroll(delta);
+			}
+		},
+		[comp = ScrollerBase::SafePointer(this->hScroller.get())]
 		(float deltaY, bool reversed) {
 			if (comp) {
 				comp->mouseWheelOutside(deltaY, reversed);
@@ -119,6 +125,23 @@ MIDISourceEditor::MIDISourceEditor() {
 		[comp = PianoComponent::SafePointer(this->piano.get())] {
 			if (comp) {
 				comp->mouseLeaveOutside();
+			}
+		},
+		[comp = MIDISourceEditor::SafePointer(this)] {
+			if (comp) {
+				comp->processAreaDragStart();
+			}
+		},
+		[comp = MIDISourceEditor::SafePointer(this)]
+		(int distanceX, int distanceY, bool moveX, bool moveY) {
+			if (comp) {
+				comp->processAreaDragTo(
+					distanceX, distanceY, moveX, moveY);
+			}
+		},
+		[comp = MIDISourceEditor::SafePointer(this)] {
+			if (comp) {
+				comp->processAreaDragEnd();
 			}
 		});
 	this->addAndMakeVisible(this->content.get());

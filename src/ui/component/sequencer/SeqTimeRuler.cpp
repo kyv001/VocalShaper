@@ -526,6 +526,23 @@ void SeqTimeRuler::mouseWheelMove(const juce::MouseEvent& event,
 	}
 }
 
+void SeqTimeRuler::mouseExit(const juce::MouseEvent& event) {
+	/** Move Label */
+	if (this->dragLabelIndex > -1) {
+		/** Reset State */
+		this->dragLabelIndex = -1;
+		this->labelDragOffset = 0;
+		this->labelDragPos = 0;
+	}
+
+	/** Move View */
+	else if (this->viewMoving) {
+		this->viewMoving = false;
+		this->mouseMove(event);/**< Update Mouse Cursor */
+		this->dragEndFunc();
+	}
+}
+
 std::tuple<double, double> SeqTimeRuler::getViewArea(
 	double pos, double itemSize) const {
 	double secStart = pos / itemSize;

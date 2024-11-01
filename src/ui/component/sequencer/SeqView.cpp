@@ -238,6 +238,15 @@ void SeqView::TrackList::mouseWheelMove(const juce::MouseEvent& event,
 	
 }
 
+void SeqView::TrackList::mouseExit(const juce::MouseEvent& event) {
+	/** Move View */
+	if (this->viewMoving) {
+		this->viewMoving = false;
+		this->setMouseCursor(juce::MouseCursor::NormalCursor);
+		this->dragEndFunc();
+	}
+}
+
 void SeqView::TrackList::add() {
 	CoreActions::insertSeqGUI();
 }
@@ -310,24 +319,24 @@ SeqView::SeqView()
 				comp->mouseWheelOutsideWithAlt(centerNum, thumbPer, deltaY, reversed);
 			}
 		},
-		[comp = ScrollerBase::SafePointer(this)] {
+		[comp = SeqView::SafePointer(this)] {
 			if (comp) {
 				comp->processAreaDragStart();
 			}
 		},
-		[comp = ScrollerBase::SafePointer(this)]
+		[comp = SeqView::SafePointer(this)]
 		(int distanceX, int distanceY, bool moveX, bool moveY) {
 			if (comp) {
 				comp->processAreaDragTo(
 					distanceX, distanceY, moveX, moveY);
 			}
 		},
-		[comp = ScrollerBase::SafePointer(this)] {
+		[comp = SeqView::SafePointer(this)] {
 			if (comp) {
 				comp->processAreaDragEnd();
 			}
 		},
-		[comp = ScrollerBase::SafePointer(this)]
+		[comp = SeqView::SafePointer(this)]
 		(int index) {
 			if (comp) {
 				comp->editing(index);
@@ -374,19 +383,19 @@ SeqView::SeqView()
 				comp->mouseWheelOutsideWithAlt(centerNum, thumbPer, deltaY, reversed);
 			}
 		},
-		[comp = ScrollerBase::SafePointer(this)] {
+		[comp = SeqView::SafePointer(this)] {
 			if (comp) {
 				comp->processAreaDragStart();
 			}
 		},
-		[comp = ScrollerBase::SafePointer(this)]
+		[comp = SeqView::SafePointer(this)]
 		(int distanceX, int distanceY, bool moveX, bool moveY) {
 			if (comp) {
 				comp->processAreaDragTo(
 					distanceX, distanceY, moveX, moveY);
 			}
 		},
-		[comp = ScrollerBase::SafePointer(this)] {
+		[comp = SeqView::SafePointer(this)] {
 			if (comp) {
 				comp->processAreaDragEnd();
 			}

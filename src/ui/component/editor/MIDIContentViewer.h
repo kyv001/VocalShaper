@@ -7,15 +7,23 @@ class MIDIContentViewer final
 	: public juce::Component,
 	public LevelMeterHub::Target {
 public:
+	using ScrollFunc = std::function<void(double)>;
 	using WheelFunc = std::function<void(float, bool)>;
 	using WheelAltFunc = std::function<void(double, double, float, bool)>;
 	using MouseYPosFunc = std::function<void(float)>;
 	using MouseLeaveFunc = std::function<void()>;
+	using DragStartFunc = std::function<void(void)>;
+	using DragProcessFunc = std::function<void(int, int, bool, bool)>;
+	using DragEndFunc = std::function<void(void)>;
 	MIDIContentViewer(
+		const ScrollFunc& scrollFunc,
 		const WheelFunc& wheelFunc,
 		const WheelAltFunc& wheelAltFunc,
 		const MouseYPosFunc& mouseYPosFunc,
-		const MouseLeaveFunc& mouseLeaveFunc);
+		const MouseLeaveFunc& mouseLeaveFunc,
+		const DragStartFunc& dragStartFunc,
+		const DragProcessFunc& dragProcessFunc,
+		const DragEndFunc& dragEndFunc);
 
 	void update(int index, uint64_t ref);
 	void updateTempoLabel();
@@ -29,6 +37,8 @@ public:
 	void paint(juce::Graphics& g) override;
 	void paintOverChildren(juce::Graphics& g) override;
 
+	void mouseDown(const juce::MouseEvent& event) override;
+	void mouseUp(const juce::MouseEvent& event) override;
 	void mouseMove(const juce::MouseEvent& event) override;
 	void mouseDrag(const juce::MouseEvent& event) override;
 	void mouseExit(const juce::MouseEvent& event) override;
@@ -36,10 +46,14 @@ public:
 		const juce::MouseWheelDetails& wheel) override;
 
 private:
+	const ScrollFunc scrollFunc;
 	const WheelFunc wheelFunc;
 	const WheelAltFunc wheelAltFunc;
 	const MouseYPosFunc mouseYPosFunc;
 	const MouseLeaveFunc mouseLeaveFunc;
+	const DragStartFunc dragStartFunc;
+	const DragProcessFunc dragProcessFunc;
+	const DragEndFunc dragEndFunc;
 
 	/** 0 for white key and 1 for black key */
 	const std::array<int, 12> keyMasks{ 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0 };
@@ -65,6 +79,8 @@ private:
 	/** Start, End */
 	using BlockItem = std::tuple<double, double>;
 	juce::Array<BlockItem> blockItemTemp;
+
+	bool viewMoving = false;
 
 	std::unique_ptr<juce::Image> rulerTemp = nullptr;
 	std::unique_ptr<juce::Image> keyTemp = nullptr;

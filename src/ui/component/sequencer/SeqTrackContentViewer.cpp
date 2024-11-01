@@ -781,6 +781,18 @@ void SeqTrackContentViewer::mouseUp(const juce::MouseEvent& event) {
 }
 
 void SeqTrackContentViewer::mouseExit(const juce::MouseEvent& event) {
+	/** Move View */
+	if (this->viewMoving) {
+		this->viewMoving = false;
+		this->mouseMove(event);/**< Update Mouse Cursor */
+		this->dragEndFunc();
+	}
+
+	this->dragType = DragType::None;
+	this->pressedBlockIndex = -1;
+	this->mousePressedSecond = 0;
+	this->blockValid = true;
+	this->copyMode = false;
 	this->mouseCurrentSecond = -1;
 	this->repaint();
 }

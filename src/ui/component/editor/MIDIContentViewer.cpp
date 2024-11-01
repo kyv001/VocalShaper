@@ -4,12 +4,17 @@
 #include "../../../audioCore/AC_API.h"
 
 MIDIContentViewer::MIDIContentViewer(
+	const ScrollFunc& scrollFunc,
 	const WheelFunc& wheelFunc,
 	const WheelAltFunc& wheelAltFunc,
 	const MouseYPosFunc& mouseYPosFunc,
-	const MouseLeaveFunc& mouseLeaveFunc)
-	: wheelFunc(wheelFunc), wheelAltFunc(wheelAltFunc),
-	mouseYPosFunc(mouseYPosFunc), mouseLeaveFunc(mouseLeaveFunc) {
+	const MouseLeaveFunc& mouseLeaveFunc,
+	const DragStartFunc& dragStartFunc,
+	const DragProcessFunc& dragProcessFunc,
+	const DragEndFunc& dragEndFunc)
+	: scrollFunc(scrollFunc), wheelFunc(wheelFunc), wheelAltFunc(wheelAltFunc),
+	mouseYPosFunc(mouseYPosFunc), mouseLeaveFunc(mouseLeaveFunc),
+	dragStartFunc(dragStartFunc), dragProcessFunc(dragProcessFunc), dragEndFunc(dragEndFunc) {
 	/** Look And Feel */
 	this->setLookAndFeel(
 		LookAndFeelFactory::getInstance()->forMidiContent());
@@ -180,6 +185,26 @@ void MIDIContentViewer::paintOverChildren(juce::Graphics& g) {
 	//}
 }
 
+void MIDIContentViewer::mouseDown(const juce::MouseEvent& event) {
+	if (event.mods.isLeftButtonDown() && event.mods.isAltDown()) {
+		/** Move View Area */
+		this->viewMoving = true;
+		this->setMouseCursor(juce::MouseCursor::DraggingHandCursor);
+		this->dragStartFunc();
+	}
+}
+
+void MIDIContentViewer::mouseUp(const juce::MouseEvent& event) {
+	if (event.mods.isLeftButtonDown()) {
+		/** Move View */
+		if (this->viewMoving) {
+			this->viewMoving = false;
+			this->setMouseCursor(juce::MouseCursor::NormalCursor);
+			this->dragEndFunc();
+		}
+	}
+}
+
 void MIDIContentViewer::mouseMove(const juce::MouseEvent& event) {
 	/** Send Y Pos */
 	this->mouseYPosFunc(event.position.getY());
@@ -188,11 +213,43 @@ void MIDIContentViewer::mouseMove(const juce::MouseEvent& event) {
 void MIDIContentViewer::mouseDrag(const juce::MouseEvent& event) {
 	/** Send Y Pos */
 	this->mouseYPosFunc(event.position.getY());
+
+	/** Auto Scroll */
+	float xPos = event.position.getX();
+	if (!this->viewMoving) {
+		double delta = 0;
+		if (xPos > this->getWidth()) {
+			delta = xPos - this->getWidth();
+		}
+		else if (xPos < 0) {
+			delta = xPos;
+		}
+
+		if (delta != 0) {
+			this->scrollFunc(delta / 4);
+		}
+	}
+
+	if (event.mods.isLeftButtonDown()) {
+		/** Move View */
+		if (this->viewMoving) {
+			int distanceX = event.getDistanceFromDragStartX();
+			int distanceY = event.getDistanceFromDragStartY();
+			this->dragProcessFunc(distanceX, distanceY, true, true);
+		}
+	}
 }
 
 void MIDIContentViewer::mouseExit(const juce::MouseEvent& event) {
 	/** Send Mouse Exit */
 	this->mouseLeaveFunc();
+
+	/** Move View */
+	if (this->viewMoving) {
+		this->viewMoving = false;
+		this->setMouseCursor(juce::MouseCursor::NormalCursor);
+		this->dragEndFunc();
+	}
 }
 
 void MIDIContentViewer::mouseWheelMove(
