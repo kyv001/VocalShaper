@@ -33,6 +33,9 @@ private:
 	std::unique_ptr<PianoComponent> piano = nullptr;
 	std::unique_ptr<MIDIContentViewer> content = nullptr;
 
+	std::unique_ptr<juce::DrawableButton> adsorbButton = nullptr;
+	std::unique_ptr<juce::Drawable> adsorbIcon = nullptr;
+
 	bool viewMoving = false;
 	double moveStartPosX = 0, moveStartPosY = 0;
 
@@ -68,6 +71,9 @@ private:
 	void sendKeyUpDown(int noteNum, bool isDown, float vel);
 
 	void updateBlockTemp();
+
+	void adsorbButtonClicked();
+	juce::PopupMenu createAdsorbMenu();
 
 	std::tuple<double, double> getViewArea(double pos, double itemSize) const;
 

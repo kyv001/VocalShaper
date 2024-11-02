@@ -2,10 +2,17 @@
 #include "../../misc/Tools.h"
 #include "../../Utils.h"
 #include "../../../audioCore/AC_API.h"
+#include <IconManager.h>
 
 #define MIDI_TAIL_SEC 10;
 
 MIDISourceEditor::MIDISourceEditor() {
+	/** Icons */
+	this->adsorbIcon = flowUI::IconManager::getSVG(
+		utils::getIconFile("Design", "align-item-left-line").getFullPathName());
+	this->adsorbIcon->replaceColour(juce::Colours::black,
+		this->getLookAndFeel().findColour(juce::TextButton::ColourIds::textColourOffId));
+
 	/** Scroller */
 	this->hScroller = std::make_unique<Scroller>(false,
 		[this] { return (double)(this->getViewWidth()); },
@@ -27,6 +34,16 @@ MIDISourceEditor::MIDISourceEditor() {
 		Scroller::PaintPreviewFunc{},
 		Scroller::PaintItemPreviewFunc{});
 	this->addAndMakeVisible(this->vScroller.get());
+
+	/** Button */
+	this->adsorbButton = std::make_unique<juce::DrawableButton>(
+		TRANS("Adsorb"), juce::DrawableButton::ButtonStyle::ImageOnButtonBackground);
+	this->adsorbButton->setImages(this->adsorbIcon.get());
+	this->adsorbButton->setConnectedEdges(juce::Button::ConnectedOnLeft | juce::Button::ConnectedOnRight);
+	this->adsorbButton->setWantsKeyboardFocus(false);
+	this->adsorbButton->setMouseCursor(juce::MouseCursor::PointingHandCursor);
+	this->adsorbButton->onClick = [this] { this->adsorbButtonClicked(); };
+	this->addAndMakeVisible(this->adsorbButton.get());
 
 	/** Ruler */
 	this->ruler = std::make_unique<SourceTimeRuler>(
@@ -180,11 +197,11 @@ void MIDISourceEditor::resized() {
 	this->vScroller->setBounds(vScrollerRect);
 
 	/** Adsorb Button */
-	/*juce::Rectangle<int> adsorbRect(
-		headWidth - adsorbButtonPaddingWidth - adsorbButtonHeight,
+	juce::Rectangle<int> adsorbRect(
+		pianoWidth - adsorbButtonPaddingWidth - adsorbButtonHeight,
 		rulerHeight - adsorbButtonPaddingHeight - adsorbButtonHeight,
 		adsorbButtonHeight, adsorbButtonHeight);
-	this->adsorbButton->setBounds(adsorbRect);*/
+	this->adsorbButton->setBounds(adsorbRect);
 
 	/** Time Ruler */
 	juce::Rectangle<int> rulerRect(
@@ -423,6 +440,33 @@ void MIDISourceEditor::updateBlockTemp() {
 	for (auto [startTime, endTime, offset] : list) {
 		this->blockItemTemp.add({ startTime, endTime });
 	}
+}
+
+void MIDISourceEditor::adsorbButtonClicked() {
+	auto menu = this->createAdsorbMenu();
+	int result = menu.showAt(this->adsorbButton.get());
+	if (result == 0) { return; }
+
+	if (result < 0) { Tools::getInstance()->setAdsorb(0); }
+	else { Tools::getInstance()->setAdsorb(1 / (double)result); }
+}
+
+juce::PopupMenu MIDISourceEditor::createAdsorbMenu() {
+	double currentAdsorb = Tools::getInstance()->getAdsorb();
+
+	juce::PopupMenu menu;
+	menu.addItem(1, "1", true, juce::approximatelyEqual(currentAdsorb, 1.0));
+	menu.addItem(2, "1/2", true, juce::approximatelyEqual(currentAdsorb, 1 / (double)2));
+	menu.addItem(4, "1/4", true, juce::approximatelyEqual(currentAdsorb, 1 / (double)4));
+	menu.addItem(6, "1/6", true, juce::approximatelyEqual(currentAdsorb, 1 / (double)6));
+	menu.addItem(8, "1/8", true, juce::approximatelyEqual(currentAdsorb, 1 / (double)8));
+	menu.addItem(12, "1/12", true, juce::approximatelyEqual(currentAdsorb, 1 / (double)12));
+	menu.addItem(16, "1/16", true, juce::approximatelyEqual(currentAdsorb, 1 / (double)16));
+	menu.addItem(24, "1/24", true, juce::approximatelyEqual(currentAdsorb, 1 / (double)24));
+	menu.addItem(32, "1/32", true, juce::approximatelyEqual(currentAdsorb, 1 / (double)32));
+	menu.addItem(-1, "Off", true, juce::approximatelyEqual(currentAdsorb, 0.0));
+
+	return menu;
 }
 
 std::tuple<double, double> MIDISourceEditor::getViewArea(double pos, double itemSize) const {
