@@ -30,7 +30,7 @@ void SeqTimeRuler::updateTempoLabel() {
 	this->tempoTemp = quickAPI::getLabelDataList();
 
 	/** Update Ruler Temp */
-	std::tie(this->lineTemp, this->minInterval) = this->createRulerLine(pos, itemSize);
+	this->lineTemp = this->createRulerLine(pos, itemSize);
 	this->updateRulerTemp();
 }
 
@@ -41,7 +41,7 @@ void SeqTimeRuler::updateHPos(double pos, double itemSize) {
 	std::tie(this->secStart, this->secEnd) = this->getViewArea(pos, itemSize);
 
 	/** Update Line Temp */
-	std::tie(this->lineTemp, this->minInterval) = this->createRulerLine(pos, itemSize);
+	this->lineTemp = this->createRulerLine(pos, itemSize);
 	this->updateRulerTemp();
 }
 
@@ -109,10 +109,15 @@ void SeqTimeRuler::updateRulerTemp() {
 	g.drawRect(outlineRect, outlineThickness);
 
 	/** Lines */
-	for (auto& [xPos, isLong, barId] : this->lineTemp) {
+	for (int i = 0; i < this->lineTemp.size(); i++) {
+		auto [xPos, isLong, barId] = this->lineTemp.getUnchecked(i);
+
 		/** Check Interval */
 		if (!isLong) {
-			if (this->minInterval < shortLineIntervalMin) {
+			if (i > 0 && (xPos - std::get<0>(this->lineTemp.getUnchecked(i - 1))) < shortLineIntervalMin) {
+				continue;
+			}
+			if (i < this->lineTemp.size() - 1 && (std::get<0>(this->lineTemp.getUnchecked(i + 1)) - xPos) < shortLineIntervalMin) {
 				continue;
 			}
 		}
@@ -184,7 +189,7 @@ void SeqTimeRuler::updateLevelMeter() {
 void SeqTimeRuler::resized() {
 	/** Update Line Temp */
 	std::tie(this->secStart, this->secEnd) = this->getViewArea(this->pos, this->itemSize);
-	std::tie(this->lineTemp, this->minInterval) = this->createRulerLine(pos, itemSize);
+	this->lineTemp = this->createRulerLine(pos, itemSize);
 
 	/** Update Ruler Temp */
 	int width = this->getWidth(), height = this->getHeight();
@@ -550,19 +555,18 @@ std::tuple<double, double> SeqTimeRuler::getViewArea(
 	return { secStart, secStart + secLength };
 }
 
-const std::tuple<juce::Array<SeqTimeRuler::LineItem>, double> SeqTimeRuler::getLineTemp() const {
-	return { this->lineTemp, this->minInterval };
+const SeqTimeRuler::LineItemList SeqTimeRuler::getLineTemp() const {
+	return this->lineTemp;
 }
 
-const std::tuple<juce::Array<SeqTimeRuler::LineItem>, double>
+const SeqTimeRuler::LineItemList
 SeqTimeRuler::createRulerLine(double pos, double itemSize) const {
 	/** Get View Area */
 	auto [secStart, secEnd] = this->getViewArea(pos, itemSize);
 	double width = this->getWidth();
 
 	/** Get Each Line */
-	juce::Array<LineItem> result;
-	double minInterval = DBL_MAX;
+	LineItemList result;
 
 	/** Get Temp */
 	int tempStartIndex = quickAPI::getTempoTempIndexBySec(secStart);
@@ -571,7 +575,7 @@ SeqTimeRuler::createRulerLine(double pos, double itemSize) const {
 	for (int i = tempStartIndex; i <= tempEndIndex; i++) {
 		tempoTempList.add(quickAPI::getTempoData(i));
 	}
-	if (tempoTempList.size() <= 0) { return { result, minInterval }; }
+	if (tempoTempList.size() <= 0) { return result; }
 
 	/** Line Start */
 	double realSecStart = secStart;
@@ -624,15 +628,8 @@ SeqTimeRuler::createRulerLine(double pos, double itemSize) const {
 		currentSec = timeInSec + (nextQuarter - timeInQuarter) * secPerQuarter;
 	}
 
-	/** Get Min Interval */
-	for (auto& item : tempoTempList) {
-		double lineDeltaSec = (4.0 / std::get<5>(item)) * std::get<3>(item);
-		double interval = lineDeltaSec / (secEnd - secStart) * width;
-		minInterval = std::min(minInterval, interval);
-	}
-
 	/** Result */
-	return { result, minInterval };
+	return result;
 }
 
 double SeqTimeRuler::limitTimeSec(double timeSec) {

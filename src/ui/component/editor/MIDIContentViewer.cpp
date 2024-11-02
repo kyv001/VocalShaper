@@ -37,7 +37,7 @@ void MIDIContentViewer::update(int index, uint64_t ref) {
 
 void MIDIContentViewer::updateTempoLabel() {
 	/** Update Ruler Temp */
-	std::tie(this->lineTemp, this->minInterval) = this->createRulerLine(this->hPos, this->hItemSize);
+	this->lineTemp = this->createRulerLine(this->hPos, this->hItemSize);
 	this->updateRulerImageTemp();
 	this->repaint();
 }
@@ -75,7 +75,7 @@ void MIDIContentViewer::updateHPos(double pos, double itemSize) {
 	this->hItemSize = itemSize;
 
 	std::tie(this->secStart, this->secEnd) = this->getHViewArea(pos, itemSize);
-	std::tie(this->lineTemp, this->minInterval) = this->createRulerLine(pos, itemSize);
+	this->lineTemp = this->createRulerLine(pos, itemSize);
 
 	this->updateRulerImageTemp();
 	this->updateBlockImageTemp();
@@ -100,7 +100,7 @@ void MIDIContentViewer::resized() {
 	/** Update Line Temp */
 	std::tie(this->secStart, this->secEnd) = this->getHViewArea(this->hPos, this->hItemSize);
 	std::tie(this->keyTop, this->keyBottom) = this->getVViewArea(this->vPos, this->vItemSize);
-	std::tie(this->lineTemp, this->minInterval) = this->createRulerLine(this->hPos, this->hItemSize);
+	this->lineTemp = this->createRulerLine(this->hPos, this->hItemSize);
 
 	/** Update Ruler Temp */
 	int width = this->getWidth(), height = this->getHeight();
@@ -330,10 +330,15 @@ void MIDIContentViewer::updateRulerImageTemp() {
 		juce::TableListBox::ColourIds::outlineColourId);
 
 	/** Lines */
-	for (auto& [xPos, isLong, barId] : this->lineTemp) {
+	for (int i = 0; i < this->lineTemp.size(); i++) {
+		auto [xPos, isLong, barId] = this->lineTemp.getUnchecked(i);
+
 		/** Check Interval */
 		if (!isLong) {
-			if (this->minInterval < shortLineIntervalMin) {
+			if (i > 0 && (xPos - std::get<0>(this->lineTemp.getUnchecked(i - 1))) < shortLineIntervalMin) {
+				continue;
+			}
+			if (i < this->lineTemp.size() - 1 && (std::get<0>(this->lineTemp.getUnchecked(i + 1)) - xPos) < shortLineIntervalMin) {
 				continue;
 			}
 		}
@@ -400,15 +405,14 @@ std::tuple<double, double> MIDIContentViewer::getVViewArea(double pos, double it
 	return { keyTop, keyTop - keyNum };
 }
 
-const std::tuple<juce::Array<MIDIContentViewer::LineItem>, double>
+const MIDIContentViewer::LineItemList
 MIDIContentViewer::createRulerLine(double pos, double itemSize) const {
 	/** Get View Area */
 	auto [secStart, secEnd] = this->getHViewArea(pos, itemSize);
 	double width = this->getWidth();
 
 	/** Get Each Line */
-	juce::Array<LineItem> result;
-	double minInterval = DBL_MAX;
+	LineItemList result;
 
 	/** Get Temp */
 	int tempStartIndex = quickAPI::getTempoTempIndexBySec(secStart);
@@ -417,7 +421,7 @@ MIDIContentViewer::createRulerLine(double pos, double itemSize) const {
 	for (int i = tempStartIndex; i <= tempEndIndex; i++) {
 		tempoTempList.add(quickAPI::getTempoData(i));
 	}
-	if (tempoTempList.size() <= 0) { return { result, minInterval }; }
+	if (tempoTempList.size() <= 0) { return result; }
 
 	/** Line Start */
 	double realSecStart = secStart;
@@ -470,13 +474,6 @@ MIDIContentViewer::createRulerLine(double pos, double itemSize) const {
 		currentSec = timeInSec + (nextQuarter - timeInQuarter) * secPerQuarter;
 	}
 
-	/** Get Min Interval */
-	for (auto& item : tempoTempList) {
-		double lineDeltaSec = (4.0 / std::get<5>(item)) * std::get<3>(item);
-		double interval = lineDeltaSec / (secEnd - secStart) * width;
-		minInterval = std::min(minInterval, interval);
-	}
-
 	/** Result */
-	return { result, minInterval };
+	return result;
 }

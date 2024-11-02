@@ -122,9 +122,8 @@ private:
 	double playPosSec = 0;
 	double loopStartSec = 0, loopEndSec = 0;
 
-	using LineItem = SeqTimeRuler::LineItem;
-	juce::Array<LineItem> lineTemp;
-	double minInterval = 0;
+	using LineItemList = SeqTimeRuler::LineItemList;
+	LineItemList lineTemp;
 	std::unique_ptr<juce::Image> gridTemp = nullptr;
 
 	juce::String emptyNoticeStr;

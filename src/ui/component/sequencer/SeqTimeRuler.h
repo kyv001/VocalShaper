@@ -42,7 +42,8 @@ public:
 	using LineItem = std::tuple<double, bool, int>;
 	std::tuple<double, double> getViewArea(double pos, double itemSize) const;
 
-	const std::tuple<juce::Array<LineItem>, double> getLineTemp() const;
+	using LineItemList = juce::Array<LineItem>;
+	const LineItemList getLineTemp() const;
 
 private:
 	const ScrollFunc scrollFunc;
@@ -55,8 +56,7 @@ private:
 
 	double pos = 0, itemSize = 0;
 	double secStart = 0, secEnd = 0;
-	juce::Array<LineItem> lineTemp;
-	double minInterval = 0;
+	LineItemList lineTemp;
 	std::unique_ptr<juce::Image> rulerTemp = nullptr;
 	/** timeInSec, tempo, numerator, denominator, isTempo */
 	using TempoLabelData = std::tuple<double, double, int, int, bool>;
@@ -73,8 +73,7 @@ private:
 
 	bool viewMoving = false;
 
-	/** Line List, Min Interval */
-	const std::tuple<juce::Array<LineItem>, double> createRulerLine(double pos, double itemSize) const;
+	const LineItemList createRulerLine(double pos, double itemSize) const;
 
 	double limitTimeSec(double timeSec);
 	int selectTempoLabel(const juce::Point<float> pos);

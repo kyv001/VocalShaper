@@ -531,7 +531,7 @@ void SeqView::resized() {
 	this->trackList->setBounds(listRect);
 
 	/** Update Line Temp */
-	std::tie(this->lineTemp, this->minInterval) = this->ruler->getLineTemp();
+	this->lineTemp = this->ruler->getLineTemp();
 
 	/** Update Grid Temp */
 	{
@@ -803,7 +803,7 @@ void SeqView::updateTempo() {
 	this->ruler->updateTempoLabel();
 
 	/** Update Line Temp */
-	std::tie(this->lineTemp, this->minInterval) = this->ruler->getLineTemp();
+	this->lineTemp = this->ruler->getLineTemp();
 	this->updateGridTemp();
 }
 
@@ -895,7 +895,7 @@ void SeqView::updateHPos(double pos, double itemSize) {
 	this->trackList->updateHPos(pos, itemSize);
 
 	/** Update Line Temp */
-	std::tie(this->lineTemp, this->minInterval) = this->ruler->getLineTemp();
+	this->lineTemp = this->ruler->getLineTemp();
 	this->updateGridTemp();
 }
 
@@ -1014,10 +1014,15 @@ void SeqView::updateGridTemp() {
 	g.fillAll();
 
 	/** Lines */
-	for (auto& [xPos, isLong, barId] : this->lineTemp) {
+	for (int i = 0; i < this->lineTemp.size(); i++) {
+		auto [xPos, isLong, barId] = this->lineTemp.getUnchecked(i);
+
 		/** Check Interval */
 		if (!isLong) {
-			if (this->minInterval < shortLineIntervalMin) {
+			if (i > 0 && (xPos - std::get<0>(this->lineTemp.getUnchecked(i - 1))) < shortLineIntervalMin) {
+				continue;
+			}
+			if (i < this->lineTemp.size() - 1 && (std::get<0>(this->lineTemp.getUnchecked(i + 1)) - xPos) < shortLineIntervalMin) {
 				continue;
 			}
 		}

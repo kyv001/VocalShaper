@@ -73,8 +73,8 @@ private:
 
 	/** Place, IsBar, barId */
 	using LineItem = std::tuple<double, bool, int>;
-	juce::Array<LineItem> lineTemp;
-	double minInterval = 0;
+	using LineItemList = juce::Array<LineItem>;
+	LineItemList lineTemp;
 
 	/** Start, End */
 	using BlockItem = std::tuple<double, double>;
@@ -94,8 +94,7 @@ private:
 	std::tuple<double, double> getHViewArea(double pos, double itemSize) const;
 	std::tuple<double, double> getVViewArea(double pos, double itemSize) const;
 
-	/** Line List, Min Interval */
-	const std::tuple<juce::Array<LineItem>, double> createRulerLine(double pos, double itemSize) const;
+	const LineItemList createRulerLine(double pos, double itemSize) const;
 
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(MIDIContentViewer)
 };
