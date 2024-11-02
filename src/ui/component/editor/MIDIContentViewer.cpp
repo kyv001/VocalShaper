@@ -322,7 +322,13 @@ void MIDIContentViewer::updateRulerImageTemp() {
 	float longLineThickness = screenSize.getWidth() * 0.00075;
 	float shortLineThickness = screenSize.getWidth() * 0.0005;
 
-	float shortLineIntervalMin = screenSize.getWidth() * 0.01;
+	float shortLineIntervalMin = screenSize.getWidth() * 0.01 / 8;
+	float dashLineIntervalMin = screenSize.getWidth() * 0.01;
+
+	float dashLineThickness = screenSize.getWidth() * 0.0005;
+	float dashLineDashLength = screenSize.getHeight() * 0.005;
+	float dashLineSkipLength = dashLineDashLength;
+	float dashLineArray[2] = { dashLineDashLength, dashLineSkipLength };
 
 	/** Colors */
 	auto& laf = this->getLookAndFeel();
@@ -331,10 +337,18 @@ void MIDIContentViewer::updateRulerImageTemp() {
 
 	/** Lines */
 	for (int i = 0; i < this->lineTemp.size(); i++) {
-		auto [xPos, isLong, barId] = this->lineTemp.getUnchecked(i);
+		auto [xPos, type, barId] = this->lineTemp.getUnchecked(i);
 
 		/** Check Interval */
-		if (!isLong) {
+		if (type == LineItemType::Dashed) {
+			if (i > 0 && (xPos - std::get<0>(this->lineTemp.getUnchecked(i - 1))) < dashLineIntervalMin) {
+				continue;
+			}
+			if (i < this->lineTemp.size() - 1 && (std::get<0>(this->lineTemp.getUnchecked(i + 1)) - xPos) < dashLineIntervalMin) {
+				continue;
+			}
+		}
+		if (type == LineItemType::Beat) {
 			if (i > 0 && (xPos - std::get<0>(this->lineTemp.getUnchecked(i - 1))) < shortLineIntervalMin) {
 				continue;
 			}
@@ -344,13 +358,23 @@ void MIDIContentViewer::updateRulerImageTemp() {
 		}
 
 		/** Line */
-		float lineThickness = isLong ? longLineThickness : shortLineThickness;
-		juce::Rectangle<float> lineRect(
-			xPos - lineThickness / 2, 0,
-			lineThickness, this->rulerTemp->getHeight());
+		if (type != LineItemType::Dashed) {
+			float lineThickness = type == LineItemType::Bar ? longLineThickness : shortLineThickness;
+			juce::Rectangle<float> lineRect(
+				xPos - lineThickness / 2, 0,
+				lineThickness, this->rulerTemp->getHeight());
 
-		g.setColour(lineColor);
-		g.fillRect(lineRect);
+			g.setColour(lineColor);
+			g.fillRect(lineRect);
+		}
+		else {
+			juce::Line<float> line(
+				xPos, 0, xPos, this->rulerTemp->getHeight());
+
+			g.setColour(lineColor);
+			g.drawDashedLine(line, dashLineArray,
+				sizeof(dashLineArray) / sizeof(float), dashLineThickness, 0);
+		}
 	}
 }
 
@@ -424,23 +448,24 @@ MIDIContentViewer::createRulerLine(double pos, double itemSize) const {
 	if (tempoTempList.size() <= 0) { return result; }
 
 	/** Line Start */
+	constexpr int dashLineNum = 8;
 	double realSecStart = secStart;
 	int tempIndex = 0;
 	auto [timeInSec, timeInQuarter, timeInBar, secPerQuarter, numerator, denominator] = tempoTempList.getUnchecked(tempIndex);
 	{
 		/** Get Real Quarter */
 		double quarterStart = timeInQuarter + (secStart - timeInSec) / secPerQuarter;
-		double realQuarterStart = std::floor(quarterStart * (denominator / 4.0)) / (denominator / 4.0);
+		double realQuarterStart = std::floor(quarterStart * (denominator / 4.0) * dashLineNum) / ((denominator / 4.0) * dashLineNum);
 		if (!juce::approximatelyEqual(quarterStart, realQuarterStart)) {
-			realQuarterStart += (4.0 / denominator);
+			realQuarterStart += ((4.0 / denominator) / dashLineNum);
 		}
 
 		/** Next Temp */
 		while ((tempoTempList.size() > (tempIndex + 1)) &&
 			(realQuarterStart > std::get<1>(tempoTempList.getUnchecked(tempIndex + 1)))) {
-			realQuarterStart -= (4.0 / denominator);
+			realQuarterStart -= (4.0 / denominator) / dashLineNum;
 			std::tie(timeInSec, timeInQuarter, timeInBar, secPerQuarter, numerator, denominator) = tempoTempList.getUnchecked(++tempIndex);
-			realQuarterStart += (4.0 / denominator);
+			realQuarterStart += (4.0 / denominator) / dashLineNum;
 		}
 
 		/** Get Real Sec */
@@ -452,22 +477,29 @@ MIDIContentViewer::createRulerLine(double pos, double itemSize) const {
 		/** Check Current Is Bar */
 		double currentQuarter = timeInQuarter + (currentSec - timeInSec) / secPerQuarter;
 		double currentBar = timeInBar + (currentQuarter - timeInQuarter) * (denominator / 4.0) / numerator;
+		constexpr double epsilon = 1.0 / 480.0;
 		//bool isBar = juce::approximatelyEqual(currentBar, std::round(currentBar));
-		bool isBar = std::abs(std::round(currentBar) - currentBar) < (1.0 / 480.0);
+		LineItemType type = LineItemType::Dashed;
+		if (std::abs(std::round(currentQuarter * (denominator / 4.0)) - (currentQuarter * (denominator / 4.0))) < epsilon) {
+			type = LineItemType::Beat;
+		}
+		if (std::abs(std::round(currentBar) - currentBar) < epsilon) {
+			type = LineItemType::Bar;
+		}
 
 		/** Get Current X Pos */
 		double XPos = (currentSec - secStart) / (secEnd - secStart) * width;
 
 		/** Add Into Result */
-		result.add({ XPos, isBar, (int)std::round(currentBar) });
+		result.add({ XPos, type, (int)std::round(currentBar) });
 
 		/** Next Line */
-		double nextQuarter = currentQuarter + (4.0 / denominator);
+		double nextQuarter = currentQuarter + (4.0 / denominator) / dashLineNum;
 		while ((tempoTempList.size() > (tempIndex + 1)) &&
 			(nextQuarter > std::get<1>(tempoTempList.getUnchecked(tempIndex + 1)))) {
-			nextQuarter -= (4.0 / denominator);
+			nextQuarter -= (4.0 / denominator) / dashLineNum;
 			std::tie(timeInSec, timeInQuarter, timeInBar, secPerQuarter, numerator, denominator) = tempoTempList.getUnchecked(++tempIndex);
-			nextQuarter += (4.0 / denominator);
+			nextQuarter += (4.0 / denominator)/ dashLineNum;
 		}
 
 		/** Update Current Sec */

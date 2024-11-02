@@ -71,8 +71,11 @@ private:
 	double playPosSec = 0;
 	double loopStartSec = 0, loopEndSec = 0;
 
-	/** Place, IsBar, barId */
-	using LineItem = std::tuple<double, bool, int>;
+	enum class LineItemType {
+		Bar, Beat, Dashed
+	};
+	/** Place, Type, barId */
+	using LineItem = std::tuple<double, LineItemType, int>;
 	using LineItemList = juce::Array<LineItem>;
 	LineItemList lineTemp;
 
