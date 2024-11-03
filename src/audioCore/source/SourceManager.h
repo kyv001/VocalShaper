@@ -20,8 +20,8 @@ public:
 	int getMIDITrackNum(uint64_t ref) const;
 	double getLength(uint64_t ref, SourceType type) const;
 
-	void initAudio(uint64_t ref, int channelNum, double sampleRate, double length);
-	void initMIDI(uint64_t ref);
+	void initAudio(uint64_t ref, const juce::String& name, int channelNum, double sampleRate, double length);
+	void initMIDI(uint64_t ref, const juce::String& name);
 	void setAudio(uint64_t ref, double sampleRate, const juce::AudioSampleBuffer& data, const juce::String& name);
 	void setMIDI(uint64_t ref, const juce::MidiFile& data, const juce::String& name);
 	void setAudio(uint64_t ref, const juce::String& name);

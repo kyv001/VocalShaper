@@ -12,6 +12,7 @@ SourceItem::~SourceItem() {
 }
 
 void SourceItem::initAudio(
+	const juce::String& name,
 	int channelNum, double sampleRate, double length) {
 	/** Check Type */
 	if (this->type != SourceType::Audio) { return; }
@@ -24,7 +25,7 @@ void SourceItem::initAudio(
 	this->releaseContainer();
 
 	/** Create Audio Source */
-	this->container = SourceInternalPool::getInstance()->create(this->type);
+	this->container = SourceInternalPool::getInstance()->create(name, this->type);
 	if (this->container) {
 		this->container->initAudioData(channelNum, sampleRate, length);
 	}
@@ -36,7 +37,7 @@ void SourceItem::initAudio(
 	this->invokeCallback();
 }
 
-void SourceItem::initMIDI() {
+void SourceItem::initMIDI(const juce::String& name) {
 	/** Check Type */
 	if (this->type != SourceType::MIDI) { return; }
 
@@ -44,7 +45,7 @@ void SourceItem::initMIDI() {
 	this->releaseContainer();
 
 	/** Create MIDI Source */
-	this->container = SourceInternalPool::getInstance()->create(this->type);
+	this->container = SourceInternalPool::getInstance()->create(name, this->type);
 	if (this->container) {
 		this->container->initMidiData();
 	}
@@ -555,11 +556,11 @@ void SourceItem::prepareAudioData(double length, int channelNum) {
 		sampleRate = playSampleRate;
 	}
 
-	this->initAudio(channelNum, sampleRate, length);
+	this->initAudio(juce::String{}, channelNum, sampleRate, length);
 }
 
 void SourceItem::prepareMIDIData() {
-	this->initMIDI();
+	this->initMIDI(juce::String{});
 }
 
 void SourceItem::releaseContainer() {

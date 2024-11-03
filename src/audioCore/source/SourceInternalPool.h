@@ -8,9 +8,11 @@ class SourceInternalPool final
 public:
 	SourceInternalPool() = default;
 
-	std::shared_ptr<SourceInternalContainer> add(const juce::String& name,
+	std::shared_ptr<SourceInternalContainer> add(
+		const juce::String& name,
 		SourceInternalContainer::SourceType type);
 	std::shared_ptr<SourceInternalContainer> create(
+		const juce::String& name,
 		SourceInternalContainer::SourceType type);
 	std::shared_ptr<SourceInternalContainer> find(const juce::String& name) const;
 	std::shared_ptr<SourceInternalContainer> fork(const juce::String& name);

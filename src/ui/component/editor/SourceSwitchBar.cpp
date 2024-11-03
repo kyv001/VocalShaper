@@ -17,6 +17,11 @@ SourceSwitchBar::SourceSwitchBar(
 	this->switchIcon->replaceColour(juce::Colours::black,
 		this->getLookAndFeel().findColour(juce::TextButton::ColourIds::textColourOnId));
 
+	/*this->renameIcon = flowUI::IconManager::getSVG(
+		utils::getIconFile("Editor", "input-field").getFullPathName());
+	this->renameIcon->replaceColour(juce::Colours::black,
+		this->getLookAndFeel().findColour(juce::TextButton::ColourIds::textColourOnId));*/
+
 	/** Buttons */
 	this->switchButton = std::make_unique<juce::DrawableButton>(
 		TRANS("Switch Editor Source"), juce::DrawableButton::ImageOnButtonBackground);
@@ -35,6 +40,14 @@ SourceSwitchBar::SourceSwitchBar(
 	this->nameButton->onClick = [this] { this->showSwitchMenu(); };
 	this->addAndMakeVisible(this->nameButton.get());
 
+	/*this->renameButton = std::make_unique<juce::DrawableButton>(
+		TRANS("Rename Source"), juce::DrawableButton::ImageOnButtonBackground);
+	this->renameButton->setImages(this->renameIcon.get());
+	this->renameButton->setWantsKeyboardFocus(false);
+	this->renameButton->setMouseCursor(juce::MouseCursor::PointingHandCursor);
+	this->renameButton->onClick = [this] { this->renameSource(); };
+	this->addAndMakeVisible(this->renameButton.get());*/
+
 	/** Source Create String */
 	this->audioCreateStr = TRANS("Create Audio Source");
 	this->midiCreateStr = TRANS("Create MIDI Source");
@@ -44,6 +57,9 @@ SourceSwitchBar::SourceSwitchBar(
 
 	/** Sync Name Button */
 	this->syncButtonName();
+
+	/** Sync Rename Button */
+	//this->syncRenameButton();
 }
 
 void SourceSwitchBar::resized() {
@@ -54,6 +70,7 @@ void SourceSwitchBar::resized() {
 	int buttonSplitWidth = screenSize.getWidth() * 0.003;
 
 	int buttonHeight = this->getHeight() - buttonPaddingHeight * 2;
+	int buttonWidth = buttonHeight;
 	int nameButtonWidth = screenSize.getWidth() * 0.03;
 
 	float trackNameFontHeight = screenSize.getHeight() * 0.02;
@@ -88,6 +105,12 @@ void SourceSwitchBar::resized() {
 		nameRect.setRight(rightLimit);
 		this->nameButton->setBounds(nameRect);
 	}
+
+	/** Rename Button */
+	/*juce::Rectangle<int> renameRect(
+		this->nameButton->getRight() + buttonSplitWidth, buttonPaddingHeight,
+		buttonWidth, buttonHeight);
+	this->renameButton->setBounds(renameRect);*/
 }
 
 void SourceSwitchBar::paint(juce::Graphics& g) {
@@ -115,16 +138,14 @@ void SourceSwitchBar::paint(juce::Graphics& g) {
 	/** Background */
 	g.fillAll(backgroundColor);
 
-	/** Switch Button */
-	juce::Rectangle<int> switchRect(
-		buttonPaddingWidth, buttonPaddingHeight,
-		buttonHeight, buttonHeight);
+	/** Button Right */
+	int buttonRight = this->nameButton->getRight() + buttonSplitWidth;
 
 	/** Track Name */
 	int trackNameWidth = std::min((float)trackNameMaxWidth, std::ceil(juce::TextLayout::getStringWidth(trackNameFont, this->trackName)));
-	int trackNamePosX = this->getWidth() - buttonPaddingWidth - trackNameWidth - buttonSplitWidth;
-	if (trackNamePosX < switchRect.getRight()) {
-		trackNamePosX = switchRect.getRight();
+	int trackNamePosX = this->getWidth() - buttonPaddingWidth - trackNameWidth;
+	if (trackNamePosX < buttonRight) {
+		trackNamePosX = buttonRight;
 		trackNameWidth = this->getWidth() - buttonPaddingWidth - trackNamePosX;
 	}
 	juce::Rectangle<int> trackNameRect(
@@ -167,11 +188,13 @@ void SourceSwitchBar::update(int index, uint64_t audioRef, uint64_t midiRef) {
 
 	/** Update Name */
 	this->syncButtonName();
+	//this->syncRenameButton();
 }
 
 void SourceSwitchBar::switchTo(SwitchState state, bool invokeCallback) {
 	this->current = state;
 	this->syncButtonName();
+	//this->syncRenameButton();
 
 	if (invokeCallback) {
 		this->stateCallback(state);
@@ -224,3 +247,27 @@ juce::PopupMenu SourceSwitchBar::createSwitchMenu() const {
 
 	return menu;
 }
+
+//void SourceSwitchBar::syncRenameButton() {
+//	if (this->index < 0) {
+//		this->renameButton->setEnabled(false);
+//		return;
+//	}
+//	if (this->current == SwitchState::Off) {
+//		this->renameButton->setEnabled(false);
+//		return;
+//	}
+//	if (this->current == SwitchState::Audio && this->audioRef == 0) {
+//		this->renameButton->setEnabled(false);
+//		return;
+//	}
+//	if (this->current == SwitchState::MIDI && this->midiRef == 0) {
+//		this->renameButton->setEnabled(false);
+//		return;
+//	}
+//	this->renameButton->setEnabled(true);
+//}
+//
+//void SourceSwitchBar::renameSource() {
+//
+//}

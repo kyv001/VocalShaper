@@ -96,8 +96,9 @@ public:
 		const std::function<void(uint64_t)>& callback = {});
 	static void setSeqMIDIRef(int index, const juce::String& path,
 		bool getTempo, const std::function<void(uint64_t)>& callback = {});
-	static void createSeqAudioSource(int index, double sampleRate, int channels, double length);
-	static void createSeqMIDISource(int index);
+	static void createSeqAudioSource(int index, const juce::String& name,
+		double sampleRate, int channels, double length);
+	static void createSeqMIDISource(int index, const juce::String& name);
 	static void removeSeq(int index);
 
 	static void addTempoLabel(double time, double tempo);
@@ -169,6 +170,8 @@ public:
 	static void setSeqAudioRefGUI(int index, const juce::String& path);
 	static void setSeqMIDIRefGUIThenAddBlock(int index, const juce::String& path, bool getTempo);
 	static void setSeqMIDIRefGUI(int index, const juce::String& path);
+	static void createSeqAudioSourceGUI(int index, const juce::String& name);
+	static void createSeqMIDISourceGUI(int index, const juce::String& name);
 	static void createSeqAudioSourceGUI(int index);
 	static void createSeqMIDISourceGUI(int index);
 	static void removeSeqGUI(int index);

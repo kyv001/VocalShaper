@@ -449,13 +449,14 @@ void CoreActions::setSeqMIDIRef(int index, const juce::String& path,
 	ActionDispatcher::getInstance()->dispatch(std::move(action));
 }
 
-void CoreActions::createSeqAudioSource(int index, double sampleRate, int channels, double length) {
-	auto action = std::unique_ptr<ActionBase>(new ActionInitAudioSource{ index, sampleRate, channels, length });
+void CoreActions::createSeqAudioSource(int index, const juce::String& name,
+	double sampleRate, int channels, double length) {
+	auto action = std::unique_ptr<ActionBase>(new ActionInitAudioSource{ index, name, sampleRate, channels, length });
 	ActionDispatcher::getInstance()->dispatch(std::move(action));
 }
 
-void CoreActions::createSeqMIDISource(int index) {
-	auto action = std::unique_ptr<ActionBase>(new ActionInitMidiSource{ index });
+void CoreActions::createSeqMIDISource(int index, const juce::String& name) {
+	auto action = std::unique_ptr<ActionBase>(new ActionInitMidiSource{ index, name });
 	ActionDispatcher::getInstance()->dispatch(std::move(action));
 }
 
@@ -1136,18 +1137,38 @@ void CoreActions::setSeqMIDIRefGUI(int index, const juce::String& path) {
 	CoreActions::setSeqMIDIRefGUIThenAddBlock(index, path, getTempo == 1);
 }
 
-void CoreActions::createSeqAudioSourceGUI(int index) {
+void CoreActions::createSeqAudioSourceGUI(int index, const juce::String& name) {
 	/** Callback */
-	auto callback = [index](double sampleRate, int channels, double length) {
-		CoreActions::createSeqAudioSource(index, sampleRate, channels, length);
+	auto callback = [index, name](double sampleRate, int channels, double length) {
+		CoreActions::createSeqAudioSource(index, name, sampleRate, channels, length);
 		};
 
 	/** Ask For Audio Props */
 	CoreActions::askForAudioPropGUIAsync(callback);
 }
 
+void CoreActions::createSeqMIDISourceGUI(int index, const juce::String& name) {
+	CoreActions::createSeqMIDISource(index, name);
+}
+
+void CoreActions::createSeqAudioSourceGUI(int index) {
+	/** Callback */
+	auto callback = [index](const juce::String& name) {
+		CoreActions::createSeqAudioSourceGUI(index, name);
+		};
+
+	/** Ask For Source Name */
+	CoreActions::askForNameGUIAsync(callback);
+}
+
 void CoreActions::createSeqMIDISourceGUI(int index) {
-	CoreActions::createSeqMIDISource(index);
+	/** Callback */
+	auto callback = [index](const juce::String& name) {
+		CoreActions::createSeqMIDISourceGUI(index, name);
+		};
+
+	/** Ask For Source Name */
+	CoreActions::askForNameGUIAsync(callback);
 }
 
 void CoreActions::removeSeqGUI(int index) {

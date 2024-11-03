@@ -11,8 +11,10 @@ public:
 	SourceItem(SourceType type);
 	~SourceItem();
 
-	void initAudio(int channelNum, double sampleRate, double length);
-	void initMIDI();
+	void initAudio(
+		const juce::String& name,
+		int channelNum, double sampleRate, double length);
+	void initMIDI(const juce::String& name);
 	void setAudio(double sampleRate, const juce::AudioSampleBuffer& data, const juce::String& name);
 	void setMIDI(const juce::MidiFile& data, const juce::String& name);
 	void setAudio(const juce::String& name);

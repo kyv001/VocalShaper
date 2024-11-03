@@ -428,7 +428,7 @@ void SeqSourceProcessor::applyMIDIIfNeed() {
 
 void SeqSourceProcessor::initAudio(double sampleRate, double length) {
 	this->applyAudio();
-	SourceManager::getInstance()->initAudio(this->audioSourceRef,
+	SourceManager::getInstance()->initAudio(this->audioSourceRef, juce::String{},
 		this->audioChannels.size(), sampleRate, length);
 
 	/** ARA Change */
@@ -439,7 +439,7 @@ void SeqSourceProcessor::initAudio(double sampleRate, double length) {
 
 void SeqSourceProcessor::initMIDI() {
 	this->applyMIDI();
-	SourceManager::getInstance()->initMIDI(this->midiSourceRef);
+	SourceManager::getInstance()->initMIDI(this->midiSourceRef, juce::String{});
 
 	/** ARA Change */
 	if (auto plugin = this->getInstrProcessor()) {

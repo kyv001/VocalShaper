@@ -98,19 +98,20 @@ double SourceManager::getLength(uint64_t ref, SourceType type) const {
 	return 0;
 }
 
-void SourceManager::initAudio(uint64_t ref, int channelNum, double sampleRate, double length) {
+void SourceManager::initAudio(uint64_t ref, const juce::String& name,
+	int channelNum, double sampleRate, double length) {
 	juce::ScopedWriteLock locker(audioLock::getSourceLock());
 
 	if (auto ptr = this->getSource(ref, SourceType::Audio)) {
-		ptr->initAudio(channelNum, sampleRate, length);
+		ptr->initAudio(name, channelNum, sampleRate, length);
 	}
 }
 
-void SourceManager::initMIDI(uint64_t ref) {
+void SourceManager::initMIDI(uint64_t ref, const juce::String& name) {
 	juce::ScopedWriteLock locker(audioLock::getSourceLock());
 
 	if (auto ptr = this->getSource(ref, SourceType::MIDI)) {
-		ptr->initMIDI();
+		ptr->initMIDI(name);
 	}
 }
 

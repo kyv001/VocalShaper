@@ -218,9 +218,11 @@ bool ActionLoad::doAction() {
 	return false;
 }
 
-ActionInitAudioSource::ActionInitAudioSource(int index,
+ActionInitAudioSource::ActionInitAudioSource(
+	int index, const juce::String& name,
 	double sampleRate, int channels, double length)
-	: index(index), sampleRate(sampleRate), channels(channels), length(length) {};
+	: index(index), name(name),
+	sampleRate(sampleRate), channels(channels), length(length) {};
 
 bool ActionInitAudioSource::doAction() {
 	ACTION_CHECK_RENDERING(
@@ -232,19 +234,20 @@ bool ActionInitAudioSource::doAction() {
 		if (auto track = graph->getSourceProcessor(this->index)) {
 			track->applyAudio();
 			auto ref = track->getAudioRef();
-			SourceManager::getInstance()->initAudio(ref,
+			SourceManager::getInstance()->initAudio(ref, this->name,
 				this->channels, this->sampleRate, this->length);
 
-			this->output("Init audio source: [" + juce::String{ this->index } + "] " + juce::String{ this->sampleRate } + ", " + juce::String{ this->channels } + ", " + juce::String{ this->length } + "s\n");
+			this->output("Init audio source: [" + juce::String{ this->index } + ", " + this->name + "] " + juce::String{ this->sampleRate } + ", " + juce::String{ this->channels } + ", " + juce::String{ this->length } + "s\n");
 			return true;
 		}
 	}
-	this->error("Can't init audio source: [" + juce::String{ this->index } + "] " + juce::String{ this->sampleRate } + ", " + juce::String{ this->channels } + ", " + juce::String{ this->length } + "s\n");
+	this->error("Can't init audio source: [" + juce::String{ this->index } + ", " + this->name + "] " + juce::String{ this->sampleRate } + ", " + juce::String{ this->channels } + ", " + juce::String{ this->length } + "s\n");
 	return false;
 }
 
-ActionInitMidiSource::ActionInitMidiSource(int index)
-	: index(index) {}
+ActionInitMidiSource::ActionInitMidiSource(
+	int index, const juce::String& name)
+	: index(index), name(name) {}
 
 bool ActionInitMidiSource::doAction() {
 	ACTION_CHECK_RENDERING(
@@ -256,13 +259,13 @@ bool ActionInitMidiSource::doAction() {
 		if (auto track = graph->getSourceProcessor(this->index)) {
 			track->applyMIDI();
 			auto ref = track->getMIDIRef();
-			SourceManager::getInstance()->initMIDI(ref);
+			SourceManager::getInstance()->initMIDI(ref, this->name);
 
-			this->output("Init midi source: [" + juce::String{ this->index } + "]\n");
+			this->output("Init midi source: [" + juce::String{ this->index } + ", " + this->name + "]\n");
 			return true;
 		}
 	}
-	this->error("Can't init midi source: [" + juce::String{ this->index } + "]\n");
+	this->error("Can't init midi source: [" + juce::String{ this->index } + ", " + this->name + "]\n");
 	return false;
 }
 

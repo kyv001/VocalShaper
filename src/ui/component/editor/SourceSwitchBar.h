@@ -22,6 +22,8 @@ private:
 	std::unique_ptr<juce::Drawable> switchIcon = nullptr;
 	std::unique_ptr<juce::DrawableButton> switchButton = nullptr;
 	std::unique_ptr<juce::TextButton> nameButton = nullptr;
+	/*std::unique_ptr<juce::Drawable> renameIcon = nullptr;
+	std::unique_ptr<juce::DrawableButton> renameButton = nullptr;*/
 
 	SwitchState current = SwitchState::Off;
 	int index = -1;
@@ -33,6 +35,9 @@ private:
 	void showSwitchMenu();
 	void syncButtonName();
 	juce::PopupMenu createSwitchMenu() const;
+
+	/*void syncRenameButton();
+	void renameSource();*/
 	
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SourceSwitchBar)
 };

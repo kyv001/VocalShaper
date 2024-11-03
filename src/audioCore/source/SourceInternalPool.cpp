@@ -21,9 +21,27 @@ SourceInternalPool::add(const juce::String& name,
 
 std::shared_ptr<SourceInternalContainer>
 SourceInternalPool::create(
+	const juce::String& name,
 	SourceInternalContainer::SourceType type) {
-	auto name = this->getNewSourceName();
-	return this->add(name, type);
+	juce::ScopedWriteLock locker(this->sourceLock);
+
+	juce::String nameTemp = name;
+	if (nameTemp.isEmpty()) {
+		nameTemp = this->getNewSourceName();
+	}
+
+	if (auto ptr = this->fork(nameTemp)) {
+		if (ptr->getType() != type) {
+			return nullptr;
+		}
+
+		this->list.insert({ nameTemp, ptr });
+		return ptr;
+	}
+
+	auto item = std::make_shared<SourceInternalContainer>(type, nameTemp);
+	this->list.insert({ nameTemp, item });
+	return item;
 }
 
 std::shared_ptr<SourceInternalContainer>
