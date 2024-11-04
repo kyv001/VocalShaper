@@ -1137,38 +1137,53 @@ void CoreActions::setSeqMIDIRefGUI(int index, const juce::String& path) {
 	CoreActions::setSeqMIDIRefGUIThenAddBlock(index, path, getTempo == 1);
 }
 
-void CoreActions::createSeqAudioSourceGUI(int index, const juce::String& name) {
+void CoreActions::createSeqAudioSourceGUI(
+	int index, const juce::String& name,
+	const CreateAudioSourceCancelCallback& cancelCallback) {
 	/** Callback */
 	auto callback = [index, name](double sampleRate, int channels, double length) {
 		CoreActions::createSeqAudioSource(index, name, sampleRate, channels, length);
 		};
+	auto canceled = [index, cancelCallback] {
+		cancelCallback(index);
+		};
 
 	/** Ask For Audio Props */
-	CoreActions::askForAudioPropGUIAsync(callback);
+	CoreActions::askForAudioPropGUIAsync(callback, canceled);
 }
 
-void CoreActions::createSeqMIDISourceGUI(int index, const juce::String& name) {
+void CoreActions::createSeqMIDISourceGUI(
+	int index, const juce::String& name,
+	const CreateMIDISourceCancelCallback& /*cancelCallback*/) {
 	CoreActions::createSeqMIDISource(index, name);
 }
 
-void CoreActions::createSeqAudioSourceGUI(int index) {
+void CoreActions::createSeqAudioSourceGUI(
+	int index, const CreateAudioSourceCancelCallback& cancelCallback) {
 	/** Callback */
-	auto callback = [index](const juce::String& name) {
-		CoreActions::createSeqAudioSourceGUI(index, name);
+	auto callback = [index, cancelCallback](const juce::String& name) {
+		CoreActions::createSeqAudioSourceGUI(index, name, cancelCallback);
+		};
+	auto canceled = [index, cancelCallback] {
+		cancelCallback(index);
 		};
 
 	/** Ask For Source Name */
-	CoreActions::askForNameGUIAsync(callback);
+	CoreActions::askForNameGUIAsync(callback, "", canceled);
 }
 
-void CoreActions::createSeqMIDISourceGUI(int index) {
+void CoreActions::createSeqMIDISourceGUI(
+	int index, const CreateMIDISourceCancelCallback& cancelCallback) {
 	/** Callback */
-	auto callback = [index](const juce::String& name) {
-		CoreActions::createSeqMIDISourceGUI(index, name);
+	auto callback = [index, cancelCallback](const juce::String& name) {
+		CoreActions::createSeqMIDISourceGUI(index, name, cancelCallback);
+		};
+	auto canceled = [index, cancelCallback] {
+		cancelCallback(index);
 		};
 
 	/** Ask For Source Name */
-	CoreActions::askForNameGUIAsync(callback);
+	CoreActions::askForNameGUIAsync(callback, "", canceled);
 }
 
 void CoreActions::removeSeqGUI(int index) {
@@ -1250,7 +1265,8 @@ bool CoreActions::askForSaveGUI() {
 }
 
 void CoreActions::askForAudioPropGUIAsync(
-	const std::function<void(double, int, double)>& callback) {
+	const std::function<void(double, int, double)>& callback,
+	const CancelCallback& cancelCallback) {
 	/** Get Available Props */
 	auto availableSampleRate = quickAPI::getSourceSampleRateSupported();
 	double currentSampleRate = quickAPI::getCurrentSampleRate();
@@ -1281,8 +1297,11 @@ void CoreActions::askForAudioPropGUIAsync(
 
 	/** Show Window */
 	configWindow->enterModalState(true, juce::ModalCallbackFunction::create(
-		[sampleRateSeletor, channelsEditor, lengthEditor, callback](int result) {
-			if (result != 1) { return; }
+		[sampleRateSeletor, channelsEditor, lengthEditor, callback, cancelCallback](int result) {
+			if (result != 1) {
+				if (cancelCallback) { cancelCallback(); }
+				return;
+			}
 
 			double sampleRate = sampleRateSeletor->getText().getDoubleValue();
 			int channels = channelsEditor->getText().getIntValue();
@@ -1351,7 +1370,8 @@ void TrackListHelper::releaseInstance() {
 TrackListHelper* TrackListHelper::instance = nullptr;
 
 void CoreActions::askForMixerTracksListGUIAsync(
-	const std::function<void(const juce::Array<int>&)>& callback) {
+	const std::function<void(const juce::Array<int>&)>& callback,
+	const CancelCallback& cancelCallback) {
 	/** Get Track List */
 	auto trackList = quickAPI::getMixerTrackInfos();
 	if (trackList.isEmpty()) {
@@ -1376,8 +1396,11 @@ void CoreActions::askForMixerTracksListGUIAsync(
 	chooserWindow->addCustomComponent(TrackListHelper::getInstance()->getListBox());
 
 	chooserWindow->enterModalState(true, juce::ModalCallbackFunction::create(
-		[callback, listBox = TrackListHelper::getInstance()->getListBox()](int result) {
-			if (result != 1) { return; }
+		[callback, cancelCallback, listBox = TrackListHelper::getInstance()->getListBox()](int result) {
+			if (result != 1) {
+				if (cancelCallback) { cancelCallback(); }
+				return;
+			}
 
 			juce::Array<int> resList;
 			auto resSet = listBox->getSelectedRows();
@@ -1402,7 +1425,7 @@ void CoreActions::askForMixerTracksListGUIAsync(
 
 void CoreActions::askForNameGUIAsync(
 	const std::function<void(const juce::String&)>& callback,
-	const juce::String& defaultName) {
+	const juce::String& defaultName, const CancelCallback& cancelCallback) {
 	/** Create Name Editor */
 	auto editorWindow = new juce::AlertWindow{
 		TRANS("Name Editor"), TRANS("Input the name in the editor:"),
@@ -1416,8 +1439,11 @@ void CoreActions::askForNameGUIAsync(
 
 	/** Show Async */
 	editorWindow->enterModalState(true, juce::ModalCallbackFunction::create(
-		[editor, callback, defaultName](int result) {
-			if (result != 1) { return; }
+		[editor, callback, cancelCallback, defaultName](int result) {
+			if (result != 1) {
+				if (cancelCallback) { cancelCallback(); }
+				return;
+			}
 
 			juce::String name = editor->getText();
 			callback(name);
@@ -1427,7 +1453,7 @@ void CoreActions::askForNameGUIAsync(
 
 void CoreActions::askForPluginGUIAsync(
 	const std::function<void(const juce::String&, bool)>& callback,
-	bool filter, bool instr) {
+	bool filter, bool instr, const CancelCallback& cancelCallback) {
 	/** Get Plugin List */
 	auto [result, list] = quickAPI::getPluginList(filter, instr);
 	juce::StringArray pluginNames;
@@ -1450,8 +1476,11 @@ void CoreActions::askForPluginGUIAsync(
 	/** Show Selector Async */
 	auto combo = selectorWindow->getComboBoxComponent(TRANS("Plugin"));
 	selectorWindow->enterModalState(true, juce::ModalCallbackFunction::create(
-		[combo, callback, list](int result) {
-			if (result != 1) { return; }
+		[combo, callback, cancelCallback, list](int result) {
+			if (result != 1) {
+				if (cancelCallback) { cancelCallback(); }
+				return;
+			}
 
 			int index = combo->getSelectedItemIndex();
 			juce::String name = combo->getText();
@@ -1465,7 +1494,8 @@ void CoreActions::askForPluginGUIAsync(
 }
 
 void CoreActions::askForBusTypeGUIAsync(
-	const std::function<void(int)>& callback, int defaultType) {
+	const std::function<void(int)>& callback, int defaultType,
+	const CancelCallback& cancelCallback) {
 	/** Get Track Type List */
 	auto list = quickAPI::getAllTrackTypeWithName();
 	juce::StringArray typeNames;
@@ -1491,8 +1521,11 @@ void CoreActions::askForBusTypeGUIAsync(
 
 	/** Show Selector Async */
 	selectorWindow->enterModalState(true, juce::ModalCallbackFunction::create(
-		[combo, callback, list](int result) {
-			if (result != 1) { return; }
+		[combo, callback, cancelCallback, list](int result) {
+			if (result != 1) {
+				if (cancelCallback) { cancelCallback(); }
+				return;
+			}
 
 			int index = combo->getSelectedItemIndex();
 			auto& [id, name] = list.getReference(index);
@@ -1504,7 +1537,8 @@ void CoreActions::askForBusTypeGUIAsync(
 
 void CoreActions::askForPluginParamGUIAsync(
 	const std::function<void(int)>& callback,
-	quickAPI::PluginHolder plugin, PluginType type) {
+	quickAPI::PluginHolder plugin, PluginType type,
+	const CancelCallback& cancelCallback) {
 	/** Get Param List */
 	juce::StringArray paramList;
 	switch (type) {
@@ -1532,8 +1566,11 @@ void CoreActions::askForPluginParamGUIAsync(
 	/** Show Selector Async */
 	auto combo = selectorWindow->getComboBoxComponent(TRANS("Parameter"));
 	selectorWindow->enterModalState(true, juce::ModalCallbackFunction::create(
-		[combo, callback, size = paramList.size()](int result) {
-			if (result != 1) { return; }
+		[combo, callback, cancelCallback, size = paramList.size()](int result) {
+			if (result != 1) {
+				if (cancelCallback) { cancelCallback(); }
+				return;
+			}
 
 			int index = combo->getSelectedItemIndex();
 			if (index < 0 || index >= size) { return; }
@@ -1588,7 +1625,7 @@ private:
 void CoreActions::askForPluginMIDICCGUIAsync(
 	const std::function<void(int)>& callback,
 	quickAPI::PluginHolder plugin, PluginType type,
-	int defaultCCChannel) {
+	int defaultCCChannel, const CancelCallback& cancelCallback) {
 	/** Get MIDI CC List */
 	auto ccList = quickAPI::getMIDICCChannelNameList();
 
@@ -1623,8 +1660,11 @@ void CoreActions::askForPluginMIDICCGUIAsync(
 
 	/** Show Selector Async */
 	selectorWindow->enterModalState(true, juce::ModalCallbackFunction::create(
-		[combo = std::move(combo), callback, size = ccList.size()](int result) {
-			if (result != 1) { return; }
+		[combo = std::move(combo), callback, cancelCallback, size = ccList.size()](int result) {
+			if (result != 1) {
+				if (cancelCallback) { cancelCallback(); }
+				return;
+			}
 
 			int index = combo->getSelectedItemIndex();
 			if (index < 0 || index >= size) { return; }
@@ -1639,7 +1679,7 @@ void CoreActions::askForAudioChannelLinkGUIAsync(
 	const juce::Array<std::tuple<int, int>>& initList,
 	const juce::AudioChannelSet& srcChannels, const juce::AudioChannelSet& dstChannels,
 	int srcChannelNum, int dstChannelNum, const juce::String& srcName, const juce::String& dstName,
-	bool initIfEmpty) {
+	bool initIfEmpty, const CancelCallback& /*cancelCallback*/) {
 	/** Create Editor */
 	auto editor = new ChannelLinkView{
 		callback, initList, srcChannels, dstChannels,
@@ -1652,7 +1692,7 @@ void CoreActions::askForAudioChannelLinkGUIAsync(
 
 void CoreActions::askForColorGUIAsync(
 	const std::function<void(const juce::Colour&)>& callback,
-	const juce::Colour& defaultColor) {
+	const juce::Colour& defaultColor, const CancelCallback& /*cancelCallback*/) {
 	/** Create Editor */
 	auto editor = new ColorEditor{ callback, defaultColor };
 
@@ -1665,7 +1705,7 @@ void CoreActions::askForTempoGUIAsync(
 	const std::function<void(bool, double, int, int)>& callback,
 	bool defaultIsTempo,
 	double defaultTempo, int defaultNumerator, int defaultDenominator,
-	bool switchable) {
+	bool switchable, const CancelCallback& /*cancelCallback*/) {
 	/** Create Editor */
 	auto editor = new TempoEditor{ defaultIsTempo,
 		defaultTempo, defaultNumerator, defaultDenominator, switchable };
@@ -1680,7 +1720,7 @@ void CoreActions::askForTempoGUIAsync(
 
 void CoreActions::askForMIDITrackAsync(
 	const std::function<void(int)>& callback,
-	int totalNum, int defaltTrack) {
+	int totalNum, int defaltTrack, const CancelCallback& cancelCallback) {
 	/** Get Index List */
 	juce::StringArray indexItemList;
 	for (int i = 0; i < totalNum; i++) {
@@ -1699,8 +1739,11 @@ void CoreActions::askForMIDITrackAsync(
 	auto combo = selectorWindow->getComboBoxComponent(TRANS("Track"));
 	combo->setSelectedItemIndex(defaltTrack);
 	selectorWindow->enterModalState(true, juce::ModalCallbackFunction::create(
-		[combo, callback, totalNum](int result) {
-			if (result != 1) { return; }
+		[combo, callback, cancelCallback, totalNum](int result) {
+			if (result != 1) {
+				if (cancelCallback) { cancelCallback(); }
+				return;
+			}
 
 			int index = combo->getSelectedItemIndex();
 			if (index < 0 || index >= totalNum) { return; }
@@ -1712,7 +1755,7 @@ void CoreActions::askForMIDITrackAsync(
 
 void CoreActions::askForAudioSaveFormatsAsync(
 	const std::function<void(bool, int, int)>& callback,
-	const juce::String& format) {
+	const juce::String& format, const CancelCallback& cancelCallback) {
 	/** Supported Formats */
 	auto bitDepthList = quickAPI::getFormatPossibleBitDepthsForExtension(format);
 	auto qualityList = quickAPI::getFormatQualityOptionsForExtension(format);
@@ -1749,8 +1792,11 @@ void CoreActions::askForAudioSaveFormatsAsync(
 
 	/** Show Async */
 	configWindow->enterModalState(true, juce::ModalCallbackFunction::create(
-		[bitDepthCombo, qualityCombo, metaDataCombo, callback, bitDepthList](int result) {
-			if (result != 1) { return; }
+		[bitDepthCombo, qualityCombo, metaDataCombo, callback, cancelCallback, bitDepthList](int result) {
+			if (result != 1) {
+				if (cancelCallback) { cancelCallback(); }
+				return;
+			}
 
 			int bitDepthIndex = bitDepthCombo->getSelectedItemIndex();
 			if (bitDepthIndex < 0 || bitDepthIndex >= bitDepthList.size()) { return; }
@@ -1768,7 +1814,8 @@ void CoreActions::askForAudioSaveFormatsAsync(
 
 void CoreActions::askForPluginPresetAsync(
 	const std::function<void(const juce::String&)>& callback,
-	const juce::String& identifier, bool saveMode) {
+	const juce::String& identifier, bool saveMode,
+	const CancelCallback& cancelCallback) {
 	if (identifier.isEmpty()) { return; }
 
 	auto presetDir = utils::getPluginPresetDir();
@@ -1789,5 +1836,8 @@ void CoreActions::askForPluginPresetAsync(
 			presetFile = presetFile.withFileExtension("pre");
 		}
 		callback(presetFile.getFullPathName());
+	}
+	else {
+		if (cancelCallback) { cancelCallback(); }
 	}
 }

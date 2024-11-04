@@ -180,12 +180,19 @@ void SourceEditor::switchEditor(SourceSwitchBar::SwitchState state) {
 	/** Update Switch State */
 	this->switchState = state;
 
+	/** Canceled Callback */
+	auto cancelCallback = [comp = SourceEditor::SafePointer{ this }](int index) {
+		if (comp) {
+			comp->update(index);
+		}
+		};
+
 	/** Create Source */
 	if ((this->audioRef == 0) && (state == SourceSwitchBar::SwitchState::Audio)) {
-		CoreActions::createSeqAudioSourceGUI(this->trackIndex);
+		CoreActions::createSeqAudioSourceGUI(this->trackIndex, cancelCallback);
 	}
 	if ((this->midiRef == 0) && (state == SourceSwitchBar::SwitchState::MIDI)) {
-		CoreActions::createSeqMIDISourceGUI(this->trackIndex);
+		CoreActions::createSeqMIDISourceGUI(this->trackIndex, cancelCallback);
 	}
 
 	/** Change Editor Visible */

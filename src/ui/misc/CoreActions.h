@@ -113,6 +113,9 @@ public:
 	static void setSeqBlock(int track, int index, double startTime, double endTime, double offset);
 	static void removeSeqBlock(int track, int index);
 
+	using CreateAudioSourceCancelCallback = std::function<void(int)>;
+	using CreateMIDISourceCancelCallback = CreateAudioSourceCancelCallback;
+
 	static void loadProjectGUI(const juce::String& filePath);
 	static void loadProjectGUI();
 	static void newProjectGUI();
@@ -170,10 +173,16 @@ public:
 	static void setSeqAudioRefGUI(int index, const juce::String& path);
 	static void setSeqMIDIRefGUIThenAddBlock(int index, const juce::String& path, bool getTempo);
 	static void setSeqMIDIRefGUI(int index, const juce::String& path);
-	static void createSeqAudioSourceGUI(int index, const juce::String& name);
-	static void createSeqMIDISourceGUI(int index, const juce::String& name);
-	static void createSeqAudioSourceGUI(int index);
-	static void createSeqMIDISourceGUI(int index);
+	static void createSeqAudioSourceGUI(
+		int index, const juce::String& name,
+		const CreateAudioSourceCancelCallback& cancelCallback);
+	static void createSeqMIDISourceGUI(
+		int index, const juce::String& name,
+		const CreateMIDISourceCancelCallback& cancelCallback);
+	static void createSeqAudioSourceGUI(
+		int index, const CreateAudioSourceCancelCallback& cancelCallback);
+	static void createSeqMIDISourceGUI(
+		int index, const CreateMIDISourceCancelCallback& cancelCallback);
 	static void removeSeqGUI(int index);
 
 	static void addLabelGUI(double time);
@@ -181,48 +190,61 @@ public:
 	static void editLabelGUI(int index);
 	static void removeLabelGUI(int index);
 
+	using CancelCallback = std::function<void(void)>;
+
 	static bool askForSaveGUI();
 	static void askForAudioPropGUIAsync(
-		const std::function<void(double, int, double)>& callback);
+		const std::function<void(double, int, double)>& callback,
+		const CancelCallback& cancelCallback = {});
 	static void askForMixerTracksListGUIAsync(
-		const std::function<void(const juce::Array<int>&)>& callback);
+		const std::function<void(const juce::Array<int>&)>& callback,
+		const CancelCallback& cancelCallback = {});
 	static void askForNameGUIAsync(
 		const std::function<void(const juce::String&)>& callback,
-		const juce::String& defaultName = "");
+		const juce::String& defaultName = "",
+		const CancelCallback& cancelCallback = {});
 	static void askForPluginGUIAsync(
 		const std::function<void(const juce::String&, bool)>& callback,
-		bool filter = false, bool instr = true);
+		bool filter = false, bool instr = true,
+		const CancelCallback& cancelCallback = {});
 	static void askForBusTypeGUIAsync(
 		const std::function<void(int)>& callback,
-		int defaultType = 20);
+		int defaultType = 20,
+		const CancelCallback& cancelCallback = {});
 	static void askForPluginParamGUIAsync(
 		const std::function<void(int)>& callback,
-		quickAPI::PluginHolder plugin, PluginType type);
+		quickAPI::PluginHolder plugin, PluginType type,
+		const CancelCallback& cancelCallback = {});
 	static void askForPluginMIDICCGUIAsync(
 		const std::function<void(int)>& callback,
 		quickAPI::PluginHolder plugin, PluginType type,
-		int defaultCCChannel = -1);
+		int defaultCCChannel = -1,
+		const CancelCallback& cancelCallback = {});
 	static void askForAudioChannelLinkGUIAsync(
 		const std::function<void(int, int, bool)>& callback,
 		const juce::Array<std::tuple<int, int>>& initList,
 		const juce::AudioChannelSet& srcChannels, const juce::AudioChannelSet& dstChannels,
 		int srcChannelNum, int dstChannelNum, const juce::String& srcName, const juce::String& dstName,
-		bool initIfEmpty);
+		bool initIfEmpty, const CancelCallback& cancelCallback = {});
 	static void askForColorGUIAsync(
 		const std::function<void(const juce::Colour&)>& callback,
-		const juce::Colour& defaultColor);
+		const juce::Colour& defaultColor,
+		const CancelCallback& cancelCallback = {});
 	static void askForTempoGUIAsync(
 		const std::function<void(bool, double, int, int)>& callback,
 		bool defaultIsTempo = true,
 		double defaultTempo = 120.0, int defaultNumerator = 4, int defaultDenominator = 4,
-		bool switchable = true);
+		bool switchable = true, const CancelCallback& cancelCallback = {});
 	static void askForMIDITrackAsync(
 		const std::function<void(int)>& callback,
-		int totalNum, int defaltTrack = 0);
+		int totalNum, int defaltTrack = 0,
+		const CancelCallback& cancelCallback = {});
 	static void askForAudioSaveFormatsAsync(
 		const std::function<void(bool, int, int)>& callback,
-		const juce::String& format);
+		const juce::String& format,
+		const CancelCallback& cancelCallback = {});
 	static void askForPluginPresetAsync(
 		const std::function<void(const juce::String&)>& callback,
-		const juce::String& identifier, bool saveMode);
+		const juce::String& identifier, bool saveMode,
+		const CancelCallback& cancelCallback = {});
 };
