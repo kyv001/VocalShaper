@@ -64,92 +64,39 @@ void LookAndFeelFactory::initialise() {
 	flowUI::FlowStyle::setAdsorbColor(
 		ColorMap::getInstance()->get("ThemeColorA2").withAlpha(0.3f));
 
-	/** ToolBar */
-	this->toolBarLAF = std::make_unique<ToolBarLookAndFeel>();
-
-	/** Main Menu */
-	this->mainMenuLAF = std::make_unique<MainMenuLookAndFeel>();
-
-	/** System Status */
-	this->sysStatusLAF = std::make_unique<SystemStatusLookAndFeel>();
-
-	/** Time */
-	this->timeLAF = std::make_unique<TimeLookAndFeel>();
-	
-	/** Controller */
-	this->controllerLAF = std::make_unique<ControllerLookAndFeel>();
-
-	/** Tools */
-	this->toolsLAF = std::make_unique<ToolsLookAndFeel>();
-
-	/** Message */
-	this->messageLAF = std::make_unique<MessageLookAndFeel>();
-
-	/** Message View */
-	this->messageViewLAF = std::make_unique<MessageViewLookAndFeel>();
-
-	/** Plugin View */
-	this->pluginViewLAF = std::make_unique<PluginViewLookAndFeel>();
-
-	/** Plugin Editor */
-	this->pluginEditorLAF = std::make_unique<PluginEditorLookAndFeel>();
-
-	/** Channel Link */
-	this->channelLinkLAF = std::make_unique<ChannelLinkLookAndFeel>();
-
-	/** Mixer */
-	this->mixerLAF = std::make_unique<MixerLookAndFeel>();
-
-	/** Scroller */
-	this->scrollerLAF = std::make_unique<ScrollerLookAndFeel>();
-
-	/** Color Editor */
-	this->colorEditorLAF = std::make_unique<ColorEditorLookAndFeel>();
-
-	/** Side Chain */
-	this->sideChainLAF = std::make_unique<SideChainLookAndFeel>();
-
-	/** Level Meter */
-	this->levelMeterLAF = std::make_unique<LevelMeterLookAndFeel>();
-
-	/** Mute Button */
-	this->muteButtonLAF = std::make_unique<MuteButtonLookAndFeel>();
-
-	/** Record Button */
-	this->recButtonLAF = std::make_unique<RecButtonLookAndFeel>();
-
-	/** Effect */
-	this->effectLAF = std::make_unique<EffectLookAndFeel>();
-
-	/** Sequencer */
-	this->seqLAF = std::make_unique<SeqLookAndFeel>();
-
-	/** Time Ruler */
-	this->timeRulerLAF = std::make_unique<TimeRulerLookAndFeel>();
-
-	/** Seq Track */
-	this->seqTrackLAF = std::make_unique<SeqTrackLookAndFeel>();
-
-	/** Seq Track Name */
-	this->seqTrackNameLAF = std::make_unique<SeqTrackNameLookAndFeel>();
-
-	/** Instr Name */
-	this->instrNameLAF = std::make_unique<InstrNameLookAndFeel>();
-
-	/** Seq Block */
-	this->seqBlockLAF = std::make_unique<SeqBlockLookAndFeel>();
-
-	/** Editor */
-	this->editorLAF = std::make_unique<EditorLookAndFeel>();
-
-	/** Editor Switch Bar */
-	this->editorSwitchBarLAF = std::make_unique<EditorSwitchBarLookAndFeel>();
-
-	/** Piano */
-	this->pianoLAF = std::make_unique<PianoLookAndFeel>();
-
-	/** MIDI Content */
-	this->midiContentLAF = std::make_unique<MidiContentLookAndFeel>();
+	/** Look And Feel List */
+	this->lafList.ensureStorageAllocated(LAFType::TotalTypeNum);
+	this->lafList = {
+		new ToolBarLookAndFeel{},
+		new MainMenuLookAndFeel{},
+		new SystemStatusLookAndFeel{},
+		new TimeLookAndFeel{},
+		new ControllerLookAndFeel{},
+		new ToolsLookAndFeel{},
+		new MessageLookAndFeel{},
+		new MessageViewLookAndFeel{},
+		new PluginViewLookAndFeel{},
+		new PluginEditorLookAndFeel{},
+		new ChannelLinkLookAndFeel{},
+		new MixerLookAndFeel{},
+		new ScrollerLookAndFeel{},
+		new ColorEditorLookAndFeel{},
+		new SideChainLookAndFeel{},
+		new LevelMeterLookAndFeel{},
+		new MuteButtonLookAndFeel{},
+		new RecButtonLookAndFeel{},
+		new EffectLookAndFeel{},
+		new SeqLookAndFeel{},
+		new TimeRulerLookAndFeel{},
+		new SeqTrackLookAndFeel{},
+		new SeqTrackNameLookAndFeel{},
+		new InstrNameLookAndFeel{},
+		new SeqBlockLookAndFeel{},
+		new EditorLookAndFeel{},
+		new EditorSwitchBarLookAndFeel{},
+		new PianoLookAndFeel{},
+		new MidiContentLookAndFeel{}
+	};
 }
 
 void LookAndFeelFactory::setDefaultSansSerifTypeface(juce::Typeface::Ptr typeface) {
@@ -157,120 +104,11 @@ void LookAndFeelFactory::setDefaultSansSerifTypeface(juce::Typeface::Ptr typefac
 	laf.setDefaultSansSerifTypeface(typeface);
 }
 
-juce::LookAndFeel_V4* LookAndFeelFactory::forToolBar() const {
-	return this->toolBarLAF.get();
-}
-
-juce::LookAndFeel_V4* LookAndFeelFactory::forMainMenu() const {
-	return this->mainMenuLAF.get();
-}
-
-juce::LookAndFeel_V4* LookAndFeelFactory::forSysStatus() const {
-	return this->sysStatusLAF.get();
-}
-
-juce::LookAndFeel_V4* LookAndFeelFactory::forTime() const {
-	return this->timeLAF.get();
-}
-
-juce::LookAndFeel_V4* LookAndFeelFactory::forController() const {
-	return this->controllerLAF.get();
-}
-
-juce::LookAndFeel_V4* LookAndFeelFactory::forTools() const {
-	return this->toolsLAF.get();
-}
-
-juce::LookAndFeel_V4* LookAndFeelFactory::forMessage() const {
-	return this->messageLAF.get();
-}
-
-juce::LookAndFeel_V4* LookAndFeelFactory::forMessageView() const {
-	return this->messageViewLAF.get();
-}
-
-juce::LookAndFeel_V4* LookAndFeelFactory::forPluginView() const {
-	return this->pluginViewLAF.get();
-}
-
-juce::LookAndFeel_V4* LookAndFeelFactory::forPluginEditor() const {
-	return this->pluginEditorLAF.get();
-}
-
-juce::LookAndFeel_V4* LookAndFeelFactory::forChannelLink() const {
-	return this->channelLinkLAF.get();
-}
-
-juce::LookAndFeel_V4* LookAndFeelFactory::forMixer() const {
-	return this->mixerLAF.get();
-}
-
-juce::LookAndFeel_V4* LookAndFeelFactory::forScroller() const {
-	return this->scrollerLAF.get();
-}
-
-juce::LookAndFeel_V4* LookAndFeelFactory::forColorEditor() const {
-	return this->colorEditorLAF.get();
-}
-
-juce::LookAndFeel_V4* LookAndFeelFactory::forSideChain() const {
-	return this->sideChainLAF.get();
-}
-
-juce::LookAndFeel_V4* LookAndFeelFactory::forLevelMeter() const {
-	return this->levelMeterLAF.get();
-}
-
-juce::LookAndFeel_V4* LookAndFeelFactory::forMuteButton() const {
-	return this->muteButtonLAF.get();
-}
-
-juce::LookAndFeel_V4* LookAndFeelFactory::forRecButton() const {
-	return this->recButtonLAF.get();
-}
-
-juce::LookAndFeel_V4* LookAndFeelFactory::forEffect() const {
-	return this->effectLAF.get();
-}
-
-juce::LookAndFeel_V4* LookAndFeelFactory::forSeq() const {
-	return this->seqLAF.get();
-}
-
-juce::LookAndFeel_V4* LookAndFeelFactory::forTimeRuler() const {
-	return this->timeRulerLAF.get();
-}
-
-juce::LookAndFeel_V4* LookAndFeelFactory::forSeqTrack() const {
-	return this->seqTrackLAF.get();
-}
-
-juce::LookAndFeel_V4* LookAndFeelFactory::forSeqTrackName() const {
-	return this->seqTrackNameLAF.get();
-}
-
-juce::LookAndFeel_V4* LookAndFeelFactory::forInstrName() const {
-	return this->instrNameLAF.get();
-}
-
-juce::LookAndFeel_V4* LookAndFeelFactory::forEditor() const {
-	return this->editorLAF.get();
-}
-
-juce::LookAndFeel_V4* LookAndFeelFactory::forSeqBlock() const {
-	return this->seqBlockLAF.get();
-}
-
-juce::LookAndFeel_V4* LookAndFeelFactory::forEditorSwitchBar() const {
-	return this->editorSwitchBarLAF.get();
-}
-
-juce::LookAndFeel_V4* LookAndFeelFactory::forPiano() const {
-	return this->pianoLAF.get();
-}
-
-juce::LookAndFeel_V4* LookAndFeelFactory::forMidiContent() const {
-	return this->midiContentLAF.get();
+juce::LookAndFeel* LookAndFeelFactory::getLAFFor(LAFType type) const {
+	if (type < this->lafList.size()) {
+		return this->lafList[type];
+	}
+	return nullptr;
 }
 
 LookAndFeelFactory* LookAndFeelFactory::getInstance() {

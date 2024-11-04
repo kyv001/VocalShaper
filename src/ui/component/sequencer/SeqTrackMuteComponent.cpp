@@ -6,7 +6,7 @@
 
 SeqTrackMuteComponent::SeqTrackMuteComponent() {
 	this->setLookAndFeel(
-		LookAndFeelFactory::getInstance()->forMuteButton());
+		LookAndFeelFactory::getInstance()->getLAFFor(LookAndFeelFactory::MuteButton));
 }
 
 void SeqTrackMuteComponent::paint(juce::Graphics& g) {

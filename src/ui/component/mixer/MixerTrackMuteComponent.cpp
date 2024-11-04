@@ -8,7 +8,7 @@ MixerTrackMuteComponent::MixerTrackMuteComponent(
 	const RightButtonCallback& rightCallback)
 	: rightCallback(rightCallback) {
 	this->setLookAndFeel(
-		LookAndFeelFactory::getInstance()->forMuteButton());
+		LookAndFeelFactory::getInstance()->getLAFFor(LookAndFeelFactory::MuteButton));
 }
 
 void MixerTrackMuteComponent::paint(juce::Graphics& g) {

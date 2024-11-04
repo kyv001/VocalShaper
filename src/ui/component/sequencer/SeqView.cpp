@@ -255,7 +255,7 @@ SeqView::SeqView()
 	: FlowComponent(TRANS("Track")) {
 	/** Look And Feel */
 	this->setLookAndFeel(
-		LookAndFeelFactory::getInstance()->forSeq());
+		LookAndFeelFactory::getInstance()->getLAFFor(LookAndFeelFactory::Seq));
 
 	/** Icons */
 	this->adsorbIcon = flowUI::IconManager::getSVG(

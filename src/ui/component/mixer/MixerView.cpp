@@ -9,7 +9,7 @@ MixerView::MixerView()
 	: FlowComponent(TRANS("Mixer")) {
 	/** Look And Feel */
 	this->setLookAndFeel(
-		LookAndFeelFactory::getInstance()->forMixer());
+		LookAndFeelFactory::getInstance()->getLAFFor(LookAndFeelFactory::Mixer));
 
 	/** Scroller */
 	this->hScroller = std::make_unique<Scroller>(false,

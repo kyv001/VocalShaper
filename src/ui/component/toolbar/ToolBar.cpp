@@ -6,7 +6,7 @@ ToolBar::ToolBar()
 	: FlowComponent(TRANS("Tool Bar")) {
 	/** Look And Feel */
 	this->setLookAndFeel(
-		LookAndFeelFactory::getInstance()->forToolBar());
+		LookAndFeelFactory::getInstance()->getLAFFor(LookAndFeelFactory::ToolBar));
 
 	/** Main Menu Model */
 	this->mainMenuModel = std::make_unique<MainMenuModel>();
@@ -15,7 +15,7 @@ ToolBar::ToolBar()
 	this->mainMenuBar =
 		std::make_unique<MenuBarComponent>(this->mainMenuModel.get());
 	this->mainMenuBar->setLookAndFeel(
-		LookAndFeelFactory::getInstance()->forMainMenu());
+		LookAndFeelFactory::getInstance()->getLAFFor(LookAndFeelFactory::MainMenu));
 	this->addAndMakeVisible(this->mainMenuBar.get());
 
 	/** System Status */

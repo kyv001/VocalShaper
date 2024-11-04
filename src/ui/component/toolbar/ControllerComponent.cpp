@@ -8,7 +8,7 @@
 ControllerComponent::ControllerComponent() {
 	/** Look And Feel */
 	this->setLookAndFeel(
-		LookAndFeelFactory::getInstance()->forController());
+		LookAndFeelFactory::getInstance()->getLAFFor(LookAndFeelFactory::Controller));
 
 	/** Icons */
 	this->playIcon = flowUI::IconManager::getSVG(

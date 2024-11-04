@@ -110,7 +110,7 @@ ColorEditorContent::ColorEditorContent(
 
 	/** Look And Feel */
 	this->setLookAndFeel(
-		LookAndFeelFactory::getInstance()->forColorEditor());
+		LookAndFeelFactory::getInstance()->getLAFFor(LookAndFeelFactory::ColorEditor));
 
 	/** Title */
 	this->commonTitle = TRANS("Common Colors");

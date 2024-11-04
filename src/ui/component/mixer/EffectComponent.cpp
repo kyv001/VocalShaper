@@ -10,7 +10,7 @@
 EffectComponent::EffectComponent() {
 	/** Look And Feel */
 	this->setLookAndFeel(
-		LookAndFeelFactory::getInstance()->forEffect());
+		LookAndFeelFactory::getInstance()->getLAFFor(LookAndFeelFactory::Effect));
 
 	/** Bypass Icon */
 	this->bypassIcon = flowUI::IconManager::getSVG(

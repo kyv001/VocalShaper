@@ -11,7 +11,7 @@ PluginEditorContent::PluginEditorContent(PluginEditor* parent,
 	editor(editor), type(type) {
 	/** Look And Feel */
 	this->setLookAndFeel(
-		LookAndFeelFactory::getInstance()->forPluginEditor());
+		LookAndFeelFactory::getInstance()->getLAFFor(LookAndFeelFactory::PluginEditor));
 
 	if (editor) {
 		/** Add Listener To Comp */

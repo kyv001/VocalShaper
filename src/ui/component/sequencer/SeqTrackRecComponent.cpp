@@ -6,7 +6,7 @@
 
 SeqTrackRecComponent::SeqTrackRecComponent() {
 	this->setLookAndFeel(
-		LookAndFeelFactory::getInstance()->forRecButton());
+		LookAndFeelFactory::getInstance()->getLAFFor(LookAndFeelFactory::RecButton));
 }
 
 void SeqTrackRecComponent::paint(juce::Graphics& g) {

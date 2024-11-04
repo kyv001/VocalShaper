@@ -11,7 +11,7 @@ MessageComponent::MessageComponent() {
 
 	/** Look And Feel */
 	this->setLookAndFeel(
-		LookAndFeelFactory::getInstance()->forMessage());
+		LookAndFeelFactory::getInstance()->getLAFFor(LookAndFeelFactory::Message));
 
 	/** Icon */
 	this->mesIcon = flowUI::IconManager::getSVG(
@@ -129,7 +129,8 @@ void MessageComponent::mouseUp(const juce::MouseEvent& event) {
 		auto pointRect = this->getScreenBounds();
 		auto& messageBox = juce::CallOutBox::launchAsynchronously(
 			std::move(mesView), pointRect, nullptr);
-		messageBox.setLookAndFeel(LookAndFeelFactory::getInstance()->forMessageView());
+		messageBox.setLookAndFeel(
+			LookAndFeelFactory::getInstance()->getLAFFor(LookAndFeelFactory::MessageView));
 		messageBox.setArrowSize(arrowSize);
 		messageBox.updatePosition(pointRect, juce::Rectangle<int>{
 			pointRect.getX(), pointRect.getBottom(), viewWidth, viewHeight});

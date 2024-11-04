@@ -8,7 +8,7 @@
 SideChainComponent::SideChainComponent() {
 	/** Look And Feel */
 	this->setLookAndFeel(
-		LookAndFeelFactory::getInstance()->forSideChain());
+		LookAndFeelFactory::getInstance()->getLAFFor(LookAndFeelFactory::SideChain));
 
 	/** Icons */
 	this->addIcon = flowUI::IconManager::getSVG(

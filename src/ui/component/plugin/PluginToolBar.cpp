@@ -10,7 +10,7 @@ PluginToolBar::PluginToolBar(PluginEditorContent* parent,
 	: parent(parent), plugin(plugin), type(type) {
 	/** Look And Feel */
 	this->setLookAndFeel(
-		LookAndFeelFactory::getInstance()->forPluginEditor());
+		LookAndFeelFactory::getInstance()->getLAFFor(LookAndFeelFactory::PluginEditor));
 
 	/** Icons */
 	this->bypassIcon = flowUI::IconManager::getSVG(

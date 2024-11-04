@@ -18,7 +18,7 @@ SourceTimeRuler::SourceTimeRuler(
 	dragStartFunc(dragStartFunc), dragProcessFunc(dragProcessFunc), dragEndFunc(dragEndFunc) {
 	/** Look And Feel */
 	this->setLookAndFeel(
-		LookAndFeelFactory::getInstance()->forTimeRuler());
+		LookAndFeelFactory::getInstance()->getLAFFor(LookAndFeelFactory::TimeRuler));
 
 	/** Init Temp */
 	this->rulerTemp = std::make_unique<juce::Image>(

@@ -10,7 +10,7 @@ PianoComponent::PianoComponent(
 	keysPerOctave(this->blackKeys.size() + this->whiteKeys.size()) {
 	/** Look And Feel */
 	this->setLookAndFeel(
-		LookAndFeelFactory::getInstance()->forPiano());
+		LookAndFeelFactory::getInstance()->getLAFFor(LookAndFeelFactory::Piano));
 }
 
 void PianoComponent::resized() {

@@ -8,7 +8,7 @@
 ToolComponent::ToolComponent() {
 	/** Look And Feel */
 	this->setLookAndFeel(
-		LookAndFeelFactory::getInstance()->forTools());
+		LookAndFeelFactory::getInstance()->getLAFFor(LookAndFeelFactory::Tools));
 
 	/** Icons */
 	auto arrowIcon = flowUI::IconManager::getSVG(

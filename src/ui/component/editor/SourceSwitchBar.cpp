@@ -9,7 +9,7 @@ SourceSwitchBar::SourceSwitchBar(
 	: stateCallback(stateCallback) {
 	/** Look And Feel */
 	this->setLookAndFeel(
-		LookAndFeelFactory::getInstance()->forEditorSwitchBar());
+		LookAndFeelFactory::getInstance()->getLAFFor(LookAndFeelFactory::EditorSwitchBar));
 
 	/** Icons */
 	this->switchIcon = flowUI::IconManager::getSVG(

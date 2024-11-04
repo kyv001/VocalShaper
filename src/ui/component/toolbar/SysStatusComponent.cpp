@@ -12,7 +12,7 @@ SysStatusComponent::SysStatusComponent()
 
 	/** Look And Feel */
 	this->setLookAndFeel(
-		LookAndFeelFactory::getInstance()->forSysStatus());
+		LookAndFeelFactory::getInstance()->getLAFFor(LookAndFeelFactory::SysStatus));
 	this->setMouseCursor(juce::MouseCursor::PointingHandCursor);
 
 	/** Translate */

@@ -10,7 +10,7 @@ PluginView::PluginView()
 	: FlowComponent(TRANS("Plugin")) {
 	/** Look And Feel */
 	this->setLookAndFeel(
-		LookAndFeelFactory::getInstance()->forPluginView());
+		LookAndFeelFactory::getInstance()->getLAFFor(LookAndFeelFactory::PluginView));
 
 	/** Search Icon */
 	this->searchIcon = flowUI::IconManager::getSVG(

@@ -9,7 +9,7 @@ SourceEditor::SourceEditor()
 	: FlowComponent(TRANS("Resource Editor")) {
 	/** Look And Feel */
 	this->setLookAndFeel(
-		LookAndFeelFactory::getInstance()->forEditor());
+		LookAndFeelFactory::getInstance()->getLAFFor(LookAndFeelFactory::Editor));
 
 	/** Switch Bar */
 	auto switchCallback = [this](SourceSwitchBar::SwitchState state) {

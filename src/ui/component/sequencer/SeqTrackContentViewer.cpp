@@ -44,7 +44,7 @@ SeqTrackContentViewer::SeqTrackContentViewer(
 	dragEndFunc(dragEndFunc), trackSelectFunc(trackSelectFunc) {
 	/** Look And Feel */
 	this->setLookAndFeel(
-		LookAndFeelFactory::getInstance()->forSeqBlock());
+		LookAndFeelFactory::getInstance()->getLAFFor(LookAndFeelFactory::SeqBlock));
 
 	/** Data Update Timer */
 	this->blockImageUpdateTimer = std::make_unique<DataImageUpdateTimer>(this);

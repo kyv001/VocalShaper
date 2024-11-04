@@ -5,7 +5,7 @@
 
 SeqTrackLevelMeter::SeqTrackLevelMeter() {
 	this->setLookAndFeel(
-		LookAndFeelFactory::getInstance()->forLevelMeter());
+		LookAndFeelFactory::getInstance()->getLAFFor(LookAndFeelFactory::LevelMeter));
 }
 
 void SeqTrackLevelMeter::updateLevelMeter() {

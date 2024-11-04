@@ -363,7 +363,7 @@ ChannelLinkView::ChannelLinkView(
 
 	/** Look And Feel */
 	this->setLookAndFeel(
-		LookAndFeelFactory::getInstance()->forChannelLink());
+		LookAndFeelFactory::getInstance()->getLAFFor(LookAndFeelFactory::ChannelLink));
 
 	/** Content */
 	this->content = std::make_unique<juce::Viewport>(TRANS("Channel Link"));

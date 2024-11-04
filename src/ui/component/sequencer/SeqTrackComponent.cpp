@@ -21,12 +21,12 @@ SeqTrackComponent::SeqTrackComponent(
 	trackSelectFunc(trackSelectFunc) {
 	/** Look And Feel */
 	this->setLookAndFeel(
-		LookAndFeelFactory::getInstance()->forSeqTrack());
+		LookAndFeelFactory::getInstance()->getLAFFor(LookAndFeelFactory::SeqTrack));
 
 	/** Track Name Buton */
 	this->trackName = std::make_unique<juce::TextButton>("0 - " + TRANS("Untitled"));
 	this->trackName->setLookAndFeel(
-		LookAndFeelFactory::getInstance()->forSeqTrackName());
+		LookAndFeelFactory::getInstance()->getLAFFor(LookAndFeelFactory::SeqTrackName));
 	this->trackName->setWantsKeyboardFocus(false);
 	this->trackName->setMouseCursor(juce::MouseCursor::PointingHandCursor);
 	this->trackName->setConnectedEdges(
@@ -49,7 +49,7 @@ SeqTrackComponent::SeqTrackComponent(
 		[this] { this->instrEditorShow(); },
 		[this] { this->instrMenuShow(); });
 	this->instrButton->setLookAndFeel(
-		LookAndFeelFactory::getInstance()->forInstrName());
+		LookAndFeelFactory::getInstance()->getLAFFor(LookAndFeelFactory::InstrName));
 	this->instrButton->setWantsKeyboardFocus(false);
 	this->instrButton->setMouseCursor(juce::MouseCursor::PointingHandCursor);
 	this->instrButton->setConnectedEdges(juce::Button::ConnectedOnRight);

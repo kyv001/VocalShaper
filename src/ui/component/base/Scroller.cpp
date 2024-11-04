@@ -16,7 +16,7 @@ Scroller::Scroller(bool vertical,
 	playPosCallback(playPosCallback) {
 	/** Look And Feel */
 	this->setLookAndFeel(
-		LookAndFeelFactory::getInstance()->forScroller());
+		LookAndFeelFactory::getInstance()->getLAFFor(LookAndFeelFactory::Scroller));
 }
 
 double Scroller::createViewSize() {

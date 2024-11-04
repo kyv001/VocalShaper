@@ -5,7 +5,7 @@
 
 MixerTrackLevelMeter::MixerTrackLevelMeter() {
 	this->setLookAndFeel(
-		LookAndFeelFactory::getInstance()->forLevelMeter());
+		LookAndFeelFactory::getInstance()->getLAFFor(LookAndFeelFactory::LevelMeter));
 	this->setMouseCursor(juce::MouseCursor::NoCursor);
 }
 
