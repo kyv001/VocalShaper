@@ -163,6 +163,10 @@ MIDISourceEditor::MIDISourceEditor() {
 		});
 	this->addAndMakeVisible(this->content.get());
 
+	/** Init Image Temp */
+	this->midiScrollerTemp = std::make_unique<juce::Image>(
+		juce::Image::ARGB, 1, 1, false);
+
 	/** Set Default V Pos */
 	juce::MessageManager::callAsync([scroller = Scroller::SafePointer{ this->vScroller.get() }] {
 		if (scroller) {
@@ -220,6 +224,13 @@ void MIDISourceEditor::resized() {
 		hScrollerRect.getX(), vScrollerRect.getY(),
 		hScrollerRect.getWidth(), vScrollerRect.getHeight());
 	this->content->setBounds(contentRect);
+
+	/** Image Temp */
+	this->midiScrollerTemp = std::make_unique<juce::Image>(
+		juce::Image::ARGB,
+		std::max(hScrollerRect.getWidth(), 1),
+		std::max(hScrollerRect.getHeight(), 1), false);
+	this->updateMIDIScrollerImageTemp();
 
 	/** Update View Pos */
 	this->hScroller->update();
@@ -301,6 +312,9 @@ void MIDISourceEditor::updateTempo() {
 
 	/** Update Content */
 	this->content->updateTempoLabel();
+
+	/** Update Block Temp */
+	this->updateBlocks();
 }
 
 void MIDISourceEditor::updateBlocks() {
@@ -310,8 +324,26 @@ void MIDISourceEditor::updateBlocks() {
 	/** Update Block Temp */
 	this->updateBlockTemp();
 
+	/** Update Data */
+	this->updateData();
+
 	/** Update Content */
 	this->content->updateBlocks();
+
+	/** Update View Pos */
+	this->vScroller->update();
+	this->hScroller->update();
+}
+
+void MIDISourceEditor::updateData() {
+	/** Total Length */
+	this->totalLength = quickAPI::getTotalLength() + MIDI_TAIL_SEC;
+
+	/** Update Note Temp */
+	this->updateNoteTemp();
+
+	/** Update Content */
+	//this->content->updateData();
 
 	/** Update View Pos */
 	this->vScroller->update();
@@ -370,13 +402,18 @@ void MIDISourceEditor::paintNotePreview(juce::Graphics& g,
 	/** Blocks */
 	g.setColour(this->trackColor);
 	for (int i = 0; i < this->blockItemTemp.size(); i++) {
-		auto [start, end] = this->blockItemTemp.getUnchecked(i);
+		auto [start, end, sourceStart] = this->blockItemTemp.getUnchecked(i);
 		float startPos = start / totalNum * width;
 		float endPos = end / totalNum * width;
 
 		juce::Rectangle<float> blockRect(
 			startPos, 0, endPos - startPos, blockRectHeight);
 		g.fillRect(blockRect);
+	}
+
+	/** Notes */
+	if (this->midiScrollerTemp) {
+		g.drawImageAt(*(this->midiScrollerTemp.get()), 0, 0);
 	}
 }
 
@@ -438,7 +475,140 @@ void MIDISourceEditor::updateBlockTemp() {
 	/** Update Block Temp */
 	auto list = quickAPI::getBlockList(this->index);
 	for (auto [startTime, endTime, offset] : list) {
-		this->blockItemTemp.add({ startTime, endTime });
+		this->blockItemTemp.add({ startTime, endTime, startTime - offset });
+	}
+
+	/** Sort by Source Start Time to Optimize Note Drawing Time */
+	class BlockItemComparator {
+	public:
+		static int compareElements(const BlockItem& first, const BlockItem& second) {
+			auto& firstSourceStartTime = std::get<2>(first);
+			auto& secondSourceStartTime = std::get<2>(second);
+			return (firstSourceStartTime < secondSourceStartTime) ? -1
+				: ((secondSourceStartTime < firstSourceStartTime) ? 1 : 0);
+		}
+	} blockItemComp{};
+	this->blockItemTemp.sort(blockItemComp);
+
+	/** Update Image Temp */
+	this->updateMIDIScrollerImageTemp();
+}
+
+void MIDISourceEditor::updateNoteTemp() {
+	/** Clear Temp */
+	this->midiDataTemp.clear();
+
+	/** Update Note Temp */
+	if (this->index >= 0 && this->ref != 0) {
+		auto midiDataList = quickAPI::getSeqTrackMIDIData(this->index);
+
+		/** Note Start Time Temp */
+		std::array<double, 128> noteStartTime{};
+		std::fill(noteStartTime.begin(), noteStartTime.end(), -1.0);
+
+		/** Match Each Note */
+		for (auto event : midiDataList) {
+			if (event->message.isNoteOn(true)) {
+				int noteNumber = event->message.getNoteNumber();
+				if (noteNumber >= 0 && noteNumber < 128) {
+					noteStartTime[noteNumber] = event->message.getTimeStamp();
+				}
+			}
+			else if (event->message.isNoteOff(false)) {
+				int noteNumber = event->message.getNoteNumber();
+				if (noteNumber >= 0 && noteNumber < 128) {
+					double noteStart = noteStartTime[noteNumber];
+					noteStartTime[noteNumber] = -1;
+					if (noteStart >= 0) {
+						double noteEnd = event->message.getTimeStamp();
+						this->midiDataTemp.add({ noteStart, noteEnd, (uint8_t)noteNumber });
+					}
+				}
+			}
+		}
+
+		/** Sort Note by Start Time */
+		this->midiDataTemp.sort();
+	}
+
+	/** Update Note Zone Temp */
+	{
+		uint8_t minNote = 127, maxNote = 0;
+		for (auto& [start, end, num] : this->midiDataTemp) {
+			minNote = std::min(minNote, num);
+			maxNote = std::max(maxNote, num);
+		}
+		if (maxNote < minNote) { maxNote = minNote = 0; }
+		this->midiMinNote = minNote;
+		this->midiMaxNote = maxNote;
+	}
+
+	/** Update Image Temp */
+	this->updateMIDIScrollerImageTemp();
+}
+
+void MIDISourceEditor::updateMIDIScrollerImageTemp() {
+	/** Clear Temp */
+	this->midiScrollerTemp->clear(this->midiScrollerTemp->getBounds());
+	juce::Graphics g(*(this->midiScrollerTemp.get()));
+
+	/** Size */
+	auto screenSize = utils::getScreenSize(this);
+	float paddingHeight = screenSize.getHeight() * 0.003;
+	float noteMaxHeight = screenSize.getHeight() * 0.015;
+
+	/** Color */
+	auto& laf = this->getLookAndFeel();
+	juce::Colour noteColor = laf.findColour(
+		juce::Label::ColourIds::textWhenEditingColourId);
+
+	/** Actual Total Length */
+	double totalLength = ScrollerBase::limitItemNum(
+		this->hScroller->getItemNum(), this->getViewWidth(),
+		std::get<0>(this->getTimeWidthLimit()));
+	juce::Rectangle<float> paintableArea = this->midiScrollerTemp->getBounds()
+		.toFloat().withTrimmedTop(paddingHeight).withTrimmedBottom(paddingHeight);
+
+	/** Limit Note Height */
+	double minNoteID = this->midiMinNote, maxNoteID = this->midiMaxNote;
+	float noteHeight = paintableArea.getHeight() / (maxNoteID - minNoteID + 1);
+	if (noteHeight > noteMaxHeight) {
+		noteHeight = noteMaxHeight;
+
+		double centerNoteID = minNoteID + (maxNoteID - minNoteID) / 2;
+		minNoteID = centerNoteID - ((paintableArea.getHeight() / noteHeight + 1) / 2 - 1);
+		maxNoteID = centerNoteID + ((paintableArea.getHeight() / noteHeight + 1) / 2 - 1);
+	}
+
+	/** Paint Each Block */
+	g.setColour(noteColor);
+	int startNoteIndexTemp = 0;
+	for (int i = 0; i < this->blockItemTemp.size(); i++) {
+		auto [blockStart, blockEnd, sourceStart] = this->blockItemTemp.getUnchecked(i);
+
+		/** Skip Notes Before Block */
+		for (; startNoteIndexTemp < this->midiDataTemp.size(); startNoteIndexTemp++) {
+			auto [start, end, num] = this->midiDataTemp.getUnchecked(startNoteIndexTemp);
+			if (start >= blockStart) { break; }
+		}
+
+		/** Paint Each Note */
+		for (int j = startNoteIndexTemp; j < this->midiDataTemp.size(); j++) {
+			auto [start, end, num] = this->midiDataTemp.getUnchecked(j);
+			if (start >= blockEnd) { break; }
+
+			/** Get Time */
+			double startInSeq = blockStart + (start - sourceStart);
+			double endInSeq = std::min(blockStart + (end - sourceStart), blockEnd);
+
+			/** Note Rect */
+			float startPosX = startInSeq / totalLength * paintableArea.getWidth();
+			float endPosX = endInSeq / totalLength * paintableArea.getWidth();
+			juce::Rectangle<float> noteRect(
+				startPosX, paintableArea.getY() + (maxNoteID - num) * noteHeight,
+				endPosX - startPosX, noteHeight);
+			g.fillRect(noteRect);
+		}
 	}
 }
 

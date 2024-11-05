@@ -18,7 +18,8 @@ public:
 	void update(int trackIndex);
 	void update(uint64_t audioRef, uint64_t midiRef);
 	void updateTempo();
-	void updateBlocks();
+	void updateBlocks(int trackIndex);
+	void updateData(int trackIndex);
 	void updateRecorded(const std::set<int>& trackList);
 
 private:

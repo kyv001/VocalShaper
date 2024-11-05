@@ -42,6 +42,8 @@ public:
 	void mouseWheelMove(const juce::MouseEvent& event,
 		const juce::MouseWheelDetails& wheel) override;
 
+	static double limitItemNum(double num, double viewSize, double itemMinSize);
+
 protected:
 	virtual double createViewSize() = 0;
 	virtual double createItemNum() = 0;

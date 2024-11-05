@@ -363,6 +363,10 @@ void ScrollerBase::mouseWheelMove(const juce::MouseEvent& event,
 	}
 }
 
+double ScrollerBase::limitItemNum(double num, double viewSize, double itemMinSize) {
+	return std::max(num, viewSize / itemMinSize);
+}
+
 void ScrollerBase::recordThumbPress(double pos) {
 	auto [startPos, endPos] = this->getThumb();
 	this->thumbPressedPer = (pos - startPos) / (double)(endPos - startPos);
@@ -434,7 +438,7 @@ double ScrollerBase::limitItemSize(double size) const {
 }
 
 double ScrollerBase::limitItemNum(double num) const {
-	return std::max(num, this->viewSize / (double)this->itemMinSize);
+	return ScrollerBase::limitItemNum(num, this->viewSize, this->itemMinSize);
 }
 
 int ScrollerBase::getJudgeSize() const {

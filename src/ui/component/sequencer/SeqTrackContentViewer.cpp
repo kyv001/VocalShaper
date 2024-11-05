@@ -344,9 +344,7 @@ void SeqTrackContentViewer::paint(juce::Graphics& g) {
 			g.setColour(this->nameColor.withMultipliedAlpha(blockAlpha));
 
 			std::array<double, 128> noteStartTime{};
-			for (int i = 0; i < 128; i++) {
-				noteStartTime[i] = -1;
-			}
+			std::fill(noteStartTime.begin(), noteStartTime.end(), -1.0);
 
 			for (auto event : this->midiDataTemp) {
 				if (event->message.isNoteOn(true)) {

@@ -19,6 +19,7 @@ public:
 	void update(int index, uint64_t ref);
 	void updateTempo();
 	void updateBlocks();
+	void updateData();
 	void updateLevelMeter() override;
 
 private:
@@ -43,9 +44,15 @@ private:
 	double secStart = 0, secEnd = 0;
 	double playPosSec = 0;
 
-	/** Start, End */
-	using BlockItem = std::tuple<double, double>;
+	/** Start, End, SourceStart */
+	using BlockItem = std::tuple<double, double, double>;
 	juce::Array<BlockItem> blockItemTemp;
+
+	/** Start, End, Num */
+	using Note = std::tuple<double, double, uint8_t>;
+	juce::Array<Note> midiDataTemp;
+	uint8_t midiMinNote = 0, midiMaxNote = 0;
+	std::unique_ptr<juce::Image> midiScrollerTemp = nullptr;
 
 	juce::Colour trackColor;
 
@@ -71,6 +78,9 @@ private:
 	void sendKeyUpDown(int noteNum, bool isDown, float vel);
 
 	void updateBlockTemp();
+	void updateNoteTemp();
+
+	void updateMIDIScrollerImageTemp();
 
 	void adsorbButtonClicked();
 	juce::PopupMenu createAdsorbMenu();
