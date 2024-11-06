@@ -343,7 +343,7 @@ void MIDISourceEditor::updateData() {
 	this->updateNoteTemp();
 
 	/** Update Content */
-	//this->content->updateData();
+	this->content->updateData();
 
 	/** Update View Pos */
 	this->vScroller->update();

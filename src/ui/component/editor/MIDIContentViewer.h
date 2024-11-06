@@ -28,6 +28,7 @@ public:
 	void update(int index, uint64_t ref);
 	void updateTempoLabel();
 	void updateBlocks();
+	void updateData();
 	void updateLevelMeter() override;
 
 	void updateHPos(double pos, double itemSize);
@@ -79,11 +80,22 @@ private:
 	using LineItemList = juce::Array<LineItem>;
 	LineItemList lineTemp;
 
-	/** Start, End */
-	using BlockItem = std::tuple<double, double>;
+	/** Start, End, SourceStart */
+	using BlockItem = std::tuple<double, double, double>;
 	juce::Array<BlockItem> blockItemTemp;
 
 	bool viewMoving = false;
+
+	/** Start, End, Num */
+	struct Note final {
+		double startSec, endSec;
+		uint8_t num;
+		uint8_t vel;
+		uint8_t channel;
+		juce::String lyrics;
+	};
+	juce::Array<Note> midiDataTemp;
+	uint8_t midiMinNote = 0, midiMaxNote = 0;
 
 	std::unique_ptr<juce::Image> rulerTemp = nullptr;
 	std::unique_ptr<juce::Image> keyTemp = nullptr;
@@ -92,7 +104,7 @@ private:
 	void updateKeyImageTemp();
 	void updateRulerImageTemp();
 	void updateBlockImageTemp();
-	void updateDataImageTemp();
+	void updateNoteImageTemp();
 
 	std::tuple<double, double> getHViewArea(double pos, double itemSize) const;
 	std::tuple<double, double> getVViewArea(double pos, double itemSize) const;

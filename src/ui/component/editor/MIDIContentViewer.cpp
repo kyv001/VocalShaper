@@ -49,11 +49,103 @@ void MIDIContentViewer::updateBlocks() {
 	/** Update Block Temp */
 	auto list = quickAPI::getBlockList(this->index);
 	for (auto [startTime, endTime, offset] : list) {
-		this->blockItemTemp.add({ startTime, endTime });
+		this->blockItemTemp.add({ startTime, endTime, startTime - offset });
 	}
+
+	/** Sort by Source Start Time to Optimize Note Drawing Time */
+	class BlockItemComparator {
+	public:
+		static int compareElements(const BlockItem& first, const BlockItem& second) {
+			auto& firstSourceStartTime = std::get<2>(first);
+			auto& secondSourceStartTime = std::get<2>(second);
+			return (firstSourceStartTime < secondSourceStartTime) ? -1
+				: ((secondSourceStartTime < firstSourceStartTime) ? 1 : 0);
+		}
+	} blockItemComp{};
+	this->blockItemTemp.sort(blockItemComp);
 
 	/** Update UI */
 	this->updateBlockImageTemp();
+	this->repaint();
+}
+
+void MIDIContentViewer::updateData() {
+	/** Clear Temp */
+	this->midiDataTemp.clear();
+
+	/** Update Note Temp */
+	if (this->index >= 0 && this->ref != 0) {
+		auto midiDataList = quickAPI::getSeqTrackMIDIData(this->index);
+
+		/** Note Start Time Temp */
+		constexpr int channalNum = 16;
+		constexpr int noteMaxNum = 128;
+		/** Start Sec, Velocity */
+		using NoteTempItem = std::tuple<double, uint8_t>;
+		const NoteTempItem initTempItem{ -1.0, 0 };
+		std::array<NoteTempItem, noteMaxNum * channalNum> noteStartTime{};
+		std::fill(noteStartTime.begin(), noteStartTime.end(), initTempItem);
+
+		/** Match Each Note */
+		for (auto event : midiDataList) {
+			if (event->message.isNoteOn(true)) {
+				int noteNumber = event->message.getNoteNumber();
+				int channel = event->message.getChannel();
+				if (noteNumber >= 0 && noteNumber < noteMaxNum
+					&& channel > 0 && channel <= channalNum) {
+					size_t tempIndex = noteMaxNum * ((size_t)channel - 1) + noteNumber;
+					noteStartTime[tempIndex] = { event->message.getTimeStamp(), event->message.getVelocity() };
+				}
+			}
+			else if (event->message.isNoteOff(false)) {
+				int noteNumber = event->message.getNoteNumber();
+				int channel = event->message.getChannel();
+				if (noteNumber >= 0 && noteNumber < noteMaxNum
+					&& channel > 0 && channel <= channalNum) {
+					size_t tempIndex = noteMaxNum * ((size_t)channel - 1) + noteNumber;
+					auto [noteStart, noteVel] = noteStartTime[tempIndex];
+					noteStartTime[tempIndex] = initTempItem;
+					if (noteStart >= 0) {
+						double noteEnd = event->message.getTimeStamp();
+
+						Note note{};
+						note.startSec = noteStart;
+						note.endSec = noteEnd;
+						note.num = noteNumber;
+						note.vel = noteVel;
+						note.channel = channel;
+						note.lyrics = "";/**< TODO Lyrics */
+						this->midiDataTemp.add(note);
+					}
+				}
+			}
+		}
+
+		/** Sort Note by Start Time */
+		class NoteItemComparator {
+		public:
+			static int compareElements(const Note& first, const Note& second) {
+				return (first.startSec < second.startSec) ? -1
+					: ((second.startSec < first.startSec) ? 1 : 0);
+			}
+		} noteItemComp{};
+		this->midiDataTemp.sort(noteItemComp);
+	}
+
+	/** Update Note Zone Temp */
+	{
+		uint8_t minNote = 127, maxNote = 0;
+		for (auto& note : this->midiDataTemp) {
+			minNote = std::min(minNote, note.num);
+			maxNote = std::max(maxNote, note.num);
+		}
+		if (maxNote < minNote) { maxNote = minNote = 0; }
+		this->midiMinNote = minNote;
+		this->midiMaxNote = maxNote;
+	}
+
+	/** Update UI */
+	this->updateNoteImageTemp();
 	this->repaint();
 }
 
@@ -79,7 +171,7 @@ void MIDIContentViewer::updateHPos(double pos, double itemSize) {
 
 	this->updateRulerImageTemp();
 	this->updateBlockImageTemp();
-	this->updateDataImageTemp();
+	this->updateNoteImageTemp();
 	this->repaint();
 }
 
@@ -92,7 +184,7 @@ void MIDIContentViewer::updateVPos(double pos, double itemSize) {
 	std::tie(this->keyTop, this->keyBottom) = this->getVViewArea(pos, itemSize);
 
 	this->updateKeyImageTemp();
-	this->updateDataImageTemp();
+	this->updateNoteImageTemp();
 	this->repaint();
 }
 
@@ -413,7 +505,7 @@ void MIDIContentViewer::updateBlockImageTemp() {
 	}
 }
 
-void MIDIContentViewer::updateDataImageTemp() {
+void MIDIContentViewer::updateNoteImageTemp() {
 	/** TODO */
 }
 
