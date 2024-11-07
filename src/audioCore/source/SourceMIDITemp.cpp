@@ -1,4 +1,5 @@
 ﻿#include "SourceMIDITemp.h"
+#include "../Utils.h"
 
 void SourceMIDITemp::setData(const juce::MidiFile& data) {
 	this->sourceData = data;
@@ -27,7 +28,7 @@ void SourceMIDITemp::update() {
 	/** For Each Track */
 	for (int i = 0; i < this->sourceData.getNumTracks(); i++) {
 		juce::MidiMessageSequence track{ *(this->sourceData.getTrack(i)) };
-		track.updateMatchedPairs();
+		track.updateMatchedPairs(utils::regardVel0NoteAsNoteOff());
 		double endTime = track.getEndTime();
 
 		/** Track Event Temp */
@@ -51,7 +52,7 @@ void SourceMIDITemp::update() {
 			auto event = track.getEventPointer(i);
 
 			/** Get Notes */
-			if (event->message.isNoteOn(true)) {
+			if (event->message.isNoteOn(!utils::regardVel0NoteAsNoteOff())) {
 				Note note{};
 				note.channel = (uint8_t)event->message.getChannel();
 				note.startSec = event->message.getTimeStamp();
@@ -59,7 +60,7 @@ void SourceMIDITemp::update() {
 				note.pitch = (uint8_t)event->message.getNoteNumber();
 				note.vel = event->message.getVelocity();
 				
-				auto& lastLyrics = lastLyricsTemp[(size_t)note.channel - 1];
+				auto& lastLyrics = lastLyricsTemp[note.channel];
 				if (juce::approximatelyEqual(std::get<0>(lastLyrics), note.startSec)) {
 					note.lyrics = std::get<1>(lastLyrics);
 					lastLyrics = initLyricsItem;
@@ -73,7 +74,7 @@ void SourceMIDITemp::update() {
 			/** Get Lyrics */
 			if (event->message.isMetaEvent() && event->message.getMetaEventType() == 0x05) {
 				uint8_t channel = event->message.getChannel();
-				lastLyricsTemp[(size_t)channel - 1] = { event->message.getTimeStamp(), event->message.getTextFromTextMetaEvent() };
+				lastLyricsTemp[channel] = { event->message.getTimeStamp(), event->message.getTextFromTextMetaEvent() };
 				continue;
 			}
 			/** Sustain Pedal */

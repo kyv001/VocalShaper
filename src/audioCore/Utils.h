@@ -157,6 +157,8 @@ namespace utils {
 		const juce::File& base = utils::getProjectDir());
 	bool writeBlockToFile(const juce::String& path, const juce::MemoryBlock& block,
 		const juce::File& base = utils::getProjectDir());
+
+	bool regardVel0NoteAsNoteOff();
 }
 
 #define UNUSED(var) (void)var

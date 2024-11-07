@@ -1069,4 +1069,6 @@ namespace utils {
 		}
 		return true;
 	}
+
+	bool regardVel0NoteAsNoteOff() { return true; }
 }
