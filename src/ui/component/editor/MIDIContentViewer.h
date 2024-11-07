@@ -100,6 +100,7 @@ private:
 	std::unique_ptr<juce::Image> rulerTemp = nullptr;
 	std::unique_ptr<juce::Image> keyTemp = nullptr;
 	std::unique_ptr<juce::Image> blockTemp = nullptr;
+	std::unique_ptr<juce::Image> noteTemp = nullptr;
 
 	void updateKeyImageTemp();
 	void updateRulerImageTemp();

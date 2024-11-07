@@ -26,6 +26,8 @@ MIDIContentViewer::MIDIContentViewer(
 		juce::Image::ARGB, 1, 1, false);
 	this->blockTemp = std::make_unique<juce::Image>(
 		juce::Image::ARGB, 1, 1, false);
+	this->noteTemp = std::make_unique<juce::Image>(
+		juce::Image::ARGB, 1, 1, false);
 }
 
 void MIDIContentViewer::update(int index, uint64_t ref) {
@@ -172,6 +174,11 @@ void MIDIContentViewer::resized() {
 	this->blockTemp = std::make_unique<juce::Image>(
 		juce::Image::ARGB, width, height, false);
 	this->updateBlockImageTemp();
+
+	/** Update Note Temp */
+	this->noteTemp = std::make_unique<juce::Image>(
+		juce::Image::ARGB, width, height, false);
+	this->updateNoteImageTemp();
 }
 
 void MIDIContentViewer::paint(juce::Graphics& g) {
@@ -188,6 +195,11 @@ void MIDIContentViewer::paint(juce::Graphics& g) {
 	/** Block Temp */
 	if (this->blockTemp) {
 		g.drawImageAt(*(this->blockTemp.get()), 0, 0);
+	}
+
+	/** Note Temp */
+	if (this->noteTemp) {
+		g.drawImageAt(*(this->noteTemp.get()), 0, 0);
 	}
 }
 
@@ -467,6 +479,10 @@ void MIDIContentViewer::updateBlockImageTemp() {
 }
 
 void MIDIContentViewer::updateNoteImageTemp() {
+	/** Clear Temp */
+	this->noteTemp->clear(this->noteTemp->getBounds());
+	juce::Graphics g(*(this->noteTemp.get()));
+
 	/** TODO */
 }
 
