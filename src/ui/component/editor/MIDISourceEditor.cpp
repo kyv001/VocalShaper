@@ -500,35 +500,14 @@ void MIDISourceEditor::updateNoteTemp() {
 
 	/** Update Note Temp */
 	if (this->index >= 0 && this->ref != 0) {
-		auto midiDataList = quickAPI::getSeqTrackMIDIData(this->index);
+		int currentMIDITrack = quickAPI::getSeqTrackCurrentMIDITrack(this->index);
+		auto midiNoteList = quickAPI::getMIDISourceNotes(this->ref, currentMIDITrack);
 
-		/** Note Start Time Temp */
-		std::array<double, 128> noteStartTime{};
-		std::fill(noteStartTime.begin(), noteStartTime.end(), -1.0);
-
-		/** Match Each Note */
-		for (auto event : midiDataList) {
-			if (event->message.isNoteOn(true)) {
-				int noteNumber = event->message.getNoteNumber();
-				if (noteNumber >= 0 && noteNumber < 128) {
-					noteStartTime[noteNumber] = event->message.getTimeStamp();
-				}
-			}
-			else if (event->message.isNoteOff(false)) {
-				int noteNumber = event->message.getNoteNumber();
-				if (noteNumber >= 0 && noteNumber < 128) {
-					double noteStart = noteStartTime[noteNumber];
-					noteStartTime[noteNumber] = -1;
-					if (noteStart >= 0) {
-						double noteEnd = event->message.getTimeStamp();
-						this->midiDataTemp.add({ noteStart, noteEnd, (uint8_t)noteNumber });
-					}
-				}
-			}
+		/** Add Each Note */
+		this->midiDataTemp.ensureStorageAllocated(midiNoteList.size());
+		for (auto& note : midiNoteList) {
+			this->midiDataTemp.add({ note.startSec, note.endSec, note.pitch });
 		}
-
-		/** Sort Note by Start Time */
-		this->midiDataTemp.sort();
 	}
 
 	/** Update Note Zone Temp */

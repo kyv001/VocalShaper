@@ -75,61 +75,22 @@ void MIDIContentViewer::updateData() {
 
 	/** Update Note Temp */
 	if (this->index >= 0 && this->ref != 0) {
-		auto midiDataList = quickAPI::getSeqTrackMIDIData(this->index);
+		int currentMIDITrack = quickAPI::getSeqTrackCurrentMIDITrack(this->index);
+		auto midiNoteList = quickAPI::getMIDISourceNotes(this->ref, currentMIDITrack);
 
-		/** Note Start Time Temp */
-		constexpr int channalNum = 16;
-		constexpr int noteMaxNum = 128;
-		/** Start Sec, Velocity */
-		using NoteTempItem = std::tuple<double, uint8_t>;
-		const NoteTempItem initTempItem{ -1.0, 0 };
-		std::array<NoteTempItem, noteMaxNum * channalNum> noteStartTime{};
-		std::fill(noteStartTime.begin(), noteStartTime.end(), initTempItem);
-
-		/** Match Each Note */
-		for (auto event : midiDataList) {
-			if (event->message.isNoteOn(true)) {
-				int noteNumber = event->message.getNoteNumber();
-				int channel = event->message.getChannel();
-				if (noteNumber >= 0 && noteNumber < noteMaxNum
-					&& channel > 0 && channel <= channalNum) {
-					size_t tempIndex = noteMaxNum * ((size_t)channel - 1) + noteNumber;
-					noteStartTime[tempIndex] = { event->message.getTimeStamp(), event->message.getVelocity() };
-				}
-			}
-			else if (event->message.isNoteOff(false)) {
-				int noteNumber = event->message.getNoteNumber();
-				int channel = event->message.getChannel();
-				if (noteNumber >= 0 && noteNumber < noteMaxNum
-					&& channel > 0 && channel <= channalNum) {
-					size_t tempIndex = noteMaxNum * ((size_t)channel - 1) + noteNumber;
-					auto [noteStart, noteVel] = noteStartTime[tempIndex];
-					noteStartTime[tempIndex] = initTempItem;
-					if (noteStart >= 0) {
-						double noteEnd = event->message.getTimeStamp();
-
-						Note note{};
-						note.startSec = noteStart;
-						note.endSec = noteEnd;
-						note.num = noteNumber;
-						note.vel = noteVel;
-						note.channel = channel;
-						note.lyrics = "";/**< TODO Lyrics */
-						this->midiDataTemp.add(note);
-					}
-				}
-			}
+		/** Add Each Note */
+		this->midiDataTemp.ensureStorageAllocated(midiNoteList.size());
+		for (auto& note : midiNoteList) {
+			/** Set Temp */
+			Note noteTemp{};
+			noteTemp.startSec = note.startSec;
+			noteTemp.endSec = note.endSec;
+			noteTemp.num = note.pitch;
+			noteTemp.vel = note.vel;
+			noteTemp.channel = note.channel;
+			noteTemp.lyrics = note.lyrics;
+			this->midiDataTemp.add(noteTemp);
 		}
-
-		/** Sort Note by Start Time */
-		class NoteItemComparator {
-		public:
-			static int compareElements(const Note& first, const Note& second) {
-				return (first.startSec < second.startSec) ? -1
-					: ((second.startSec < first.startSec) ? 1 : 0);
-			}
-		} noteItemComp{};
-		this->midiDataTemp.sort(noteItemComp);
 	}
 
 	/** Update Note Zone Temp */

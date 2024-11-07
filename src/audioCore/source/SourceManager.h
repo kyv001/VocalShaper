@@ -75,6 +75,16 @@ public:
 	const SourceMIDITemp::Controller getMIDIController(uint64_t ref, int track, uint8_t number, int index) const;
 	const SourceMIDITemp::Misc getMIDIMisc(uint64_t ref, int track, int index) const;
 
+	const juce::Array<SourceMIDITemp::Note> getMIDINoteList(uint64_t ref, int track) const;
+	const juce::Array<SourceMIDITemp::Pedal> getMIDISustainPedalList(uint64_t ref, int track) const;
+	const juce::Array<SourceMIDITemp::Pedal> getMIDISostenutoPedalList(uint64_t ref, int track) const;
+	const juce::Array<SourceMIDITemp::Pedal> getMIDISoftPedalList(uint64_t ref, int track) const;
+	const juce::Array<SourceMIDITemp::IntParam> getMIDIPitchWheelList(uint64_t ref, int track) const;
+	const juce::Array<SourceMIDITemp::AfterTouch> getMIDIAfterTouchList(uint64_t ref, int track) const;
+	const juce::Array<SourceMIDITemp::IntParam> getMIDIChannelPressureList(uint64_t ref, int track) const;
+	const juce::Array<SourceMIDITemp::Controller> getMIDIControllerList(uint64_t ref, int track, uint8_t number) const;
+	const juce::Array<SourceMIDITemp::Misc> getMIDIMiscList(uint64_t ref, int track) const;
+
 public:
 	void sampleRateChanged(double sampleRate, int blockSize);
 

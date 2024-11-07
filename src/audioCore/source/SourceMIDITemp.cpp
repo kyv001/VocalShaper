@@ -32,8 +32,13 @@ void SourceMIDITemp::update() {
 
 		/** Track Event Temp */
 		juce::Array<Note> noteTrack;
-		juce::String lyricsTemp;
-		double lyricsTimeTemp = 0;
+		constexpr int channalNum = 16;
+		/** Second, Lyrics */
+		using LyricsItem = std::tuple<double, juce::String>;
+		const LyricsItem initLyricsItem{ -1.0, "" };
+
+		std::array<LyricsItem, channalNum> lastLyricsTemp{};
+		std::fill(lastLyricsTemp.begin(), lastLyricsTemp.end(), initLyricsItem);
 
 		juce::Array<Pedal> sustain, sostenuto, soft;
 		juce::Array<IntParam> pitchWheel, channelPressure;
@@ -53,9 +58,13 @@ void SourceMIDITemp::update() {
 				note.endSec = event->noteOffObject ? event->noteOffObject->message.getTimeStamp() : endTime;
 				note.pitch = (uint8_t)event->message.getNoteNumber();
 				note.vel = event->message.getVelocity();
-				if (note.startSec == lyricsTimeTemp) {
-					note.lyrics = lyricsTemp;
+				
+				auto& lastLyrics = lastLyricsTemp[(size_t)note.channel - 1];
+				if (juce::approximatelyEqual(std::get<0>(lastLyrics), note.startSec)) {
+					note.lyrics = std::get<1>(lastLyrics);
+					lastLyrics = initLyricsItem;
 				}
+
 				note.noteOnEvent = i;
 
 				noteTrack.add(note);
@@ -63,8 +72,8 @@ void SourceMIDITemp::update() {
 			}
 			/** Get Lyrics */
 			if (event->message.isMetaEvent() && event->message.getMetaEventType() == 0x05) {
-				lyricsTemp = event->message.getTextFromTextMetaEvent();
-				lyricsTimeTemp = event->message.getTimeStamp();
+				uint8_t channel = event->message.getChannel();
+				lastLyricsTemp[(size_t)channel - 1] = { event->message.getTimeStamp(), event->message.getTextFromTextMetaEvent() };
 				continue;
 			}
 			/** Sustain Pedal */

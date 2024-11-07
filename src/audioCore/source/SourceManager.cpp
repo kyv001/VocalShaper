@@ -397,6 +397,150 @@ const SourceMIDITemp::Misc SourceManager::getMIDIMisc(uint64_t ref, int track, i
 	return {};
 }
 
+const juce::Array<SourceMIDITemp::Note> SourceManager::getMIDINoteList(uint64_t ref, int track) const {
+	juce::ScopedReadLock locker(audioLock::getSourceLock());
+	if (auto ptr = this->getSourceFast(ref, SourceType::MIDI)) {
+		int num = ptr->getMIDINoteNum(track);
+		juce::Array<SourceMIDITemp::Note> list;
+		list.ensureStorageAllocated(num);
+
+		for (int i = 0; i < num; i++) {
+			list.add(ptr->getMIDINote(track, i));
+		}
+
+		return list;
+	}
+	return {};
+}
+
+const juce::Array<SourceMIDITemp::Pedal> SourceManager::getMIDISustainPedalList(uint64_t ref, int track) const {
+	juce::ScopedReadLock locker(audioLock::getSourceLock());
+	if (auto ptr = this->getSourceFast(ref, SourceType::MIDI)) {
+		int num = ptr->getMIDISustainPedalNum(track);
+		juce::Array<SourceMIDITemp::Pedal> list;
+		list.ensureStorageAllocated(num);
+
+		for (int i = 0; i < num; i++) {
+			list.add(ptr->getMIDISustainPedal(track, i));
+		}
+
+		return list;
+	}
+	return {};
+}
+
+const juce::Array<SourceMIDITemp::Pedal> SourceManager::getMIDISostenutoPedalList(uint64_t ref, int track) const {
+	juce::ScopedReadLock locker(audioLock::getSourceLock());
+	if (auto ptr = this->getSourceFast(ref, SourceType::MIDI)) {
+		int num = ptr->getMIDISostenutoPedalNum(track);
+		juce::Array<SourceMIDITemp::Pedal> list;
+		list.ensureStorageAllocated(num);
+
+		for (int i = 0; i < num; i++) {
+			list.add(ptr->getMIDISostenutoPedal(track, i));
+		}
+
+		return list;
+	}
+	return {};
+}
+
+const juce::Array<SourceMIDITemp::Pedal> SourceManager::getMIDISoftPedalList(uint64_t ref, int track) const {
+	juce::ScopedReadLock locker(audioLock::getSourceLock());
+	if (auto ptr = this->getSourceFast(ref, SourceType::MIDI)) {
+		int num = ptr->getMIDISoftPedalNum(track);
+		juce::Array<SourceMIDITemp::Pedal> list;
+		list.ensureStorageAllocated(num);
+
+		for (int i = 0; i < num; i++) {
+			list.add(ptr->getMIDISoftPedal(track, i));
+		}
+
+		return list;
+	}
+	return {};
+}
+
+const juce::Array<SourceMIDITemp::IntParam> SourceManager::getMIDIPitchWheelList(uint64_t ref, int track) const {
+	juce::ScopedReadLock locker(audioLock::getSourceLock());
+	if (auto ptr = this->getSourceFast(ref, SourceType::MIDI)) {
+		int num = ptr->getMIDIPitchWheelNum(track);
+		juce::Array<SourceMIDITemp::IntParam> list;
+		list.ensureStorageAllocated(num);
+
+		for (int i = 0; i < num; i++) {
+			list.add(ptr->getMIDIPitchWheel(track, i));
+		}
+
+		return list;
+	}
+	return {};
+}
+
+const juce::Array<SourceMIDITemp::AfterTouch> SourceManager::getMIDIAfterTouchList(uint64_t ref, int track) const {
+	juce::ScopedReadLock locker(audioLock::getSourceLock());
+	if (auto ptr = this->getSourceFast(ref, SourceType::MIDI)) {
+		int num = ptr->getMIDIAfterTouchNum(track);
+		juce::Array<SourceMIDITemp::AfterTouch> list;
+		list.ensureStorageAllocated(num);
+
+		for (int i = 0; i < num; i++) {
+			list.add(ptr->getMIDIAfterTouch(track, i));
+		}
+
+		return list;
+	}
+	return {};
+}
+
+const juce::Array<SourceMIDITemp::IntParam> SourceManager::getMIDIChannelPressureList(uint64_t ref, int track) const {
+	juce::ScopedReadLock locker(audioLock::getSourceLock());
+	if (auto ptr = this->getSourceFast(ref, SourceType::MIDI)) {
+		int num = ptr->getMIDIChannelPressureNum(track);
+		juce::Array<SourceMIDITemp::IntParam> list;
+		list.ensureStorageAllocated(num);
+
+		for (int i = 0; i < num; i++) {
+			list.add(ptr->getMIDIChannelPressure(track, i));
+		}
+
+		return list;
+	}
+	return {};
+}
+
+const juce::Array<SourceMIDITemp::Controller> SourceManager::getMIDIControllerList(uint64_t ref, int track, uint8_t number) const {
+	juce::ScopedReadLock locker(audioLock::getSourceLock());
+	if (auto ptr = this->getSourceFast(ref, SourceType::MIDI)) {
+		int num = ptr->getMIDIControllerNum(track, number);
+		juce::Array<SourceMIDITemp::Controller> list;
+		list.ensureStorageAllocated(num);
+
+		for (int i = 0; i < num; i++) {
+			list.add(ptr->getMIDIController(track, number, i));
+		}
+
+		return list;
+	}
+	return {};
+}
+
+const juce::Array<SourceMIDITemp::Misc> SourceManager::getMIDIMiscList(uint64_t ref, int track) const {
+	juce::ScopedReadLock locker(audioLock::getSourceLock());
+	if (auto ptr = this->getSourceFast(ref, SourceType::MIDI)) {
+		int num = ptr->getMIDIMiscNum(track);
+		juce::Array<SourceMIDITemp::Misc> list;
+		list.ensureStorageAllocated(num);
+
+		for (int i = 0; i < num; i++) {
+			list.add(ptr->getMIDIMisc(track, i));
+		}
+
+		return list;
+	}
+	return {};
+}
+
 void SourceManager::sampleRateChanged(double sampleRate, int blockSize) {
 	juce::ScopedWriteLock locker(audioLock::getSourceLock());
 	

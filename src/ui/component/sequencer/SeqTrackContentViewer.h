@@ -64,10 +64,12 @@ private:
 	juce::OwnedArray<BlockItem> blockTemp;
 
 	std::tuple<double, juce::AudioSampleBuffer> audioDataTemp;
-	juce::MidiMessageSequence midiDataTemp;
+	/** Start, End, Num */
+	using Note = std::tuple<double, double, uint8_t>;
+	juce::Array<Note> midiDataTemp;
 
 	juce::Array<juce::MemoryBlock> audioPointTemp;
-	int midiMinNote = 0, midiMaxNote = 0;
+	uint8_t midiMinNote = 0, midiMaxNote = 0;
 
 	std::unique_ptr<juce::Timer> blockImageUpdateTimer = nullptr;
 

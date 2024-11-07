@@ -2,6 +2,7 @@
 
 #include <JuceHeader.h>
 #include "../graph/PluginDecorator.h"
+#include "../source/SourceMIDITemp.h"
 #include "../Utils.h"
 
 namespace quickAPI {
@@ -186,10 +187,14 @@ namespace quickAPI {
 	const juce::String getMIDICCChannelName(int channel);
 	const juce::StringArray getMIDICCChannelNameList();
 
+	using Note = SourceMIDITemp::Note;
+	using NoteList = juce::Array<Note>;
+
 	double getAudioSourceLength(uint64_t ref);
 	double getMIDISourceLength(uint64_t ref);
 	const juce::String getAudioSourceName(uint64_t ref);
 	const juce::String getMIDISourceName(uint64_t ref);
 	bool isAudioSourceValid(uint64_t ref);
 	bool isMIDISourceValid(uint64_t ref);
+	const NoteList getMIDISourceNotes(uint64_t ref, int track);
 }

@@ -1070,4 +1070,10 @@ namespace quickAPI {
 		return SourceManager::getInstance()->isValid(
 			ref, SourceManager::SourceType::MIDI);
 	}
+
+	const NoteList getMIDISourceNotes(uint64_t ref, int track) {
+		if (ref == 0) { return {}; }
+		return SourceManager::getInstance()->getMIDINoteList(
+			ref, track);
+	}
 }
