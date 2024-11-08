@@ -103,7 +103,7 @@ private:
 	std::unique_ptr<juce::Image> noteTemp = nullptr;
 
 	juce::Colour trackColor;
-	bool trackColorIsLight = false;
+	//bool trackColorIsLight = false;
 	juce::Array<juce::Colour> noteColorGradient;
 
 	void updateKeyImageTemp();

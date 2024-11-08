@@ -36,7 +36,7 @@ void MIDIContentViewer::update(int index, uint64_t ref) {
 
 	if (index >= 0) {
 		this->trackColor = quickAPI::getSeqTrackColor(index);
-		this->trackColorIsLight = utils::isLightColor(this->trackColor);
+		//this->trackColorIsLight = utils::isLightColor(this->trackColor);
 
 		/** Note Color Gradient */
 		auto& laf = this->getLookAndFeel();

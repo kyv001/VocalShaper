@@ -710,9 +710,30 @@ namespace utils {
 			+ juce::String{ num[6] } + juce::String{ num[7] };
 	}
 
-	bool isLightColor(const juce::Colour& color) {
-		float brightness = color.getRed() * 0.299 + color.getGreen() * 0.587 + color.getBlue() * 0.114;
-		return brightness > 140;
+	float colorLuminance(const juce::Colour& color) {
+		auto normalize = [](int c) {
+			float normalized = c / 255.0f;
+			return (normalized <= 0.03928) ? normalized / 12.92 : std::pow((normalized + 0.055) / 1.055, 2.4);
+			};
+		return 0.2126f * normalize(color.getRed()) + 0.7152f * normalize(color.getGreen()) + 0.0722f * normalize(color.getBlue());
+	}
+
+	float colorContrastRatio(float luminance1, float luminance2) {
+		float L1 = std::max(luminance1, luminance2);
+		float L2 = std::min(luminance1, luminance2);
+		return (L1 + 0.05f) / (L2 + 0.05f);
+	}
+
+	bool isLightColor(const juce::Colour& color,
+		const juce::Colour& textColorLight, const juce::Colour& textColorDark) {
+		float backgroundLuminance = colorLuminance(color);
+		float darkLuminance = colorLuminance(textColorDark);
+		float lightLuminance = colorLuminance(textColorLight);
+
+		float darkContrast = colorContrastRatio(backgroundLuminance, darkLuminance);
+		float lightContrast = colorContrastRatio(backgroundLuminance, lightLuminance);
+
+		return darkContrast < lightContrast;
 	}
 
 	const IntSectionList getUnionSections(const IntSectionList& source) {

@@ -71,14 +71,12 @@ void SeqTrackContentViewer::update(int index) {
 		this->trackColor = quickAPI::getSeqTrackColor(index);
 
 		auto& laf = this->getLookAndFeel();
-		if (utils::isLightColor(this->trackColor)) {
-			this->nameColor = laf.findColour(
-				juce::Label::ColourIds::textWhenEditingColourId);
-		}
-		else {
-			this->nameColor = laf.findColour(
-				juce::Label::ColourIds::textColourId);
-		}
+		auto textColorLight = laf.findColour(
+			juce::Label::ColourIds::textWhenEditingColourId);
+		auto textColorDark = laf.findColour(
+			juce::Label::ColourIds::textColourId);
+		this->nameColor = utils::isLightColor(this->trackColor, textColorLight, textColorDark)
+			? textColorLight : textColorDark;
 
 		if (changeData) {
 			this->updateDataRef();
