@@ -160,4 +160,12 @@ namespace utils {
 	using IntSection = std::pair<int, int>;
 	using IntSectionList = juce::Array<IntSection>;
 	const IntSectionList getUnionSections(const IntSectionList& source);
+
+	float bezierInterpolate(float p0, float p1, float p2, float p3, float t);
+	juce::Colour bezierInterpolateColor(
+		const juce::Colour& color1, const juce::Colour& control1,
+		const juce::Colour& control2, const juce::Colour& color2, float t);
+	const juce::Array<juce::Colour> generateBezierColorGradient(
+		const juce::Colour& baseColor, const juce::Colour& targetColor, int num,
+		float control1 = 0.3f, float control2 = 0.7f);
 }

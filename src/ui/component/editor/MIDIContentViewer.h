@@ -102,6 +102,10 @@ private:
 	std::unique_ptr<juce::Image> blockTemp = nullptr;
 	std::unique_ptr<juce::Image> noteTemp = nullptr;
 
+	juce::Colour trackColor;
+	bool trackColorIsLight = false;
+	juce::Array<juce::Colour> noteColorGradient;
+
 	void updateKeyImageTemp();
 	void updateRulerImageTemp();
 	void updateBlockImageTemp();

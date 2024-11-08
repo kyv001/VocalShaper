@@ -739,4 +739,41 @@ namespace utils {
 
 		return merged;
 	}
+
+	float bezierInterpolate(float p0, float p1, float p2, float p3, float t) {
+		float u = 1 - t;
+		return u * u * u * p0 + 3 * u * u * t * p1 + 3 * u * t * t * p2 + t * t * t * p3;
+	}
+
+	juce::Colour bezierInterpolateColor(
+		const juce::Colour& color1, const juce::Colour& control1,
+		const juce::Colour& control2, const juce::Colour& color2, float t) {
+		return juce::Colour::fromRGB(
+			(int)bezierInterpolate(color1.getRed(), control1.getRed(), control2.getRed(), color2.getRed(), t),
+			(int)bezierInterpolate(color1.getGreen(), control1.getGreen(), control2.getGreen(), color2.getGreen(), t),
+			(int)bezierInterpolate(color1.getBlue(), control1.getBlue(), control2.getBlue(), color2.getBlue(), t));
+	}
+
+	const juce::Array<juce::Colour> generateBezierColorGradient(
+		const juce::Colour& baseColor, const juce::Colour& targetColor, int num,
+		float control1, float control2) {
+		juce::Array<juce::Colour> gradient;
+
+		auto controlColor1 = juce::Colour::fromRGB(
+			baseColor.getRed() + (int)((targetColor.getRed() - baseColor.getRed()) * control1),
+			baseColor.getGreen() + (int)((targetColor.getGreen() - baseColor.getGreen()) * control1),
+			baseColor.getBlue() + (int)((targetColor.getBlue() - baseColor.getBlue()) * control1));
+
+		auto controlColor2 = juce::Colour::fromRGB(
+			baseColor.getRed() + static_cast<int>((targetColor.getRed() - baseColor.getRed()) * control2),
+			baseColor.getGreen() + static_cast<int>((targetColor.getGreen() - baseColor.getGreen()) * control2),
+			baseColor.getBlue() + static_cast<int>((targetColor.getBlue() - baseColor.getBlue()) * control2));
+
+		for (int i = 0; i < num; i++) {
+			float t = i / (float)(num - 1);
+			gradient.add(bezierInterpolateColor(baseColor, controlColor1, controlColor2, targetColor, t));
+		}
+
+		return gradient;
+	}
 }
