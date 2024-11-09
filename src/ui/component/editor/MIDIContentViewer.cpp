@@ -494,8 +494,38 @@ void MIDIContentViewer::updateNoteImageTemp() {
 	/** Clear Temp */
 	this->noteTemp->clear(this->noteTemp->getBounds());
 	juce::Graphics g(*(this->noteTemp.get()));
+	int width = this->noteTemp->getWidth(), height = this->noteTemp->getHeight();
 
-	/** TODO */
+	/** Size */
+	auto screenSize = utils::getScreenSize(this);
+	float noteCornerSize = screenSize.getHeight() * 0.003;
+	float noteOutlineThickness = screenSize.getHeight() * 0.001;
+
+	/** Colors */
+	auto& laf = this->getLookAndFeel();
+	juce::Colour noteOutlineColor = laf.findColour(
+		juce::Label::ColourIds::outlineColourId);
+
+	/** Notes */
+	int minNoteNum = std::floor(this->keyBottom), maxNoteNum = std::floor(this->keyTop);
+	for (auto& note : this->midiDataTemp) {
+		if (note.startSec <= this->secEnd &&
+			this->secStart <= note.endSec) {
+			if (note.num >= minNoteNum &&
+				note.num <= maxNoteNum) {
+				float startXPos = (note.startSec - this->secStart) / (this->secEnd - this->secStart) * width;
+				float endXPos = (note.endSec - this->secStart) / (this->secEnd - this->secStart) * width;
+				float noteYPos = ((note.num + 1) - this->keyTop) / (this->keyBottom - this->keyTop) * height;
+				juce::Rectangle<float> noteRect(
+					startXPos, noteYPos,
+					endXPos - startXPos, (float)this->vItemSize);
+				g.setColour(this->noteColorGradient[note.channel]);
+				g.fillRoundedRectangle(noteRect,noteCornerSize);
+				g.setColour(noteOutlineColor);
+				g.drawRoundedRectangle(noteRect, noteCornerSize, noteOutlineThickness);
+			}
+		}
+	}
 }
 
 std::tuple<double, double> MIDIContentViewer::getHViewArea(double pos, double itemSize) const {

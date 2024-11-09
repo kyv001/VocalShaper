@@ -35,7 +35,7 @@ MidiContentLookAndFeel::MidiContentLookAndFeel()
 	this->setColour(juce::Label::ColourIds::textColourId,
 		ColorMap::getInstance()->get("ThemeColorA2"));/**< Cursor */
 	this->setColour(juce::Label::ColourIds::outlineColourId,
-		ColorMap::getInstance()->get("ThemeColorB3"));
+		ColorMap::getInstance()->get("ThemeColorB3"));/**< Note Outline */
 	this->setColour(juce::Label::ColourIds::backgroundWhenEditingColourId,
 		ColorMap::getInstance()->get("ThemeColorB9"));/**< Notes In High Channel */
 	this->setColour(juce::Label::ColourIds::textWhenEditingColourId,
