@@ -17,17 +17,19 @@ MidiContentLookAndFeel::MidiContentLookAndFeel()
 
 	/** Key Line */
 	this->setColour(juce::MidiKeyboardComponent::ColourIds::whiteNoteColourId,
-		ColorMap::getInstance()->get("ThemeColorB3"));
+		ColorMap::getInstance()->get("ThemeColorB3"));/**< White Key Line */
 	this->setColour(juce::MidiKeyboardComponent::ColourIds::blackNoteColourId,
-		ColorMap::getInstance()->get("ThemeColorB2"));
+		ColorMap::getInstance()->get("ThemeColorB2"));/**< Black Key Line */
 	this->setColour(juce::MidiKeyboardComponent::ColourIds::keySeparatorLineColourId,
-		ColorMap::getInstance()->get("ThemeColorB1"));
+		ColorMap::getInstance()->get("ThemeColorB1"));/**< Line Split */
 	this->setColour(juce::MidiKeyboardComponent::ColourIds::mouseOverKeyOverlayColourId,
 		ColorMap::getInstance()->get("ThemeColorB5").withAlpha(0.5f));
 	this->setColour(juce::MidiKeyboardComponent::ColourIds::keyDownOverlayColourId,
 		ColorMap::getInstance()->get("ThemeColorB5").withAlpha(0.5f));
 	this->setColour(juce::MidiKeyboardComponent::ColourIds::textLabelColourId,
-		ColorMap::getInstance()->get("ThemeColorB4"));
+		ColorMap::getInstance()->get("ThemeColorB0"));/**< Light Note Label */
+	this->setColour(juce::MidiKeyboardComponent::ColourIds::textLabelColourId + 2,
+		ColorMap::getInstance()->get("ThemeColorB10"));/**< Dark Note Label */
 
 	/** Lines */
 	this->setColour(juce::Label::ColourIds::backgroundColourId,

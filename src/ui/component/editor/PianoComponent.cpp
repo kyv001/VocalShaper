@@ -51,7 +51,7 @@ void PianoComponent::paint(juce::Graphics& g) {
 	/** Keys */
 	for (int i = 0; i < octaveNum; i++) {
 		int octave = startOctave + i;
-		juce::String octaveName = juce::String{ octave - 1 };
+		juce::String octaveName = juce::String{ octave };
 		float octavePos = startOctavePos - i * sizePerOctave;
 
 		/** White Keys */

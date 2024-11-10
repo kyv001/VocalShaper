@@ -60,6 +60,8 @@ private:
 	const std::array<int, 12> keyMasks{ 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0 };
 	const int totalKeys = 128;
 
+	const juce::StringArray keyNames{ "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B" };
+
 	int index = -1;
 	uint64_t ref = 0;
 
@@ -105,6 +107,7 @@ private:
 	juce::Colour trackColor;
 	//bool trackColorIsLight = false;
 	juce::Array<juce::Colour> noteColorGradient;
+	juce::Array<juce::Colour> noteLabelColorGradient;
 
 	void updateKeyImageTemp();
 	void updateRulerImageTemp();

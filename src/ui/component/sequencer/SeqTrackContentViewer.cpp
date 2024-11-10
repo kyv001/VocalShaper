@@ -75,8 +75,7 @@ void SeqTrackContentViewer::update(int index) {
 			juce::Label::ColourIds::textWhenEditingColourId);
 		auto textColorDark = laf.findColour(
 			juce::Label::ColourIds::textColourId);
-		this->nameColor = utils::isLightColor(this->trackColor, textColorLight, textColorDark)
-			? textColorLight : textColorDark;
+		this->nameColor = utils::chooseTextColor(this->trackColor, textColorLight, textColorDark);
 
 		if (changeData) {
 			this->updateDataRef();

@@ -161,6 +161,9 @@ namespace utils {
 	bool isLightColor(const juce::Colour& color,
 		const juce::Colour& textColorLight = juce::Colours::black,
 		const juce::Colour& textColorDark = juce::Colours::white);
+	juce::Colour chooseTextColor(const juce::Colour& backgroundColor,
+		const juce::Colour& textColorLight = juce::Colours::black,
+		const juce::Colour& textColorDark = juce::Colours::white);
 	using IntSection = std::pair<int, int>;
 	using IntSectionList = juce::Array<IntSection>;
 	const IntSectionList getUnionSections(const IntSectionList& source);

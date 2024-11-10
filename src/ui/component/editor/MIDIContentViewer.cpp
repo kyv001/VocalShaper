@@ -44,6 +44,17 @@ void MIDIContentViewer::update(int index, uint64_t ref) {
 			juce::Label::ColourIds::backgroundWhenEditingColourId);
 		this->noteColorGradient = utils::generateBezierColorGradient(
 			this->trackColor, highChannelNoteColor, 16);
+
+		/** Note Name Color Gradient */
+		juce::Colour lightNoteLabelColor = laf.findColour(
+			juce::MidiKeyboardComponent::ColourIds::textLabelColourId);
+		juce::Colour darkNoteLabelColor = laf.findColour(
+			juce::MidiKeyboardComponent::ColourIds::textLabelColourId + 2);
+		this->noteLabelColorGradient.clearQuick();
+		for (auto& backColor : this->noteColorGradient) {
+			this->noteLabelColorGradient.add(utils::chooseTextColor(
+				backColor, lightNoteLabelColor, darkNoteLabelColor));
+		}
 	}
 
 	this->updateBlocks();
@@ -501,18 +512,26 @@ void MIDIContentViewer::updateNoteImageTemp() {
 	float noteCornerSize = screenSize.getHeight() * 0.003;
 	float noteOutlineThickness = screenSize.getHeight() * 0.001;
 
+	float notePaddingWidth = screenSize.getWidth() * 0.003;
+	float notePaddingHeight = screenSize.getHeight() * 0.0025;
+	float noteFontHeight = screenSize.getHeight() * 0.0135;
+
 	/** Colors */
 	auto& laf = this->getLookAndFeel();
 	juce::Colour noteOutlineColor = laf.findColour(
 		juce::Label::ColourIds::outlineColourId);
+
+	/** Font */
+	juce::Font noteLabelFont(juce::FontOptions{ noteFontHeight });
 
 	/** Notes */
 	int minNoteNum = std::floor(this->keyBottom), maxNoteNum = std::floor(this->keyTop);
 	for (auto& note : this->midiDataTemp) {
 		if (note.startSec <= this->secEnd &&
 			this->secStart <= note.endSec) {
-			if (note.num >= minNoteNum &&
+			if (note.num >= (minNoteNum - 1) &&
 				note.num <= maxNoteNum) {
+				/** Note Rect */
 				float startXPos = (note.startSec - this->secStart) / (this->secEnd - this->secStart) * width;
 				float endXPos = (note.endSec - this->secStart) / (this->secEnd - this->secStart) * width;
 				float noteYPos = ((note.num + 1) - this->keyTop) / (this->keyBottom - this->keyTop) * height;
@@ -523,6 +542,18 @@ void MIDIContentViewer::updateNoteImageTemp() {
 				g.fillRoundedRectangle(noteRect,noteCornerSize);
 				g.setColour(noteOutlineColor);
 				g.drawRoundedRectangle(noteRect, noteCornerSize, noteOutlineThickness);
+
+				/** Note Name */
+				juce::String noteName = this->keyNames[note.num % this->keyMasks.size()] + juce::String{ note.num / this->keyMasks.size() };
+				float noteNameWidth = juce::TextLayout::getStringWidth(noteLabelFont, noteName);
+				if ((noteNameWidth + notePaddingWidth * 2) <= noteRect.getWidth()
+					&& (noteFontHeight + notePaddingHeight * 2) <= noteRect.getHeight()) {
+					juce::Rectangle<float> noteLabelRect = noteRect.withWidth(noteNameWidth + notePaddingWidth * 2);
+					g.setFont(noteLabelFont);
+					g.setColour(this->noteLabelColorGradient[note.channel]);
+					g.drawFittedText(noteName, noteLabelRect.toNearestInt(),
+						juce::Justification::centred, 1, 0.75f);
+				}
 			}
 		}
 	}

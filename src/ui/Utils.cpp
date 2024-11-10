@@ -736,6 +736,12 @@ namespace utils {
 		return darkContrast < lightContrast;
 	}
 
+	juce::Colour chooseTextColor(const juce::Colour& backgroundColor,
+		const juce::Colour& textColorLight, const juce::Colour& textColorDark) {
+		return utils::isLightColor(backgroundColor, textColorLight, textColorDark)
+			? textColorLight : textColorDark;
+	}
+
 	const IntSectionList getUnionSections(const IntSectionList& source) {
 		if (source.size() <= 0) return {};
 
