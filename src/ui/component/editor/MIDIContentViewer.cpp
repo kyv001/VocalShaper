@@ -515,14 +515,18 @@ void MIDIContentViewer::updateNoteImageTemp() {
 	float notePaddingWidth = screenSize.getWidth() * 0.003;
 	float notePaddingHeight = screenSize.getHeight() * 0.0025;
 	float noteFontHeight = screenSize.getHeight() * 0.0135;
+	float noteLyricsFontHeight = screenSize.getHeight() * 0.0135;
 
 	/** Colors */
 	auto& laf = this->getLookAndFeel();
 	juce::Colour noteOutlineColor = laf.findColour(
 		juce::Label::ColourIds::outlineColourId);
+	juce::Colour noteLyricsColor = laf.findColour(
+		juce::MidiKeyboardComponent::ColourIds::textLabelColourId + 3);
 
 	/** Font */
 	juce::Font noteLabelFont(juce::FontOptions{ noteFontHeight });
+	juce::Font noteLyricsFont(juce::FontOptions{ noteLyricsFontHeight });
 
 	/** Notes */
 	int minNoteNum = std::floor(this->keyBottom), maxNoteNum = std::floor(this->keyTop);
@@ -553,6 +557,18 @@ void MIDIContentViewer::updateNoteImageTemp() {
 					g.setColour(this->noteLabelColorGradient[note.channel - 1]);
 					g.drawFittedText(noteName, noteLabelRect.toNearestInt(),
 						juce::Justification::centred, 1, 0.75f);
+				}
+
+				/** Lyrics */
+				float noteLyricsWidth = juce::TextLayout::getStringWidth(noteLyricsFont, note.lyrics);
+				if (notePaddingWidth * 2 <= noteRect.getWidth()) {
+					juce::Rectangle<float> noteLyricsRect(
+						noteRect.getX() + notePaddingWidth, noteRect.getY() - (float)this->vItemSize,
+						noteRect.getWidth() - notePaddingWidth * 2, (float)this->vItemSize);
+					g.setFont(noteLyricsFont);
+					g.setColour(noteLyricsColor);
+					g.drawFittedText(note.lyrics, noteLyricsRect.toNearestInt(),
+						juce::Justification::left, 1, 1.0f);
 				}
 			}
 		}

@@ -30,6 +30,8 @@ MidiContentLookAndFeel::MidiContentLookAndFeel()
 		ColorMap::getInstance()->get("ThemeColorB0"));/**< Light Note Label */
 	this->setColour(juce::MidiKeyboardComponent::ColourIds::textLabelColourId + 2,
 		ColorMap::getInstance()->get("ThemeColorB10"));/**< Dark Note Label */
+	this->setColour(juce::MidiKeyboardComponent::ColourIds::textLabelColourId + 3,
+		ColorMap::getInstance()->get("ThemeColorB10"));/**< Note Lyrics */
 
 	/** Lines */
 	this->setColour(juce::Label::ColourIds::backgroundColourId,
