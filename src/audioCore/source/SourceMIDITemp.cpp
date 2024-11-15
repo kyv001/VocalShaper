@@ -33,13 +33,11 @@ void SourceMIDITemp::update() {
 
 		/** Track Event Temp */
 		juce::Array<Note> noteTrack;
-		constexpr int channalNum = 16;
 		/** Second, Lyrics */
 		using LyricsItem = std::tuple<double, juce::String>;
 		const LyricsItem initLyricsItem{ -1.0, "" };
-
-		std::array<LyricsItem, channalNum> lastLyricsTemp{};
-		std::fill(lastLyricsTemp.begin(), lastLyricsTemp.end(), initLyricsItem);
+		LyricsItem lastLyrics{ initLyricsItem };
+		uint8_t lastChannel = 0;
 
 		juce::Array<Pedal> sustain, sostenuto, soft;
 		juce::Array<IntParam> pitchWheel, channelPressure;
@@ -60,10 +58,11 @@ void SourceMIDITemp::update() {
 				note.pitch = (uint8_t)event->message.getNoteNumber();
 				note.vel = event->message.getVelocity();
 				
-				auto& lastLyrics = lastLyricsTemp[note.channel];
-				if (juce::approximatelyEqual(std::get<0>(lastLyrics), note.startSec)) {
-					note.lyrics = std::get<1>(lastLyrics);
-					lastLyrics = initLyricsItem;
+				if ((lastChannel == 0) || (lastChannel == note.channel)) {
+					if (juce::approximatelyEqual(std::get<0>(lastLyrics), note.startSec)) {
+						note.lyrics = std::get<1>(lastLyrics);
+						lastLyrics = initLyricsItem;
+					}
 				}
 
 				note.noteOnEvent = i;
@@ -73,8 +72,7 @@ void SourceMIDITemp::update() {
 			}
 			/** Get Lyrics */
 			if (event->message.isMetaEvent() && event->message.getMetaEventType() == 0x05) {
-				uint8_t channel = event->message.getChannel();
-				lastLyricsTemp[channel] = { event->message.getTimeStamp(), event->message.getTextFromTextMetaEvent() };
+				lastLyrics = { event->message.getTimeStamp(), event->message.getTextFromTextMetaEvent() };
 				continue;
 			}
 			/** Sustain Pedal */
@@ -156,10 +154,15 @@ void SourceMIDITemp::update() {
 				controllers[controller.number].add(controller);
 				continue;
 			}
+			/** Channel Meta */
+			if (event->message.isMidiChannelMetaEvent()) {
+				lastChannel = (uint8_t)event->message.getMidiChannelMetaEventChannel();
+			}
 			/** Other exclude Lyrics */
 			{
 				Misc misc{};
-				misc.channel = (uint8_t)event->message.getChannel();
+				misc.channel = (event->message.isSysEx() || event->message.isMetaEvent())
+					? lastChannel : (uint8_t)event->message.getChannel();
 				misc.timeSec = event->message.getTimeStamp();
 				misc.message = event->message;
 				misc.event = i;
