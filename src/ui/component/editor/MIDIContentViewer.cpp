@@ -538,7 +538,7 @@ void MIDIContentViewer::updateNoteImageTemp() {
 				juce::Rectangle<float> noteRect(
 					startXPos, noteYPos,
 					endXPos - startXPos, (float)this->vItemSize);
-				g.setColour(this->noteColorGradient[note.channel]);
+				g.setColour(this->noteColorGradient[note.channel - 1]);
 				g.fillRoundedRectangle(noteRect,noteCornerSize);
 				g.setColour(noteOutlineColor);
 				g.drawRoundedRectangle(noteRect, noteCornerSize, noteOutlineThickness);
@@ -550,7 +550,7 @@ void MIDIContentViewer::updateNoteImageTemp() {
 					&& (noteFontHeight + notePaddingHeight * 2) <= noteRect.getHeight()) {
 					juce::Rectangle<float> noteLabelRect = noteRect.withWidth(noteNameWidth + notePaddingWidth * 2);
 					g.setFont(noteLabelFont);
-					g.setColour(this->noteLabelColorGradient[note.channel]);
+					g.setColour(this->noteLabelColorGradient[note.channel - 1]);
 					g.drawFittedText(noteName, noteLabelRect.toNearestInt(),
 						juce::Justification::centred, 1, 0.75f);
 				}
