@@ -885,7 +885,7 @@ SeqTrackContentViewer::getBlockControllerWithoutEdge(float posX) const {
 		float startX = (block->startTime - this->secStart) / (this->secEnd - this->secStart) * this->getWidth();
 		float endX = (block->endTime - this->secStart) / (this->secEnd - this->secStart) * this->getWidth();
 
-		/** Set Cursor */
+		/** Inside Block */
 		if (posX >= startX && posX < endX) {
 			return { BlockControllerType::Inside, i };
 		}

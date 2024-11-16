@@ -109,10 +109,22 @@ private:
 	juce::Array<juce::Colour> noteColorGradient;
 	juce::Array<juce::Colour> noteLabelColorGradient;
 
+	/** Index, Rect */
+	using NoteRectTemp = std::tuple<int, juce::Rectangle<float>>;
+	juce::Array<NoteRectTemp> noteRectTempList;
+
 	void updateKeyImageTemp();
 	void updateRulerImageTemp();
 	void updateBlockImageTemp();
 	void updateNoteImageTemp();
+
+	void updateMouseCursor(const juce::Point<float>& pos);
+
+	enum class NoteControllerType {
+		None, Left, Right, Inside
+	};
+	std::tuple<NoteControllerType, int> getNoteController(const juce::Point<float>& pos) const;
+	std::tuple<NoteControllerType, int> getNoteControllerWithoutEdge(const juce::Point<float>& pos) const;
 
 	std::tuple<double, double> getHViewArea(double pos, double itemSize) const;
 	std::tuple<double, double> getVViewArea(double pos, double itemSize) const;

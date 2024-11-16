@@ -1,4 +1,5 @@
 #include "MIDIContentViewer.h"
+#include "../../misc/Tools.h"
 #include "../../lookAndFeel/LookAndFeelFactory.h"
 #include "../../Utils.h"
 #include "../../../audioCore/AC_API.h"
@@ -296,6 +297,9 @@ void MIDIContentViewer::mouseUp(const juce::MouseEvent& event) {
 void MIDIContentViewer::mouseMove(const juce::MouseEvent& event) {
 	/** Send Y Pos */
 	this->mouseYPosFunc(event.position.getY());
+
+	/** Update Mouse Cursor */
+	this->updateMouseCursor(event.position);
 }
 
 void MIDIContentViewer::mouseDrag(const juce::MouseEvent& event) {
@@ -528,9 +532,13 @@ void MIDIContentViewer::updateNoteImageTemp() {
 	juce::Font noteLabelFont(juce::FontOptions{ noteFontHeight });
 	juce::Font noteLyricsFont(juce::FontOptions{ noteLyricsFontHeight });
 
+	/** Temp */
+	this->noteRectTempList.clear();
+
 	/** Notes */
 	int minNoteNum = std::floor(this->keyBottom), maxNoteNum = std::floor(this->keyTop);
-	for (auto& note : this->midiDataTemp) {
+	for (int i = 0; i < this->midiDataTemp.size(); i++) {
+		auto& note = this->midiDataTemp.getReference(i);
 		if (note.startSec <= this->secEnd &&
 			this->secStart <= note.endSec) {
 			if (note.num >= (minNoteNum - 1) &&
@@ -570,9 +578,117 @@ void MIDIContentViewer::updateNoteImageTemp() {
 					g.drawFittedText(note.lyrics, noteLyricsRect.toNearestInt(),
 						juce::Justification::left, 1, 1.0f);
 				}
+
+				/** Add Temp */
+				this->noteRectTempList.add({ i, noteRect });
 			}
 		}
 	}
+}
+
+void MIDIContentViewer::updateMouseCursor(const juce::Point<float>& pos) {
+	std::tuple<MIDIContentViewer::NoteControllerType, int> noteController;
+	switch (Tools::getInstance()->getType()) {
+	case Tools::Type::Arrow:
+		noteController = this->getNoteControllerWithoutEdge(pos);
+		break;
+	case Tools::Type::Pencil:
+		noteController = this->getNoteController(pos);
+		break;
+	}
+
+	switch (std::get<0>(noteController)) {
+	case NoteControllerType::Left:
+		this->setMouseCursor(juce::MouseCursor::LeftEdgeResizeCursor);
+		break;
+	case NoteControllerType::Right:
+		this->setMouseCursor(juce::MouseCursor::RightEdgeResizeCursor);
+		break;
+	case NoteControllerType::Inside:
+		this->setMouseCursor(juce::MouseCursor::PointingHandCursor);
+		break;
+	default:
+		this->setMouseCursor(juce::MouseCursor::NormalCursor);
+		break;
+	}
+}
+
+std::tuple<MIDIContentViewer::NoteControllerType, int>
+MIDIContentViewer::getNoteController(const juce::Point<float>& pos) const {
+	/** Size */
+	auto screenSize = utils::getScreenSize(this);
+	int noteJudgeWidth = screenSize.getWidth() * 0.005;
+
+	int width = this->noteTemp->getWidth(), height = this->noteTemp->getHeight();
+
+	/** Check Pos Inside Note */
+	auto [type, index] = this->getNoteControllerWithoutEdge(pos);
+	if (index >= 0) {
+		auto& note = this->midiDataTemp.getReference(index);
+		float startXPos = (note.startSec - this->secStart) / (this->secEnd - this->secStart) * width;
+		float endXPos = (note.endSec - this->secStart) / (this->secEnd - this->secStart) * width;
+
+		/** Judge Area */
+		float judgeSSX = startXPos - noteJudgeWidth, judgeSEX = startXPos + noteJudgeWidth;
+		float judgeESX = endXPos - noteJudgeWidth, judgeEEX = endXPos + noteJudgeWidth;
+		if (endXPos - startXPos < noteJudgeWidth * 2) {
+			judgeSEX = startXPos + (endXPos - startXPos) / 2;
+			judgeESX = endXPos - (endXPos - startXPos) / 2;
+		}
+
+		/** Get Controller */
+		if (pos.getX() >= judgeSSX && pos.getX() < judgeSEX) {
+			return { NoteControllerType::Left, index };
+		}
+		else if (pos.getX() >= judgeESX && pos.getX() < judgeEEX) {
+			return { NoteControllerType::Right, index };
+		}
+		else if (pos.getX() >= judgeSEX && pos.getX() < judgeESX) {
+			return { NoteControllerType::Inside, index };
+		}
+	}
+
+	/** Get Each Block */
+	for (auto& [index, rect] : this->noteRectTempList) {
+		if (pos.getY() >= rect.getY() && pos.getY() < rect.getBottom()) {
+			/** Judge Area */
+			float judgeSSX = rect.getX() - noteJudgeWidth, judgeSEX = rect.getX() + noteJudgeWidth;
+			float judgeESX = rect.getRight() - noteJudgeWidth, judgeEEX = rect.getRight() + noteJudgeWidth;
+			if (rect.getRight() - rect.getX() < noteJudgeWidth * 2) {
+				judgeSEX = rect.getX() + (rect.getRight() - rect.getX()) / 2;
+				judgeESX = rect.getRight() - (rect.getRight() - rect.getX()) / 2;
+			}
+
+			/** Get Controller */
+			if (pos.getX() >= judgeSSX && pos.getX() < judgeSEX) {
+				return { NoteControllerType::Left, index };
+			}
+			else if (pos.getX() >= judgeESX && pos.getX() < judgeEEX) {
+				return { NoteControllerType::Right, index };
+			}
+			else if (pos.getX() >= judgeSEX && pos.getX() < judgeESX) {
+				return { NoteControllerType::Inside, index };
+			}
+		}
+	}
+
+	/** None */
+	return { NoteControllerType::None, -1 };
+}
+
+std::tuple<MIDIContentViewer::NoteControllerType, int>
+MIDIContentViewer::getNoteControllerWithoutEdge(const juce::Point<float>& pos) const {
+	/** Get Each Note */
+	for (auto& [index, rect] : this->noteRectTempList) {
+		/** Inside Note */
+		if (pos.getX() >= rect.getX() && pos.getX() < rect.getRight()
+			&& pos.getY() >= rect.getY() && pos.getY() < rect.getBottom()) {
+			return { NoteControllerType::Inside, index };
+		}
+	}
+
+	/** None */
+	return { NoteControllerType::None, -1 };
 }
 
 std::tuple<double, double> MIDIContentViewer::getHViewArea(double pos, double itemSize) const {
