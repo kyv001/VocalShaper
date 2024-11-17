@@ -46,6 +46,8 @@ public:
 	void mouseWheelMove(const juce::MouseEvent& event,
 		const juce::MouseWheelDetails& wheel) override;
 
+	void midiChannelChanged();
+
 private:
 	const ScrollFunc scrollFunc;
 	const WheelFunc wheelFunc;
@@ -109,9 +111,11 @@ private:
 	juce::Array<juce::Colour> noteColorGradient;
 	juce::Array<juce::Colour> noteLabelColorGradient;
 
-	/** Index, Rect */
-	using NoteRectTemp = std::tuple<int, juce::Rectangle<float>>;
+	/** Index, Rect, Channel */
+	using NoteRectTemp = std::tuple<int, juce::Rectangle<float>, uint8_t>;
 	juce::Array<NoteRectTemp> noteRectTempList;
+
+	std::unique_ptr<juce::ChangeListener> midiChannelListener = nullptr;
 
 	void updateKeyImageTemp();
 	void updateRulerImageTemp();

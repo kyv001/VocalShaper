@@ -24,6 +24,21 @@ bool Tools::getFollow() const {
 	return this->editorFollow;
 }
 
+void Tools::setMIDIChannel(uint8_t channel) {
+	if (channel >= 1 && channel <= 16) {
+		this->midiChannel = channel;
+		this->midiChannelBroadcaster.sendChangeMessage();
+	}
+}
+
+uint8_t Tools::getMIDIChannel() const {
+	return this->midiChannel;
+}
+
+void Tools::addMIDIChannelChangedListener(juce::ChangeListener* listener) {
+	this->midiChannelBroadcaster.addChangeListener(listener);
+}
+
 Tools* Tools::getInstance() {
 	return Tools::instance ? Tools::instance
 		: (Tools::instance = new Tools{});

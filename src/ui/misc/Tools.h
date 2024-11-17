@@ -18,10 +18,17 @@ public:
 	void setFollow(bool follow);
 	bool getFollow() const;
 
+	void setMIDIChannel(uint8_t channel);
+	uint8_t getMIDIChannel() const;
+	void addMIDIChannelChangedListener(juce::ChangeListener* listener);
+
 private:
 	Type type = Type::Arrow;
 	double adsorbLevel = 1;
 	bool editorFollow = false;
+	uint8_t midiChannel = 1;
+
+	juce::ChangeBroadcaster midiChannelBroadcaster;
 
 public:
 	static Tools* getInstance();
