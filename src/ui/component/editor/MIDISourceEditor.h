@@ -34,8 +34,8 @@ private:
 	std::unique_ptr<PianoComponent> piano = nullptr;
 	std::unique_ptr<MIDIContentViewer> content = nullptr;
 
-	std::unique_ptr<juce::DrawableButton> adsorbButton = nullptr;
-	std::unique_ptr<juce::Drawable> adsorbIcon = nullptr;
+	std::unique_ptr<juce::DrawableButton> menuButton = nullptr;
+	std::unique_ptr<juce::Drawable> menuIcon = nullptr;
 
 	bool viewMoving = false;
 	double moveStartPosX = 0, moveStartPosY = 0;
@@ -82,8 +82,10 @@ private:
 
 	void updateMIDIScrollerImageTemp();
 
-	void adsorbButtonClicked();
+	void menuButtonClicked();
+	juce::PopupMenu createMenu();
 	juce::PopupMenu createAdsorbMenu();
+	juce::PopupMenu createMIDIChannelMenu();
 
 	std::tuple<double, double> getViewArea(double pos, double itemSize) const;
 

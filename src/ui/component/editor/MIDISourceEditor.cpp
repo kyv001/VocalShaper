@@ -8,9 +8,9 @@
 
 MIDISourceEditor::MIDISourceEditor() {
 	/** Icons */
-	this->adsorbIcon = flowUI::IconManager::getSVG(
-		utils::getIconFile("Design", "align-item-left-line").getFullPathName());
-	this->adsorbIcon->replaceColour(juce::Colours::black,
+	this->menuIcon = flowUI::IconManager::getSVG(
+		utils::getIconFile("Arrows", "arrow-drop-down-fill").getFullPathName());
+	this->menuIcon->replaceColour(juce::Colours::black,
 		this->getLookAndFeel().findColour(juce::TextButton::ColourIds::textColourOffId));
 
 	/** Scroller */
@@ -36,14 +36,14 @@ MIDISourceEditor::MIDISourceEditor() {
 	this->addAndMakeVisible(this->vScroller.get());
 
 	/** Button */
-	this->adsorbButton = std::make_unique<juce::DrawableButton>(
-		TRANS("Adsorb"), juce::DrawableButton::ButtonStyle::ImageOnButtonBackground);
-	this->adsorbButton->setImages(this->adsorbIcon.get());
-	this->adsorbButton->setConnectedEdges(juce::Button::ConnectedOnLeft | juce::Button::ConnectedOnRight);
-	this->adsorbButton->setWantsKeyboardFocus(false);
-	this->adsorbButton->setMouseCursor(juce::MouseCursor::PointingHandCursor);
-	this->adsorbButton->onClick = [this] { this->adsorbButtonClicked(); };
-	this->addAndMakeVisible(this->adsorbButton.get());
+	this->menuButton = std::make_unique<juce::DrawableButton>(
+		TRANS("Menu"), juce::DrawableButton::ButtonStyle::ImageOnButtonBackground);
+	this->menuButton->setImages(this->menuIcon.get());
+	this->menuButton->setConnectedEdges(juce::Button::ConnectedOnLeft | juce::Button::ConnectedOnRight);
+	this->menuButton->setWantsKeyboardFocus(false);
+	this->menuButton->setMouseCursor(juce::MouseCursor::PointingHandCursor);
+	this->menuButton->onClick = [this] { this->menuButtonClicked(); };
+	this->addAndMakeVisible(this->menuButton.get());
 
 	/** Ruler */
 	this->ruler = std::make_unique<SourceTimeRuler>(
@@ -183,9 +183,9 @@ void MIDISourceEditor::resized() {
 	int rulerHeight = screenSize.getHeight() * 0.065;
 	int pianoWidth = screenSize.getWidth() * 0.065;
 
-	int adsorbButtonHeight = screenSize.getHeight() * 0.025;
-	int adsorbButtonPaddingWidth = screenSize.getWidth() * 0.005;
-	int adsorbButtonPaddingHeight = screenSize.getHeight() * 0.005;
+	int menuButtonHeight = screenSize.getHeight() * 0.025;
+	int menuButtonPaddingWidth = screenSize.getWidth() * 0.005;
+	int menuButtonPaddingHeight = screenSize.getHeight() * 0.005;
 
 	/** Update Time */
 	std::tie(this->secStart, this->secEnd) = this->getViewArea(this->pos, this->itemSize);
@@ -200,12 +200,12 @@ void MIDISourceEditor::resized() {
 		scrollerWidth, this->getHeight() - rulerHeight - scrollerHeight);
 	this->vScroller->setBounds(vScrollerRect);
 
-	/** Adsorb Button */
-	juce::Rectangle<int> adsorbRect(
-		pianoWidth - adsorbButtonPaddingWidth - adsorbButtonHeight,
-		rulerHeight - adsorbButtonPaddingHeight - adsorbButtonHeight,
-		adsorbButtonHeight, adsorbButtonHeight);
-	this->adsorbButton->setBounds(adsorbRect);
+	/** Menu Button */
+	juce::Rectangle<int> menuRect(
+		pianoWidth - menuButtonPaddingWidth - menuButtonHeight,
+		rulerHeight - menuButtonPaddingHeight - menuButtonHeight,
+		menuButtonHeight, menuButtonHeight);
+	this->menuButton->setBounds(menuRect);
 
 	/** Time Ruler */
 	juce::Rectangle<int> rulerRect(
@@ -591,29 +591,72 @@ void MIDISourceEditor::updateMIDIScrollerImageTemp() {
 	}
 }
 
-void MIDISourceEditor::adsorbButtonClicked() {
-	auto menu = this->createAdsorbMenu();
-	int result = menu.showAt(this->adsorbButton.get());
+enum MIDIEditorMenuActionType {
+	MIDIChannelBase = 0, AdsorbBase = 0x20
+};
+
+void MIDISourceEditor::menuButtonClicked() {
+	auto menu = this->createMenu();
+	int result = menu.showAt(this->menuButton.get());
 	if (result == 0) { return; }
 
-	if (result < 0) { Tools::getInstance()->setAdsorb(0); }
-	else { Tools::getInstance()->setAdsorb(1 / (double)result); }
+	if (result > MIDIEditorMenuActionType::MIDIChannelBase
+		&& result < MIDIEditorMenuActionType::AdsorbBase) {
+		Tools::getInstance()->setMIDIChannel((uint8_t)(result - MIDIEditorMenuActionType::MIDIChannelBase));
+	}
+	else if (result == MIDIEditorMenuActionType::AdsorbBase) {
+		Tools::getInstance()->setAdsorb(0);
+	}
+	else if (result > MIDIEditorMenuActionType::AdsorbBase) {
+		Tools::getInstance()->setAdsorb(1 / (double)(result - MIDIEditorMenuActionType::AdsorbBase));
+	}
+}
+
+juce::PopupMenu MIDISourceEditor::createMenu() {
+	juce::PopupMenu menu;
+
+	menu.addSubMenu(TRANS("Adsorb"), this->createAdsorbMenu());
+	menu.addSubMenu(TRANS("MIDI Channel"), this->createMIDIChannelMenu());
+
+	return menu;
 }
 
 juce::PopupMenu MIDISourceEditor::createAdsorbMenu() {
 	double currentAdsorb = Tools::getInstance()->getAdsorb();
 
 	juce::PopupMenu menu;
-	menu.addItem(1, "1", true, juce::approximatelyEqual(currentAdsorb, 1.0));
-	menu.addItem(2, "1/2", true, juce::approximatelyEqual(currentAdsorb, 1 / (double)2));
-	menu.addItem(4, "1/4", true, juce::approximatelyEqual(currentAdsorb, 1 / (double)4));
-	menu.addItem(6, "1/6", true, juce::approximatelyEqual(currentAdsorb, 1 / (double)6));
-	menu.addItem(8, "1/8", true, juce::approximatelyEqual(currentAdsorb, 1 / (double)8));
-	menu.addItem(12, "1/12", true, juce::approximatelyEqual(currentAdsorb, 1 / (double)12));
-	menu.addItem(16, "1/16", true, juce::approximatelyEqual(currentAdsorb, 1 / (double)16));
-	menu.addItem(24, "1/24", true, juce::approximatelyEqual(currentAdsorb, 1 / (double)24));
-	menu.addItem(32, "1/32", true, juce::approximatelyEqual(currentAdsorb, 1 / (double)32));
-	menu.addItem(-1, "Off", true, juce::approximatelyEqual(currentAdsorb, 0.0));
+	menu.addItem(MIDIEditorMenuActionType::AdsorbBase + 1, "1", true,
+		juce::approximatelyEqual(currentAdsorb, 1.0));
+	menu.addItem(MIDIEditorMenuActionType::AdsorbBase + 2, "1/2",
+		true, juce::approximatelyEqual(currentAdsorb, 1 / (double)2));
+	menu.addItem(MIDIEditorMenuActionType::AdsorbBase + 4, "1/4",
+		true, juce::approximatelyEqual(currentAdsorb, 1 / (double)4));
+	menu.addItem(MIDIEditorMenuActionType::AdsorbBase + 6, "1/6",
+		true, juce::approximatelyEqual(currentAdsorb, 1 / (double)6));
+	menu.addItem(MIDIEditorMenuActionType::AdsorbBase + 8, "1/8",
+		true, juce::approximatelyEqual(currentAdsorb, 1 / (double)8));
+	menu.addItem(MIDIEditorMenuActionType::AdsorbBase + 12, "1/12",
+		true, juce::approximatelyEqual(currentAdsorb, 1 / (double)12));
+	menu.addItem(MIDIEditorMenuActionType::AdsorbBase + 16, "1/16",
+		true, juce::approximatelyEqual(currentAdsorb, 1 / (double)16));
+	menu.addItem(MIDIEditorMenuActionType::AdsorbBase + 24, "1/24",
+		true, juce::approximatelyEqual(currentAdsorb, 1 / (double)24));
+	menu.addItem(MIDIEditorMenuActionType::AdsorbBase + 32, "1/32",
+		true, juce::approximatelyEqual(currentAdsorb, 1 / (double)32));
+	menu.addItem(MIDIEditorMenuActionType::AdsorbBase + 0, "Off",
+		true, juce::approximatelyEqual(currentAdsorb, 0.0));
+
+	return menu;
+}
+
+juce::PopupMenu MIDISourceEditor::createMIDIChannelMenu() {
+	uint8_t midiChannel = Tools::getInstance()->getMIDIChannel();
+
+	juce::PopupMenu menu;
+	for (int i = 1; i <= 16; i++) {
+		menu.addItem(MIDIEditorMenuActionType::MIDIChannelBase + i,
+			juce::String{ i }, true, midiChannel == i);
+	}
 
 	return menu;
 }
