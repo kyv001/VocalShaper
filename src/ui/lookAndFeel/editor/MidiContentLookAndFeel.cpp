@@ -35,7 +35,7 @@ MidiContentLookAndFeel::MidiContentLookAndFeel()
 
 	/** Lines */
 	this->setColour(juce::Label::ColourIds::backgroundColourId,
-		ColorMap::getInstance()->get("ThemeColorB1"));
+		ColorMap::getInstance()->get("ThemeColorB0"));/**< Notes Opaque Base */
 	this->setColour(juce::Label::ColourIds::textColourId,
 		ColorMap::getInstance()->get("ThemeColorA2"));/**< Cursor */
 	this->setColour(juce::Label::ColourIds::outlineColourId,

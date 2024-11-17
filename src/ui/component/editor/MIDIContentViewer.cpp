@@ -553,6 +553,8 @@ void MIDIContentViewer::updateNoteImageTemp() {
 		juce::Label::ColourIds::outlineColourId);
 	juce::Colour noteLyricsColor = laf.findColour(
 		juce::MidiKeyboardComponent::ColourIds::textLabelColourId + 3);
+	juce::Colour noteBaseColor = laf.findColour(
+		juce::Label::ColourIds::backgroundColourId);
 
 	/** Font */
 	juce::Font noteLabelFont(juce::FontOptions{ noteFontHeight });
@@ -580,7 +582,7 @@ void MIDIContentViewer::updateNoteImageTemp() {
 				juce::Rectangle<float> noteRect(
 					startXPos, noteYPos,
 					endXPos - startXPos, (float)this->vItemSize);
-				g.setColour(juce::Colours::black);
+				g.setColour(noteBaseColor);
 				g.fillRoundedRectangle(noteRect, noteCornerSize);
 				g.setColour(this->noteColorGradient[note.channel - 1].withAlpha(opaque));
 				g.fillRoundedRectangle(noteRect,noteCornerSize);
