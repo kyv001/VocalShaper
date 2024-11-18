@@ -65,9 +65,6 @@ public:
 
 public:
 	int getMIDINoteNum(int track) const;
-	int getMIDISustainPedalNum(int track) const;
-	int getMIDISostenutoPedalNum(int track) const;
-	int getMIDISoftPedalNum(int track) const;
 	int getMIDIPitchWheelNum(int track) const;
 	int getMIDIAfterTouchNum(int track) const;
 	int getMIDIChannelPressureNum(int track) const;
@@ -76,9 +73,6 @@ public:
 	int getMIDIMiscNum(int track) const;
 
 	const SourceMIDITemp::Note getMIDINote(int track, int index) const;
-	const SourceMIDITemp::Pedal getMIDISustainPedal(int track, int index) const;
-	const SourceMIDITemp::Pedal getMIDISostenutoPedal(int track, int index) const;
-	const SourceMIDITemp::Pedal getMIDISoftPedal(int track, int index) const;
 	const SourceMIDITemp::IntParam getMIDIPitchWheel(int track, int index) const;
 	const SourceMIDITemp::AfterTouch getMIDIAfterTouch(int track, int index) const;
 	const SourceMIDITemp::IntParam getMIDIChannelPressure(int track, int index) const;

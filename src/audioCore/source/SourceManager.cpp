@@ -271,27 +271,6 @@ int SourceManager::getMIDINoteNum(uint64_t ref, int track) const {
 	return 0;
 }
 
-int SourceManager::getMIDISustainPedalNum(uint64_t ref, int track) const {
-	if (auto ptr = this->getSourceFast(ref, SourceType::MIDI)) {
-		return ptr->getMIDISustainPedalNum(track);
-	}
-	return 0;
-}
-
-int SourceManager::getMIDISostenutoPedalNum(uint64_t ref, int track) const {
-	if (auto ptr = this->getSourceFast(ref, SourceType::MIDI)) {
-		return ptr->getMIDISostenutoPedalNum(track);
-	}
-	return 0;
-}
-
-int SourceManager::getMIDISoftPedalNum(uint64_t ref, int track) const {
-	if (auto ptr = this->getSourceFast(ref, SourceType::MIDI)) {
-		return ptr->getMIDISoftPedalNum(track);
-	}
-	return 0;
-}
-
 int SourceManager::getMIDIPitchWheelNum(uint64_t ref, int track) const {
 	if (auto ptr = this->getSourceFast(ref, SourceType::MIDI)) {
 		return ptr->getMIDIPitchWheelNum(track);
@@ -341,27 +320,6 @@ const SourceMIDITemp::Note SourceManager::getMIDINote(uint64_t ref, int track, i
 	return {};
 }
 
-const SourceMIDITemp::Pedal SourceManager::getMIDISustainPedal(uint64_t ref, int track, int index) const {
-	if (auto ptr = this->getSourceFast(ref, SourceType::MIDI)) {
-		return ptr->getMIDISustainPedal(track, index);
-	}
-	return {};
-}
-
-const SourceMIDITemp::Pedal SourceManager::getMIDISostenutoPedal(uint64_t ref, int track, int index) const {
-	if (auto ptr = this->getSourceFast(ref, SourceType::MIDI)) {
-		return ptr->getMIDISostenutoPedal(track, index);
-	}
-	return {};
-}
-
-const SourceMIDITemp::Pedal SourceManager::getMIDISoftPedal(uint64_t ref, int track, int index) const {
-	if (auto ptr = this->getSourceFast(ref, SourceType::MIDI)) {
-		return ptr->getMIDISoftPedal(track, index);
-	}
-	return {};
-}
-
 const SourceMIDITemp::IntParam SourceManager::getMIDIPitchWheel(uint64_t ref, int track, int index) const {
 	if (auto ptr = this->getSourceFast(ref, SourceType::MIDI)) {
 		return ptr->getMIDIPitchWheel(track, index);
@@ -406,54 +364,6 @@ const juce::Array<SourceMIDITemp::Note> SourceManager::getMIDINoteList(uint64_t 
 
 		for (int i = 0; i < num; i++) {
 			list.add(ptr->getMIDINote(track, i));
-		}
-
-		return list;
-	}
-	return {};
-}
-
-const juce::Array<SourceMIDITemp::Pedal> SourceManager::getMIDISustainPedalList(uint64_t ref, int track) const {
-	juce::ScopedReadLock locker(audioLock::getSourceLock());
-	if (auto ptr = this->getSourceFast(ref, SourceType::MIDI)) {
-		int num = ptr->getMIDISustainPedalNum(track);
-		juce::Array<SourceMIDITemp::Pedal> list;
-		list.ensureStorageAllocated(num);
-
-		for (int i = 0; i < num; i++) {
-			list.add(ptr->getMIDISustainPedal(track, i));
-		}
-
-		return list;
-	}
-	return {};
-}
-
-const juce::Array<SourceMIDITemp::Pedal> SourceManager::getMIDISostenutoPedalList(uint64_t ref, int track) const {
-	juce::ScopedReadLock locker(audioLock::getSourceLock());
-	if (auto ptr = this->getSourceFast(ref, SourceType::MIDI)) {
-		int num = ptr->getMIDISostenutoPedalNum(track);
-		juce::Array<SourceMIDITemp::Pedal> list;
-		list.ensureStorageAllocated(num);
-
-		for (int i = 0; i < num; i++) {
-			list.add(ptr->getMIDISostenutoPedal(track, i));
-		}
-
-		return list;
-	}
-	return {};
-}
-
-const juce::Array<SourceMIDITemp::Pedal> SourceManager::getMIDISoftPedalList(uint64_t ref, int track) const {
-	juce::ScopedReadLock locker(audioLock::getSourceLock());
-	if (auto ptr = this->getSourceFast(ref, SourceType::MIDI)) {
-		int num = ptr->getMIDISoftPedalNum(track);
-		juce::Array<SourceMIDITemp::Pedal> list;
-		list.ensureStorageAllocated(num);
-
-		for (int i = 0; i < num; i++) {
-			list.add(ptr->getMIDISoftPedal(track, i));
 		}
 
 		return list;

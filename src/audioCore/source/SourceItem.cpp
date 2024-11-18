@@ -435,21 +435,6 @@ int SourceItem::getMIDINoteNum(int track) const {
 	return this->container->getMIDINoteNum(track);
 }
 
-int SourceItem::getMIDISustainPedalNum(int track) const {
-	if (!this->container) { return 0; }
-	return this->container->getMIDISustainPedalNum(track);
-}
-
-int SourceItem::getMIDISostenutoPedalNum(int track) const {
-	if (!this->container) { return 0; }
-	return this->container->getMIDISostenutoPedalNum(track);
-}
-
-int SourceItem::getMIDISoftPedalNum(int track) const {
-	if (!this->container) { return 0; }
-	return this->container->getMIDISoftPedalNum(track);
-}
-
 int SourceItem::getMIDIPitchWheelNum(int track) const {
 	if (!this->container) { return 0; }
 	return this->container->getMIDIPitchWheelNum(track);
@@ -483,21 +468,6 @@ int SourceItem::getMIDIMiscNum(int track) const {
 const SourceMIDITemp::Note SourceItem::getMIDINote(int track, int index) const {
 	if (!this->container) { return {}; }
 	return this->container->getMIDINote(track, index);
-}
-
-const SourceMIDITemp::Pedal SourceItem::getMIDISustainPedal(int track, int index) const {
-	if (!this->container) { return {}; }
-	return this->container->getMIDISustainPedal(track, index);
-}
-
-const SourceMIDITemp::Pedal SourceItem::getMIDISostenutoPedal(int track, int index) const {
-	if (!this->container) { return {}; }
-	return this->container->getMIDISustainPedal(track, index);
-}
-
-const SourceMIDITemp::Pedal SourceItem::getMIDISoftPedal(int track, int index) const {
-	if (!this->container) { return {}; }
-	return this->container->getMIDISoftPedal(track, index);
 }
 
 const SourceMIDITemp::IntParam SourceItem::getMIDIPitchWheel(int track, int index) const {

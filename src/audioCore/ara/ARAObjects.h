@@ -63,15 +63,6 @@ public:
 	int32_t getNotePlusCount() const;
 	ARAExtension::ARAContentNote getNotePlus(int32_t index) const;
 
-	int32_t getSustainPedalCount() const;
-	ARAExtension::ARAContentPedal getSustainPedal(int32_t index) const;
-
-	int32_t getSostenutoPedalCount() const;
-	ARAExtension::ARAContentPedal getSostenutoPedal(int32_t index) const;
-
-	int32_t getSoftPedalCount() const;
-	ARAExtension::ARAContentPedal getSoftPedal(int32_t index) const;
-
 	int32_t getPitchWheelCount() const;
 	ARAExtension::ARAContentIntParam getPitchWheel(int32_t index) const;
 

@@ -144,18 +144,6 @@ ARA::ARAInt32 ARAContentAccessController::getContentReaderEventCount(
 			return midiContext->getNotePlusCount();
 		}
 
-		case ARAExtension::ARAContentTypeSustainPedal: {
-			return midiContext->getSustainPedalCount();
-		}
-
-		case ARAExtension::ARAContentTypeSostenutoPedal: {
-			return midiContext->getSostenutoPedalCount();
-		}
-
-		case ARAExtension::ARAContentTypeSoftPedal: {
-			return midiContext->getSoftPedalCount();
-		}
-
 		case ARAExtension::ARAContentTypePitchWheel: {
 			return midiContext->getPitchWheelCount();
 		}
@@ -219,21 +207,6 @@ const void* ARAContentAccessController::getContentReaderDataForEvent(
 		case ARAExtension::ARAContentTypeNotePlus: {
 			this->notePlusTemp = midiContext->getNotePlus(eventIndex);
 			return &(this->notePlusTemp);
-		}
-
-		case ARAExtension::ARAContentTypeSustainPedal: {
-			this->pedalTemp = midiContext->getSustainPedal(eventIndex);
-			return &(this->pedalTemp);
-		}
-
-		case ARAExtension::ARAContentTypeSostenutoPedal: {
-			this->pedalTemp = midiContext->getSostenutoPedal(eventIndex);
-			return &(this->pedalTemp);
-		}
-
-		case ARAExtension::ARAContentTypeSoftPedal: {
-			this->pedalTemp = midiContext->getSoftPedal(eventIndex);
-			return &(this->pedalTemp);
 		}
 
 		case ARAExtension::ARAContentTypePitchWheel: {

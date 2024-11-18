@@ -21,13 +21,6 @@ public:
 
 		int noteOnEvent;
 	};
-	struct Pedal {
-		uint8_t channel;
-		double timeSec;
-		bool value;
-
-		int event;
-	};
 	struct IntParam {
 		uint8_t channel;
 		double timeSec;
@@ -63,9 +56,6 @@ public:
 	int getTrackNum() const;
 
 	int getNoteNum(int track) const;
-	int getSustainPedalNum(int track) const;
-	int getSostenutoPedalNum(int track) const;
-	int getSoftPedalNum(int track) const;
 	int getPitchWheelNum(int track) const;
 	int getAfterTouchNum(int track) const;
 	int getChannelPressureNum(int track) const;
@@ -74,9 +64,6 @@ public:
 	int getMiscNum(int track) const;
 
 	const Note getNote(int track, int index) const;
-	const Pedal getSustainPedal(int track, int index) const;
-	const Pedal getSostenutoPedal(int track, int index) const;
-	const Pedal getSoftPedal(int track, int index) const;
 	const IntParam getPitchWheel(int track, int index) const;
 	const AfterTouch getAfterTouch(int track, int index) const;
 	const IntParam getChannelPressure(int track, int index) const;
@@ -87,10 +74,6 @@ private:
 	juce::MidiFile sourceData;
 
 	juce::Array<juce::Array<Note>> noteList;
-
-	juce::Array<juce::Array<Pedal>> sustainPedalList;
-	juce::Array<juce::Array<Pedal>> sostenutoPedalList;
-	juce::Array<juce::Array<Pedal>> softPedalList;
 
 	juce::Array<juce::Array<IntParam>> pitchWheelList;
 	juce::Array<juce::Array<AfterTouch>> afterTouchList;

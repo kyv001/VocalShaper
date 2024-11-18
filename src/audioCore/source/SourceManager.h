@@ -66,9 +66,6 @@ public:
 	int getMIDIMiscNum(uint64_t ref, int track) const;
 
 	const SourceMIDITemp::Note getMIDINote(uint64_t ref, int track, int index) const;
-	const SourceMIDITemp::Pedal getMIDISustainPedal(uint64_t ref, int track, int index) const;
-	const SourceMIDITemp::Pedal getMIDISostenutoPedal(uint64_t ref, int track, int index) const;
-	const SourceMIDITemp::Pedal getMIDISoftPedal(uint64_t ref, int track, int index) const;
 	const SourceMIDITemp::IntParam getMIDIPitchWheel(uint64_t ref, int track, int index) const;
 	const SourceMIDITemp::AfterTouch getMIDIAfterTouch(uint64_t ref, int track, int index) const;
 	const SourceMIDITemp::IntParam getMIDIChannelPressure(uint64_t ref, int track, int index) const;
@@ -76,9 +73,6 @@ public:
 	const SourceMIDITemp::Misc getMIDIMisc(uint64_t ref, int track, int index) const;
 
 	const juce::Array<SourceMIDITemp::Note> getMIDINoteList(uint64_t ref, int track) const;
-	const juce::Array<SourceMIDITemp::Pedal> getMIDISustainPedalList(uint64_t ref, int track) const;
-	const juce::Array<SourceMIDITemp::Pedal> getMIDISostenutoPedalList(uint64_t ref, int track) const;
-	const juce::Array<SourceMIDITemp::Pedal> getMIDISoftPedalList(uint64_t ref, int track) const;
 	const juce::Array<SourceMIDITemp::IntParam> getMIDIPitchWheelList(uint64_t ref, int track) const;
 	const juce::Array<SourceMIDITemp::AfterTouch> getMIDIAfterTouchList(uint64_t ref, int track) const;
 	const juce::Array<SourceMIDITemp::IntParam> getMIDIChannelPressureList(uint64_t ref, int track) const;

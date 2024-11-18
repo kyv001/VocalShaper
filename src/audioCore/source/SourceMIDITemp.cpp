@@ -16,9 +16,6 @@ void SourceMIDITemp::addTrack(const juce::MidiMessageSequence& track) {
 void SourceMIDITemp::update() {
 	/** Clear Lists */
 	this->noteList.clear();
-	this->sustainPedalList.clear();
-	this->sostenutoPedalList.clear();
-	this->softPedalList.clear();
 	this->pitchWheelList.clear();
 	this->afterTouchList.clear();
 	this->channelPressureList.clear();
@@ -39,7 +36,6 @@ void SourceMIDITemp::update() {
 		LyricsItem lastLyrics{ initLyricsItem };
 		uint8_t lastChannel = 0;
 
-		juce::Array<Pedal> sustain, sostenuto, soft;
 		juce::Array<IntParam> pitchWheel, channelPressure;
 		juce::Array<AfterTouch> afterTouch;
 		std::unordered_map<uint8_t, juce::Array<Controller>> controllers;
@@ -73,39 +69,6 @@ void SourceMIDITemp::update() {
 			/** Get Lyrics */
 			if (event->message.isMetaEvent() && event->message.getMetaEventType() == 0x05) {
 				lastLyrics = { event->message.getTimeStamp(), event->message.getTextFromTextMetaEvent() };
-				continue;
-			}
-			/** Sustain Pedal */
-			if (event->message.isSustainPedalOn() || event->message.isSustainPedalOff()) {
-				Pedal pedal{};
-				pedal.channel = (uint8_t)event->message.getChannel();
-				pedal.timeSec = event->message.getTimeStamp();
-				pedal.value = event->message.isSustainPedalOn();
-				pedal.event = i;
-
-				sustain.add(pedal);
-				continue;
-			}
-			/** Sostenuto Pedal */
-			if (event->message.isSostenutoPedalOn() || event->message.isSostenutoPedalOff()) {
-				Pedal pedal{};
-				pedal.channel = (uint8_t)event->message.getChannel();
-				pedal.timeSec = event->message.getTimeStamp();
-				pedal.value = event->message.isSostenutoPedalOn();
-				pedal.event = i;
-
-				sostenuto.add(pedal);
-				continue;
-			}
-			/** Soft Pedal */
-			if (event->message.isSoftPedalOn() || event->message.isSoftPedalOff()) {
-				Pedal pedal{};
-				pedal.channel = (uint8_t)event->message.getChannel();
-				pedal.timeSec = event->message.getTimeStamp();
-				pedal.value = event->message.isSoftPedalOn();
-				pedal.event = i;
-
-				soft.add(pedal);
 				continue;
 			}
 			/** Pitch Wheel */
@@ -174,9 +137,6 @@ void SourceMIDITemp::update() {
 
 		/** Add Track to List */
 		this->noteList.add(noteTrack);
-		this->sustainPedalList.add(sustain);
-		this->sostenutoPedalList.add(sostenuto);
-		this->softPedalList.add(soft);
 		this->pitchWheelList.add(pitchWheel);
 		this->afterTouchList.add(afterTouch);
 		this->channelPressureList.add(channelPressure);
@@ -198,27 +158,6 @@ int SourceMIDITemp::getNoteNum(int track) const {
 		return 0;
 	}
 	return this->noteList.getReference(track).size();
-}
-
-int SourceMIDITemp::getSustainPedalNum(int track) const {
-	if (track < 0 || track >= this->sustainPedalList.size()) {
-		return 0;
-	}
-	return this->sustainPedalList.getReference(track).size();
-}
-
-int SourceMIDITemp::getSostenutoPedalNum(int track) const {
-	if (track < 0 || track >= this->sostenutoPedalList.size()) {
-		return 0;
-	}
-	return this->sostenutoPedalList.getReference(track).size();
-}
-
-int SourceMIDITemp::getSoftPedalNum(int track) const {
-	if (track < 0 || track >= this->softPedalList.size()) {
-		return 0;
-	}
-	return this->softPedalList.getReference(track).size();
 }
 
 int SourceMIDITemp::getPitchWheelNum(int track) const {
@@ -283,45 +222,6 @@ const SourceMIDITemp::Note SourceMIDITemp::getNote(int track, int index) const {
 	}
 
 	auto& trackRef = this->noteList.getReference(track);
-	if (track < 0 || track >= trackRef.size()) {
-		return {};
-	}
-
-	return trackRef.getUnchecked(index);
-}
-
-const SourceMIDITemp::Pedal SourceMIDITemp::getSustainPedal(int track, int index) const {
-	if (track < 0 || track >= this->sustainPedalList.size()) {
-		return {};
-	}
-
-	auto& trackRef = this->sustainPedalList.getReference(track);
-	if (track < 0 || track >= trackRef.size()) {
-		return {};
-	}
-
-	return trackRef.getUnchecked(index);
-}
-
-const SourceMIDITemp::Pedal SourceMIDITemp::getSostenutoPedal(int track, int index) const {
-	if (track < 0 || track >= this->sostenutoPedalList.size()) {
-		return {};
-	}
-
-	auto& trackRef = this->sostenutoPedalList.getReference(track);
-	if (track < 0 || track >= trackRef.size()) {
-		return {};
-	}
-
-	return trackRef.getUnchecked(index);
-}
-
-const SourceMIDITemp::Pedal SourceMIDITemp::getSoftPedal(int track, int index) const {
-	if (track < 0 || track >= this->softPedalList.size()) {
-		return {};
-	}
-
-	auto& trackRef = this->softPedalList.getReference(track);
 	if (track < 0 || track >= trackRef.size()) {
 		return {};
 	}

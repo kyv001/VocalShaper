@@ -122,9 +122,6 @@ private:
 		//ARAExtension::ARAContentTypeKeySignature,
 		ARAExtension::ARAContentTypeNote,
 		ARAExtension::ARAContentTypeNotePlus,
-		ARAExtension::ARAContentTypeSustainPedal,
-		ARAExtension::ARAContentTypeSostenutoPedal,
-		ARAExtension::ARAContentTypeSoftPedal,
 		ARAExtension::ARAContentTypePitchWheel,
 		ARAExtension::ARAContentTypeAfterTouch,
 		ARAExtension::ARAContentTypeChannelPressure,
@@ -140,7 +137,6 @@ private:
 	ARA::ARAContentKeySignature keyTemp;
 
 	ARAExtension::ARAContentNote notePlusTemp;
-	ARAExtension::ARAContentPedal pedalTemp;
 	ARAExtension::ARAContentIntParam intParamTemp;
 	ARAExtension::ARAContentAfterTouch afterTouchTemp;
 	ARAExtension::ARAContentController controllerTemp;
