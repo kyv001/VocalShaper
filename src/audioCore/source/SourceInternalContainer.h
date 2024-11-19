@@ -15,6 +15,8 @@ public:
 	SourceType getType() const;
 	const juce::String getName() const;
 
+	const juce::MidiFile makeMIDIFile() const;
+	const juce::MidiMessageSequence makeMIDITrack(int index) const;
 	juce::MidiFile* getMidiData() const;
 	juce::AudioSampleBuffer* getAudioData() const;
 	double getAudioSampleRate() const;

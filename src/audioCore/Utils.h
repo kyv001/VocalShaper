@@ -152,6 +152,7 @@ namespace utils {
 		int srcStart, int dstStart, int length);
 
 	const juce::String getMIDICCChannelName(int channel);
+	void setMIDITimeFormat(juce::MidiFile& file, short timeFormat);
 
 	bool readFileToBlock(const juce::String& path, juce::MemoryBlock& block,
 		const juce::File& base = utils::getProjectDir());

@@ -715,16 +715,16 @@ namespace quickAPI {
 		return {};
 	}
 
-	const juce::MidiMessageSequence getSeqTrackMIDIData(int index) {
+	/*const juce::MidiMessageSequence getSeqTrackMIDIData(int index) {
 		if (auto graph = AudioCore::getInstance()->getGraph()) {
 			if (auto track = graph->getSourceProcessor(index)) {
 				auto ref = track->getMIDIRef();
 				int midiTrack = track->getCurrentMIDITrack();
-				return SourceManager::getInstance()->getMIDI(ref, midiTrack);
+				return SourceManager::getInstance()->makeMIDITrack(ref, midiTrack);
 			}
 		}
 		return {};
-	}
+	}*/
 
 	int getSeqTrackMIDITrackNum(int index) {
 		if (auto graph = AudioCore::getInstance()->getGraph()) {

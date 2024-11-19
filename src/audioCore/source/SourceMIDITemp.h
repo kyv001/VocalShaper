@@ -12,6 +12,9 @@ public:
 
 	juce::MidiFile* getSourceData();
 
+	const juce::MidiFile makeMIDIFile() const;
+	const juce::MidiMessageSequence makeMIDITrack(int index) const;
+
 	struct Note {
 		uint8_t channel;
 		double startSec, endSec;
@@ -72,6 +75,8 @@ public:
 
 private:
 	juce::MidiFile sourceData;
+	int trackNum = 0;
+	short timeFormat = 480;
 
 	juce::Array<juce::Array<Note>> noteList;
 

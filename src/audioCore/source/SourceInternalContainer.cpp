@@ -35,6 +35,20 @@ const juce::String SourceInternalContainer::getName() const {
 	return this->name;
 }
 
+const juce::MidiFile SourceInternalContainer::makeMIDIFile() const {
+	if (this->midiData) {
+		return this->midiData->makeMIDIFile();
+	}
+	return {};
+}
+
+const juce::MidiMessageSequence SourceInternalContainer::makeMIDITrack(int index) const {
+	if (this->midiData) {
+		return this->midiData->makeMIDITrack(index);
+	}
+	return {};
+}
+
 juce::MidiFile* SourceInternalContainer::getMidiData() const {
 	if (this->midiData) {
 		return this->midiData->getSourceData();

@@ -20,8 +20,8 @@ public:
 	void setAudio(const juce::String& name);
 	void setMIDI(const juce::String& name);
 	const std::tuple<double, juce::AudioSampleBuffer> getAudio() const;
-	const juce::MidiMessageSequence getMIDI(int trackIndex) const;
-	const juce::MidiFile getMIDIFile() const;
+	const juce::MidiMessageSequence makeMIDITrack(int trackIndex) const;
+	const juce::MidiFile makeMIDIFile() const;
 
 	void changed();
 	void saved();

@@ -157,21 +157,21 @@ const std::tuple<double, juce::AudioSampleBuffer> SourceManager::getAudio(uint64
 	return { 0, juce::AudioSampleBuffer {} };
 }
 
-const juce::MidiMessageSequence SourceManager::getMIDI(uint64_t ref, int trackIndex) const {
+const juce::MidiMessageSequence SourceManager::makeMIDITrack(uint64_t ref, int trackIndex) const {
 	juce::ScopedReadLock locker(audioLock::getSourceLock());
 
 	if (auto ptr = this->getSource(ref, SourceType::MIDI)) {
-		return ptr->getMIDI(trackIndex);
+		return ptr->makeMIDITrack(trackIndex);
 	}
 
 	return {};
 }
 
-const juce::MidiFile SourceManager::getMIDIFile(uint64_t ref) const {
+const juce::MidiFile SourceManager::makeMIDIFile(uint64_t ref) const {
 	juce::ScopedReadLock locker(audioLock::getSourceLock());
 
 	if (auto ptr = this->getSource(ref, SourceType::MIDI)) {
-		return ptr->getMIDIFile();
+		return ptr->makeMIDIFile();
 	}
 
 	return {};

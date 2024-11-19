@@ -142,28 +142,24 @@ const std::tuple<double, juce::AudioSampleBuffer> SourceItem::getAudio() const {
 	return { this->container->getAudioSampleRate(), *(this->container->getAudioData()) };
 }
 
-const juce::MidiMessageSequence SourceItem::getMIDI(int trackIndex) const {
+const juce::MidiMessageSequence SourceItem::makeMIDITrack(int trackIndex) const {
 	/** Check Data */
 	if (!this->midiValid()) {
 		return juce::MidiMessageSequence{};
 	}
 
-	/** Copy Data */
-	if (auto track = this->container->getMidiData()->getTrack(trackIndex)) {
-		return juce::MidiMessageSequence{ *track };
-	}
-
-	return juce::MidiMessageSequence{};
+	/** Make Data */
+	return this->container->makeMIDITrack(trackIndex);
 }
 
-const juce::MidiFile SourceItem::getMIDIFile() const {
+const juce::MidiFile SourceItem::makeMIDIFile() const {
 	/** Check Data */
 	if (!this->midiValid()) {
 		return juce::MidiFile{};
 	}
 
-	/** Copy Data */
-	return *(this->container->getMidiData());
+	/** Make Data */
+	return this->container->makeMIDIFile();
 }
 
 void SourceItem::changed() {

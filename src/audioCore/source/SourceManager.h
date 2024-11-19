@@ -27,8 +27,8 @@ public:
 	void setAudio(uint64_t ref, const juce::String& name);
 	void setMIDI(uint64_t ref, const juce::String& name);
 	const std::tuple<double, juce::AudioSampleBuffer> getAudio(uint64_t ref) const;
-	const juce::MidiMessageSequence getMIDI(uint64_t ref, int trackIndex) const;
-	const juce::MidiFile getMIDIFile(uint64_t ref) const;
+	const juce::MidiMessageSequence makeMIDITrack(uint64_t ref, int trackIndex) const;
+	const juce::MidiFile makeMIDIFile(uint64_t ref) const;
 
 	void prepareAudioPlay(uint64_t ref);
 	void prepareMIDIPlay(uint64_t ref);
@@ -55,9 +55,6 @@ public:
 
 public:
 	int getMIDINoteNum(uint64_t ref, int track) const;
-	int getMIDISustainPedalNum(uint64_t ref, int track) const;
-	int getMIDISostenutoPedalNum(uint64_t ref, int track) const;
-	int getMIDISoftPedalNum(uint64_t ref, int track) const;
 	int getMIDIPitchWheelNum(uint64_t ref, int track) const;
 	int getMIDIAfterTouchNum(uint64_t ref, int track) const;
 	int getMIDIChannelPressureNum(uint64_t ref, int track) const;

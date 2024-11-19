@@ -1036,6 +1036,18 @@ namespace utils {
 		return juce::MidiMessage::getControllerName(channel);
 	}
 
+	void setMIDITimeFormat(juce::MidiFile& file, short timeFormat) {
+		if (timeFormat >= 0) {
+			file.setTicksPerQuarterNote(timeFormat);
+		}
+		else {
+			auto p = (signed char*)(&timeFormat);
+			int fps = -p[0];
+			int tpf = p[1];
+			file.setSmpteTimeFormat(fps, tpf);
+		}
+	}
+
 	bool readFileToBlock(
 		const juce::String& path, juce::MemoryBlock& block, const juce::File& base) {
 		juce::File file = base.getChildFile(path);

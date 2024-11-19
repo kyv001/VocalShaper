@@ -172,7 +172,7 @@ void SourceIO::run() {
 					juce::MidiFile buffer;
 					{
 						juce::ScopedReadLock locker(audioLock::getSourceLock());
-						buffer = SourceManager::getInstance()->getMIDIFile(ref);
+						buffer = SourceManager::getInstance()->makeMIDIFile(ref);
 					}
 					if (buffer.getNumTracks() <= 0) { continue; }
 
@@ -347,15 +347,7 @@ const juce::MidiFile SourceIO::mergeMIDI(const juce::MidiFile& data,
 
 void SourceIO::copyMIDITimeFormat(juce::MidiFile& dst, const juce::MidiFile& src) {
 	short timeFormat = src.getTimeFormat();
-	if (timeFormat >= 0) {
-		dst.setTicksPerQuarterNote(timeFormat);
-	}
-	else {
-		auto p = (signed char*)(&timeFormat) ;
-		int fps = -p[0];
-		int tpf = p[1];
-		dst.setSmpteTimeFormat(fps, tpf);
-	}
+	utils::setMIDITimeFormat(dst, timeFormat);
 }
 
 SourceIO* SourceIO::getInstance() {
