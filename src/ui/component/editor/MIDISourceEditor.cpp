@@ -506,7 +506,7 @@ void MIDISourceEditor::updateNoteTemp() {
 		/** Add Each Note */
 		this->midiDataTemp.ensureStorageAllocated(midiNoteList.size());
 		for (auto& note : midiNoteList) {
-			this->midiDataTemp.add({ note.startSec, note.endSec, note.pitch });
+			this->midiDataTemp.add({ note.timeSec, note.endSec, note.pitch });
 		}
 	}
 

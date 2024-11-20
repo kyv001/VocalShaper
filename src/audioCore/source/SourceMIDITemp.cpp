@@ -4,22 +4,12 @@
 #define MIDI_LYRICS_TYPE 0x05
 
 void SourceMIDITemp::setData(const juce::MidiFile& data) {
-	this->sourceData = data;
-
-	this->trackNum = data.getNumTracks();
+	/** Get Time Format */
 	this->timeFormat = data.getTimeFormat();
-	this->update();
-}
-
-void SourceMIDITemp::addTrack(const juce::MidiMessageSequence& track) {
-	this->sourceData.addTrack(track);
-
-	this->trackNum++;
-	this->update();
-}
-
-void SourceMIDITemp::update() {
+	
 	/** Clear Lists */
+	this->eventList.clear();
+
 	this->noteList.clear();
 	this->pitchWheelList.clear();
 	this->afterTouchList.clear();
@@ -28,130 +18,195 @@ void SourceMIDITemp::update() {
 	this->miscList.clear();
 
 	/** For Each Track */
-	for (int i = 0; i < this->sourceData.getNumTracks(); i++) {
-		juce::MidiMessageSequence track{ *(this->sourceData.getTrack(i)) };
-		track.updateMatchedPairs(utils::regardVel0NoteAsNoteOff());
-		double endTime = track.getEndTime();
-
-		/** Track Event Temp */
-		juce::Array<Note> noteTrack;
-		/** Second, Lyrics */
-		using LyricsItem = std::tuple<double, juce::String>;
-		const LyricsItem initLyricsItem{ -1.0, "" };
-		LyricsItem lastLyrics{ initLyricsItem };
-
-		juce::Array<IntParam> pitchWheel, channelPressure;
-		juce::Array<AfterTouch> afterTouch;
-		std::unordered_map<uint8_t, juce::Array<Controller>> controllers;
-		juce::Array<Misc> miscs;
-
-		/** For Each Event */
-		for (int i = 0; i < track.getNumEvents(); i++) {
-			auto event = track.getEventPointer(i);
-
-			/** Get Notes */
-			if (event->message.isNoteOn(!utils::regardVel0NoteAsNoteOff())) {
-				Note note{};
-				note.channel = (uint8_t)event->message.getChannel();
-				note.startSec = event->message.getTimeStamp();
-				note.endSec = event->noteOffObject ? event->noteOffObject->message.getTimeStamp() : endTime;
-				note.pitch = (uint8_t)event->message.getNoteNumber();
-				note.vel = event->message.getVelocity();
-				
-				if (juce::approximatelyEqual(std::get<0>(lastLyrics), note.startSec)) {
-					note.lyrics = std::get<1>(lastLyrics);
-					lastLyrics = initLyricsItem;
-				}
-
-				note.noteOnEvent = i;
-
-				noteTrack.add(note);
-				continue;
-			}
-			/** Get Lyrics */
-			if (event->message.isMetaEvent() && event->message.getMetaEventType() == MIDI_LYRICS_TYPE) {
-				lastLyrics = { event->message.getTimeStamp(), event->message.getTextFromTextMetaEvent() };
-				continue;
-			}
-			/** Pitch Wheel */
-			if (event->message.isPitchWheel()) {
-				IntParam param{};
-				param.channel = (uint8_t)event->message.getChannel();
-				param.timeSec = event->message.getTimeStamp();
-				param.value = event->message.getPitchWheelValue();
-				param.event = i;
-
-				pitchWheel.add(param);
-				continue;
-			}
-			/** After Touch */
-			if (event->message.isAftertouch()) {
-				AfterTouch param{};
-				param.channel = (uint8_t)event->message.getChannel();
-				param.timeSec = event->message.getTimeStamp();
-				param.notePitch = (uint8_t)event->message.getNoteNumber();
-				param.value = (uint8_t)event->message.getAfterTouchValue();
-				param.event = i;
-
-				afterTouch.add(param);
-				continue;
-			}
-			/** Channel Pressure */
-			if (event->message.isChannelPressure()) {
-				IntParam param{};
-				param.channel = (uint8_t)event->message.getChannel();
-				param.timeSec = event->message.getTimeStamp();
-				param.value = event->message.getChannelPressureValue();
-				param.event = i;
-
-				channelPressure.add(param);
-				continue;
-			}
-			/** MIDI CC */
-			if (event->message.isController()) {
-				Controller controller{};
-				controller.channel = (uint8_t)event->message.getChannel();
-				controller.timeSec = event->message.getTimeStamp();
-				controller.number = (uint8_t)event->message.getControllerNumber();
-				controller.value = (uint8_t)event->message.getControllerValue();
-				controller.event = i;
-
-				controllers[controller.number].add(controller);
-				continue;
-			}
-			/** Other exclude Lyrics */
-			{
-				Misc misc{};
-				misc.channel = (event->message.isSysEx() || event->message.isMetaEvent())
-					? 0 : (uint8_t)event->message.getChannel();
-				misc.timeSec = event->message.getTimeStamp();
-				misc.message = event->message;
-				misc.event = i;
-
-				miscs.add(misc);
-				continue;
-			}
-		}
-
-		/** Add Track to List */
-		this->noteList.add(noteTrack);
-		this->pitchWheelList.add(pitchWheel);
-		this->afterTouchList.add(afterTouch);
-		this->channelPressureList.add(channelPressure);
-		this->controllerList.add(controllers);
-		this->miscList.add(miscs);
+	for (int i = 0; i < data.getNumTracks(); i++) {
+		this->addTrack(*(data.getTrack(i)));
 	}
 }
 
-juce::MidiFile* SourceMIDITemp::getSourceData() {
-	return &(this->sourceData);
+void SourceMIDITemp::addTrack(const juce::MidiMessageSequence& track) {
+	juce::MidiMessageSequence trackTemp{ track };
+	trackTemp.updateMatchedPairs(utils::regardVel0NoteAsNoteOff());
+	double endTime = trackTemp.getEndTime();
+
+	/** Track Event Temp */
+	/** Second, Lyrics */
+	using LyricsItem = std::tuple<double, juce::String>;
+	const LyricsItem initLyricsItem{ -1.0, "" };
+	LyricsItem lastLyrics{ initLyricsItem };
+	std::unordered_map<juce::MidiMessageSequence::MidiEventHolder*, int> noteOffObjectTemp;
+
+	juce::OwnedArray<MIDIStruct> events;
+
+	juce::Array<int> noteTrack;
+	juce::Array<int> pitchWheel, channelPressure;
+	juce::Array<int> afterTouch;
+	std::unordered_map<uint8_t, juce::Array<int>> controllers;
+	juce::Array<int> miscs;
+
+	/** For Each Event */
+	for (int i = 0; i < trackTemp.getNumEvents(); i++) {
+		auto event = trackTemp.getEventPointer(i);
+
+		/** Get Notes */
+		if (event->message.isNoteOn(!utils::regardVel0NoteAsNoteOff())) {
+			auto note = std::make_unique<Note>();
+			note->channel = (uint8_t)event->message.getChannel();
+			note->timeSec = event->message.getTimeStamp();
+			note->endSec = event->noteOffObject ? event->noteOffObject->message.getTimeStamp() : endTime;
+			note->pitch = (uint8_t)event->message.getNoteNumber();
+			note->vel = event->message.getVelocity();
+
+			if (juce::approximatelyEqual(std::get<0>(lastLyrics), note->timeSec)) {
+				note->lyrics = std::get<1>(lastLyrics);
+				lastLyrics = initLyricsItem;
+			}
+
+			note->eventOffIndex = -1;
+			if (auto offObject = event->noteOffObject) {
+				noteOffObjectTemp[event->noteOffObject] = i;
+			}
+
+			note->eventIndex = i;
+			note->eventInListIndex = noteTrack.size();
+
+			events.add(std::move(note));
+			noteTrack.add(i);
+
+			continue;
+		}
+		/** Get Lyrics */
+		if (event->message.isMetaEvent() && event->message.getMetaEventType() == MIDI_LYRICS_TYPE) {
+			lastLyrics = { event->message.getTimeStamp(), event->message.getTextFromTextMetaEvent() };
+			continue;
+		}
+		/** Note Off Marker */
+		if (event->message.isNoteOff(utils::regardVel0NoteAsNoteOff())) {
+			auto noteOff = std::make_unique<NoteOffMarker>();
+			noteOff->channel = (uint8_t)event->message.getChannel();
+			noteOff->timeSec = event->message.getTimeStamp();
+
+			noteOff->eventOnIndex = -1;
+			{
+				auto tempIt = noteOffObjectTemp.find(event);
+				if (tempIt != noteOffObjectTemp.end()) {
+					int noteIndex = tempIt->second;
+					if (noteIndex >= 0 && noteIndex < i) {
+						if (auto note = dynamic_cast<Note*>(events[noteIndex])) {
+							if (juce::approximatelyEqual(note->endSec, noteOff->timeSec)) {
+								noteOff->eventOnIndex = noteIndex;
+							}
+						}
+					}
+
+					noteOffObjectTemp.erase(tempIt);
+				}
+			}
+
+			noteOff->eventIndex = i;
+			noteOff->eventInListIndex = -1;
+
+			events.add(std::move(noteOff));
+
+			continue;
+		}
+		/** Pitch Wheel */
+		if (event->message.isPitchWheel()) {
+			auto param = std::make_unique<IntParam>();
+			param->channel = (uint8_t)event->message.getChannel();
+			param->timeSec = event->message.getTimeStamp();
+			param->value = event->message.getPitchWheelValue();
+
+			param->eventIndex = i;
+			param->eventInListIndex = pitchWheel.size();
+
+			events.add(std::move(param));
+			pitchWheel.add(i);
+
+			continue;
+		}
+		/** After Touch */
+		if (event->message.isAftertouch()) {
+			auto param = std::make_unique<AfterTouch>();
+			param->channel = (uint8_t)event->message.getChannel();
+			param->timeSec = event->message.getTimeStamp();
+			param->notePitch = (uint8_t)event->message.getNoteNumber();
+			param->value = (uint8_t)event->message.getAfterTouchValue();
+
+			param->eventIndex = i;
+			param->eventInListIndex = afterTouch.size();
+
+			events.add(std::move(param));
+			afterTouch.add(i);
+
+			continue;
+		}
+		/** Channel Pressure */
+		if (event->message.isChannelPressure()) {
+			auto param = std::make_unique<IntParam>();
+			param->channel = (uint8_t)event->message.getChannel();
+			param->timeSec = event->message.getTimeStamp();
+			param->value = event->message.getChannelPressureValue();
+
+			param->eventIndex = i;
+			param->eventInListIndex = channelPressure.size();
+
+			events.add(std::move(param));
+			channelPressure.add(i);
+
+			continue;
+		}
+		/** MIDI CC */
+		if (event->message.isController()) {
+			auto controller = std::make_unique<Controller>();
+			controller->channel = (uint8_t)event->message.getChannel();
+			controller->timeSec = event->message.getTimeStamp();
+			controller->number = (uint8_t)event->message.getControllerNumber();
+			controller->value = (uint8_t)event->message.getControllerValue();
+
+			auto& controllerList = controllers[controller->number];
+
+			controller->eventIndex = i;
+			controller->eventInListIndex = controllerList.size();
+
+			events.add(std::move(controller));
+			controllerList.add(i);
+
+			continue;
+		}
+		/** Other exclude Lyrics */
+		{
+			auto misc = std::make_unique<Misc>();
+			misc->channel = (event->message.isSysEx() || event->message.isMetaEvent())
+				? 0 : (uint8_t)event->message.getChannel();
+			misc->timeSec = event->message.getTimeStamp();
+			misc->message = event->message;
+
+			misc->eventIndex = i;
+			misc->eventInListIndex = miscs.size();
+
+			events.add(std::move(misc));
+			miscs.add(i);
+
+			continue;
+		}
+	}
+
+	/** Add Track to List */
+	this->eventList.add(std::move(events));
+
+	this->noteList.add(noteTrack);
+	this->pitchWheelList.add(pitchWheel);
+	this->afterTouchList.add(afterTouch);
+	this->channelPressureList.add(channelPressure);
+	this->controllerList.add(controllers);
+	this->miscList.add(miscs);
 }
 
 const juce::MidiFile SourceMIDITemp::makeMIDIFile() const {
 	juce::MidiFile file;
 	utils::setMIDITimeFormat(file, this->timeFormat);
 	
-	for (int i = 0; i < this->trackNum; i++) {
+	for (int i = 0; i < this->eventList.size(); i++) {
 		auto track = this->makeMIDITrack(i);
 		file.addTrack(track);
 	}
@@ -161,94 +216,84 @@ const juce::MidiFile SourceMIDITemp::makeMIDIFile() const {
 
 const juce::MidiMessageSequence SourceMIDITemp::makeMIDITrack(int index) const {
 	/** Check Index */
-	if (index < 0 || index >= this->trackNum) { return juce::MidiMessageSequence{}; }
+	if (index < 0 || index >= this->eventList.size()) { return juce::MidiMessageSequence{}; }
 
 	/** Temp */
 	juce::MidiMessageSequence track;
-	auto controllerNumbers = this->getControllerNumbers(index);
 
-	/** Notes */
-	if (index < this->noteList.size()) {
-		auto& notes = this->noteList.getReference(index);
-		for (auto& note : notes) {
+	/** Events */
+	auto& trackSeq = this->eventList.getReference(index);
+	for (auto event : trackSeq) {
+		/** Note On */
+		if (auto note = dynamic_cast<Note*>(event)) {
 			/** Lyrics */
-			if (note.lyrics.isNotEmpty()) {
+			if (note->lyrics.isNotEmpty()) {
 				auto lyricsEvent = juce::MidiMessage::textMetaEvent(
-					MIDI_LYRICS_TYPE, note.lyrics);
-				lyricsEvent.setTimeStamp(note.startSec);
+					MIDI_LYRICS_TYPE, note->lyrics);
+				lyricsEvent.setTimeStamp(note->timeSec);
 
 				track.addEvent(lyricsEvent);
 			}
 
-			/** Note On Off */
+			/** Event */
 			auto onEvent = juce::MidiMessage::noteOn(
-				note.channel, note.pitch, note.vel);
-			auto offEvent = juce::MidiMessage::noteOff(
-				note.channel, note.pitch);
-			onEvent.setTimeStamp(note.startSec);
-			offEvent.setTimeStamp(note.endSec);
+				note->channel, note->pitch, note->vel);
+			onEvent.setTimeStamp(note->timeSec);
 
 			track.addEvent(onEvent);
-			track.addEvent(offEvent);
 		}
-	}
+		/** Note Off */
+		else if (auto noteOff = dynamic_cast<NoteOffMarker*>(event)) {
+			if (auto note = dynamic_cast<Note*>(trackSeq[noteOff->eventOnIndex])) {
+				/** Event */
+				auto offEvent = juce::MidiMessage::noteOff(
+					note->channel, note->pitch, note->vel);
+				offEvent.setTimeStamp(noteOff->timeSec);
 
-	/** Pitch Wheel */
-	if (index < this->pitchWheelList.size()) {
-		auto& pitchs = this->pitchWheelList.getReference(index);
-		for (auto& pitch : pitchs) {
-			auto event = juce::MidiMessage::pitchWheel(
-				pitch.channel, pitch.value);
-			event.setTimeStamp(pitch.timeSec);
-
-			track.addEvent(event);
-		}
-	}
-
-	/** After Touch */
-	if (index < this->afterTouchList.size()) {
-		auto& afterTouches = this->afterTouchList.getReference(index);
-		for (auto& afterTouch : afterTouches) {
-			auto event = juce::MidiMessage::aftertouchChange(
-				afterTouch.channel, afterTouch.notePitch, afterTouch.value);
-			event.setTimeStamp(afterTouch.timeSec);
-
-			track.addEvent(event);
-		}
-	}
-
-	/** Channel Pressure */
-	if (index < this->channelPressureList.size()) {
-		auto& channelPressures = this->channelPressureList.getReference(index);
-		for (auto& channelPressure : channelPressures) {
-			auto event = juce::MidiMessage::channelPressureChange(
-				channelPressure.channel, channelPressure.value);
-			event.setTimeStamp(channelPressure.timeSec);
-
-			track.addEvent(event);
-		}
-	}
-
-	/** Controller */
-	if (index < this->controllerList.size()) {
-		auto& controllers = this->controllerList.getReference(index);
-		for (auto& controller : controllers) {
-			for (auto& controllerPoint : controller.second) {
-				auto event = juce::MidiMessage::controllerEvent(
-					controllerPoint.channel, controllerPoint.number, controllerPoint.value);
-				event.setTimeStamp(controllerPoint.timeSec);
-
-				track.addEvent(event);
+				track.addEvent(offEvent);
 			}
 		}
-	}
+		/** Pitch Wheel */
+		else if (auto pitch = dynamic_cast<IntParam*>(event)) {
+			/** Event */
+			auto event = juce::MidiMessage::pitchWheel(
+				pitch->channel, pitch->value);
+			event.setTimeStamp(pitch->timeSec);
 
-	/** Misc */
-	if (index < this->miscList.size()) {
-		auto& miscs = this->miscList.getReference(index);
-		for (auto& misc : miscs) {
-			auto event = misc.message;
-			event.setTimeStamp(misc.timeSec);
+			track.addEvent(event);
+		}
+		/** After Touch */
+		else if (auto afterTouch = dynamic_cast<AfterTouch*>(event)) {
+			/** Event */
+			auto event = juce::MidiMessage::aftertouchChange(
+				afterTouch->channel, afterTouch->notePitch, afterTouch->value);
+			event.setTimeStamp(afterTouch->timeSec);
+
+			track.addEvent(event);
+		}
+		/** Channel Pressure */
+		else if (auto channelPressure = dynamic_cast<IntParam*>(event)) {
+			/** Event */
+			auto event = juce::MidiMessage::channelPressureChange(
+				channelPressure->channel, channelPressure->value);
+			event.setTimeStamp(channelPressure->timeSec);
+
+			track.addEvent(event);
+		}
+		/** Controller */
+		else if (auto controller = dynamic_cast<Controller*>(event)) {
+			/** Event */
+			auto event = juce::MidiMessage::controllerEvent(
+				controller->channel, controller->number, controller->value);
+			event.setTimeStamp(controller->timeSec);
+
+			track.addEvent(event);
+		}
+		/** Misc */
+		else if (auto misc = dynamic_cast<Misc*>(event)) {
+			/** Event */
+			auto event = misc->message;
+			event.setTimeStamp(misc->timeSec);
 
 			track.addEvent(event);
 		}
@@ -261,7 +306,19 @@ const juce::MidiMessageSequence SourceMIDITemp::makeMIDITrack(int index) const {
 }
 
 int SourceMIDITemp::getTrackNum() const {
-	return this->trackNum;
+	return this->eventList.size();
+}
+
+double SourceMIDITemp::getLength() const {
+	double result = 0;
+
+	for (auto& track : this->eventList) {
+		if (auto ptr = track.getLast()) {
+			result = std::max(result, ptr->timeSec);
+		}
+	}
+
+	return result;
 }
 
 int SourceMIDITemp::getNoteNum(int track) const {
@@ -331,17 +388,30 @@ const SourceMIDITemp::Note SourceMIDITemp::getNote(int track, int index) const {
 	if (track < 0 || track >= this->noteList.size()) {
 		return {};
 	}
+	if (track < 0 || track >= this->eventList.size()) {
+		return {};
+	}
 
 	auto& trackRef = this->noteList.getReference(track);
 	if (track < 0 || track >= trackRef.size()) {
 		return {};
 	}
 
-	return trackRef.getUnchecked(index);
+	int structIndex = trackRef[index];
+	auto& eventTrackRef = this->eventList.getReference(track);
+	if (structIndex < 0 || structIndex >= eventTrackRef.size()) {
+		return {};
+	}
+
+	return *(dynamic_cast<SourceMIDITemp::Note*>(
+		eventTrackRef.getUnchecked(structIndex)));
 }
 
 const SourceMIDITemp::IntParam SourceMIDITemp::getPitchWheel(int track, int index) const {
 	if (track < 0 || track >= this->pitchWheelList.size()) {
+		return {};
+	}
+	if (track < 0 || track >= this->eventList.size()) {
 		return {};
 	}
 
@@ -350,11 +420,21 @@ const SourceMIDITemp::IntParam SourceMIDITemp::getPitchWheel(int track, int inde
 		return {};
 	}
 
-	return trackRef.getUnchecked(index);
+	int structIndex = trackRef[index];
+	auto& eventTrackRef = this->eventList.getReference(track);
+	if (structIndex < 0 || structIndex >= eventTrackRef.size()) {
+		return {};
+	}
+
+	return *(dynamic_cast<SourceMIDITemp::IntParam*>(
+		eventTrackRef.getUnchecked(structIndex)));
 }
 
 const SourceMIDITemp::AfterTouch SourceMIDITemp::getAfterTouch(int track, int index) const {
 	if (track < 0 || track >= this->afterTouchList.size()) {
+		return {};
+	}
+	if (track < 0 || track >= this->eventList.size()) {
 		return {};
 	}
 
@@ -363,11 +443,21 @@ const SourceMIDITemp::AfterTouch SourceMIDITemp::getAfterTouch(int track, int in
 		return {};
 	}
 
-	return trackRef.getUnchecked(index);
+	int structIndex = trackRef[index];
+	auto& eventTrackRef = this->eventList.getReference(track);
+	if (structIndex < 0 || structIndex >= eventTrackRef.size()) {
+		return {};
+	}
+
+	return *(dynamic_cast<SourceMIDITemp::AfterTouch*>(
+		eventTrackRef.getUnchecked(structIndex)));
 }
 
 const SourceMIDITemp::IntParam SourceMIDITemp::getChannelPressure(int track, int index) const {
 	if (track < 0 || track >= this->channelPressureList.size()) {
+		return {};
+	}
+	if (track < 0 || track >= this->eventList.size()) {
 		return {};
 	}
 
@@ -376,11 +466,21 @@ const SourceMIDITemp::IntParam SourceMIDITemp::getChannelPressure(int track, int
 		return {};
 	}
 
-	return trackRef.getUnchecked(index);
+	int structIndex = trackRef[index];
+	auto& eventTrackRef = this->eventList.getReference(track);
+	if (structIndex < 0 || structIndex >= eventTrackRef.size()) {
+		return {};
+	}
+
+	return *(dynamic_cast<SourceMIDITemp::IntParam*>(
+		eventTrackRef.getUnchecked(structIndex)));
 }
 
 const SourceMIDITemp::Controller SourceMIDITemp::getController(int track, uint8_t number, int index) const {
 	if (track < 0 || track >= this->controllerList.size()) {
+		return {};
+	}
+	if (track < 0 || track >= this->eventList.size()) {
 		return {};
 	}
 
@@ -394,11 +494,21 @@ const SourceMIDITemp::Controller SourceMIDITemp::getController(int track, uint8_
 		return {};
 	}
 
-	return it->second.getUnchecked(index);
+	int structIndex = it->second[index];
+	auto& eventTrackRef = this->eventList.getReference(track);
+	if (structIndex < 0 || structIndex >= eventTrackRef.size()) {
+		return {};
+	}
+
+	return *(dynamic_cast<SourceMIDITemp::Controller*>(
+		eventTrackRef.getUnchecked(structIndex)));
 }
 
 const SourceMIDITemp::Misc SourceMIDITemp::getMisc(int track, int index) const {
 	if (track < 0 || track >= this->miscList.size()) {
+		return {};
+	}
+	if (track < 0 || track >= this->eventList.size()) {
 		return {};
 	}
 
@@ -407,5 +517,23 @@ const SourceMIDITemp::Misc SourceMIDITemp::getMisc(int track, int index) const {
 		return {};
 	}
 
-	return trackRef.getUnchecked(index);
+	int structIndex = trackRef[index];
+	auto& eventTrackRef = this->eventList.getReference(track);
+	if (structIndex < 0 || structIndex >= eventTrackRef.size()) {
+		return {};
+	}
+
+	return *(dynamic_cast<SourceMIDITemp::Misc*>(
+		eventTrackRef.getUnchecked(structIndex)));
+}
+
+void SourceMIDITemp::findMIDIMessages(
+	int track, double startSec, double length,
+	juce::MidiMessageSequence& list) const {
+	/** TODO */
+}
+
+void SourceMIDITemp::addMIDIMessages(
+	int track, const juce::MidiMessageSequence& list) {
+	/** TODO */
 }

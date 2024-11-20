@@ -11,7 +11,7 @@ SourceInternalContainer::SourceInternalContainer(
 	if (&other != this) {
 		if (other.midiData) {
 			this->midiData = std::make_unique<SourceMIDITemp>();
-			this->midiData->setData(*(other.midiData->getSourceData()));
+			this->midiData->setData(other.midiData->makeMIDIFile());
 		}
 		if (other.audioData) {
 			this->audioData = std::make_unique<juce::AudioSampleBuffer>(*(other.audioData));
@@ -49,11 +49,11 @@ const juce::MidiMessageSequence SourceInternalContainer::makeMIDITrack(int index
 	return {};
 }
 
-juce::MidiFile* SourceInternalContainer::getMidiData() const {
+double SourceInternalContainer::getMIDILength() const {
 	if (this->midiData) {
-		return this->midiData->getSourceData();
+		return this->midiData->getLength();
 	}
-	return nullptr;
+	return 0;
 }
 
 juce::AudioSampleBuffer* SourceInternalContainer::getAudioData() const {
@@ -224,6 +224,20 @@ const SourceMIDITemp::Controller SourceInternalContainer::getMIDIController(int 
 const SourceMIDITemp::Misc SourceInternalContainer::getMIDIMisc(int track, int index) const {
 	if (!this->midiData) { return {}; }
 	return this->midiData->getMisc(track, index);
+}
+
+void SourceInternalContainer::findMIDIMessages(
+	int track, double startSec, double length,
+	juce::MidiMessageSequence& list) const {
+	if (!this->midiData) { return; }
+	this->midiData->findMIDIMessages(
+		track, startSec, length, list);
+}
+
+void SourceInternalContainer::addMIDIMessages(
+	int track, const juce::MidiMessageSequence& list) {
+	if (!this->midiData) { return; }
+	this->midiData->addMIDIMessages(track, list);
 }
 
 void SourceInternalContainer::initAudioFormat() {

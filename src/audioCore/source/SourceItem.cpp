@@ -222,8 +222,7 @@ void SourceItem::prepareMIDIRecord() {
 	}
 
 	/** Init MIDI */
-	if (!this->container || !this->container->getMidiData()
-		|| this->container->getMidiData()->getNumTracks() == 0) {
+	if (!this->container || this->container->getTrackNum() == 0) {
 		this->prepareMIDIData();
 	}
 
@@ -248,7 +247,7 @@ const juce::String SourceItem::getFileName() const {
 }
 
 bool SourceItem::midiValid() const {
-	return !(this->type != SourceType::MIDI || !this->container || !this->container->getMidiData());
+	return !(this->type != SourceType::MIDI || !this->container);
 }
 
 bool SourceItem::audioValid() const {
@@ -258,13 +257,13 @@ bool SourceItem::audioValid() const {
 int SourceItem::getMIDITrackNum() const {
 	if (!this->midiValid()) { return 0; }
 
-	return this->container->getMidiData()->getNumTracks();
+	return this->container->getTrackNum();
 }
 
 double SourceItem::getMIDILength() const {
 	if (!this->midiValid()) { return 0; }
 
-	return this->container->getMidiData()->getLastTimestamp() + AudioConfig::getMidiTail();
+	return this->container->getMIDILength() + AudioConfig::getMidiTail();
 }
 
 double SourceItem::getAudioLength() const {
@@ -347,13 +346,12 @@ void SourceItem::readMIDIData(
 	if (!this->midiValid()) { return; }
 
 	/** Get MIDI Data */
-	juce::MidiMessageSequence total;
-	if (auto track = this->container->getMidiData()->getTrack(trackIndex)) {
-		total.addSequence(*track, 0, startTime, endTime);
-	}
+	juce::MidiMessageSequence temp;
+	this->container->findMIDIMessages(
+		trackIndex, startTime, endTime - startTime, temp);
 
 	/** Copy Data */
-	for (auto i : total) {
+	for (auto i : temp) {
 		auto& message = i->message;
 		double time = message.getTimeStamp();
 		buffer.addEvent(message,
@@ -409,21 +407,22 @@ void SourceItem::writeMIDIData(
 	this->prepareMIDIRecord();
 	if (!this->midiValid()) { return; }
 
-	/** Write To The Last Track */
-	if (auto track = const_cast<juce::MidiMessageSequence*>(
-		this->container->getMidiData()->getTrack(trackIndex))) {
-		for (const auto& m : buffer) {
-			double timeStamp = (m.samplePosition + offset) / this->playSampleRate;
-			if (timeStamp >= 0) {
-				auto mes = m.getMessage();
-				mes.setTimeStamp(timeStamp);
-				track->addEvent(mes);
-			}
+	/** Create Temp */
+	juce::MidiMessageSequence temp;
+	for (const auto& m : buffer) {
+		double timeStamp = (m.samplePosition + offset) / this->playSampleRate;
+		if (timeStamp >= 0) {
+			auto mes = m.getMessage();
+			mes.setTimeStamp(timeStamp);
+			temp.addEvent(mes);
 		}
-
-		/** Set Flag */
-		this->container->changed();
 	}
+
+	/** Write To Internal Data */
+	this->container->addMIDIMessages(trackIndex, temp);
+
+	/** Set Flag */
+	this->container->changed();
 }
 
 int SourceItem::getMIDINoteNum(int track) const {

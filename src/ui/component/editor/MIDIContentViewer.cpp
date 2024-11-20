@@ -129,7 +129,7 @@ void MIDIContentViewer::updateData() {
 		for (auto& note : midiNoteList) {
 			/** Set Temp */
 			Note noteTemp{};
-			noteTemp.startSec = note.startSec;
+			noteTemp.startSec = note.timeSec;
 			noteTemp.endSec = note.endSec;
 			noteTemp.num = note.pitch;
 			noteTemp.vel = note.vel;

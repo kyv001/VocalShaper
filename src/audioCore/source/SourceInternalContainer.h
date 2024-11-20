@@ -17,7 +17,7 @@ public:
 
 	const juce::MidiFile makeMIDIFile() const;
 	const juce::MidiMessageSequence makeMIDITrack(int index) const;
-	juce::MidiFile* getMidiData() const;
+	double getMIDILength() const;
 	juce::AudioSampleBuffer* getAudioData() const;
 	double getAudioSampleRate() const;
 
@@ -60,6 +60,13 @@ public:
 	const SourceMIDITemp::IntParam getMIDIChannelPressure(int track, int index) const;
 	const SourceMIDITemp::Controller getMIDIController(int track, uint8_t number, int index) const;
 	const SourceMIDITemp::Misc getMIDIMisc(int track, int index) const;
+
+public:
+	void findMIDIMessages(
+		int track, double startSec, double length,
+		juce::MidiMessageSequence& list) const;
+	void addMIDIMessages(
+		int track, const juce::MidiMessageSequence& list);
 
 private:
 	const SourceType type;

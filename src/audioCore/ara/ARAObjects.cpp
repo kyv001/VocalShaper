@@ -219,9 +219,9 @@ ARA::ARAContentNote ARAVirtualMusicalContext::getNote(int32_t index) const {
 		result.frequency = (float)juce::MidiMessage::getMidiNoteInHertz(note.pitch);
 		result.pitchNumber = note.pitch;
 		result.volume = note.vel / (float)UINT8_MAX;
-		result.startPosition = note.startSec;
+		result.startPosition = note.timeSec;
 		result.attackDuration = 0;
-		result.noteDuration = note.endSec - note.startSec;
+		result.noteDuration = note.endSec - note.timeSec;
 		result.signalDuration = result.noteDuration;
 
 		return result;
@@ -244,7 +244,7 @@ ARAExtension::ARAContentNote ARAVirtualMusicalContext::getNotePlus(int32_t index
 
 		ARAExtension::ARAContentNote result{};
 		result.channel = note.channel;
-		result.startSec = note.startSec;
+		result.startSec = note.timeSec;
 		result.endSec = note.endSec;
 		result.pitch = note.pitch;
 		result.vel = note.vel;

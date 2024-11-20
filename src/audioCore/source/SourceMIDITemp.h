@@ -8,55 +8,47 @@ public:
 
 	void setData(const juce::MidiFile& data);
 	void addTrack(const juce::MidiMessageSequence& track);
-	void update();
-
-	juce::MidiFile* getSourceData();
 
 	const juce::MidiFile makeMIDIFile() const;
 	const juce::MidiMessageSequence makeMIDITrack(int index) const;
 
-	struct Note {
-		uint8_t channel;
-		double startSec, endSec;
-		uint8_t pitch;
-		uint8_t vel;
+	struct MIDIStruct {
+		virtual ~MIDIStruct() = default;
+
+		uint8_t channel = 0;
+		double timeSec = 0;
+
+		int eventIndex = -1;
+		int eventInListIndex = -1;
+	};
+	struct Note : public MIDIStruct {
+		double endSec = 0;
+		uint8_t pitch = 0;
+		uint8_t vel = 0;
 		juce::String lyrics;
 
-		int noteOnEvent;
+		int eventOffIndex = -1;
 	};
-	struct IntParam {
-		uint8_t channel;
-		double timeSec;
-		int value;
-
-		int event;
+	struct NoteOffMarker : public MIDIStruct {
+		int eventOnIndex = -1;
 	};
-	struct AfterTouch {
-		uint8_t channel;
-		double timeSec;
-		uint8_t notePitch;
-		uint8_t value;
-
-		int event;
+	struct IntParam : public MIDIStruct {
+		int value = 0;
 	};
-	struct Controller {
-		uint8_t channel;
-		double timeSec;
-		uint8_t number;
-		uint8_t value;
-
-		int event;
+	struct AfterTouch : public MIDIStruct {
+		uint8_t notePitch = 0;
+		uint8_t value = 0;
 	};
-	struct Misc {
-		uint8_t channel;
-		double timeSec;
-
+	struct Controller : public MIDIStruct {
+		uint8_t number = 0;
+		uint8_t value = 0;
+	};
+	struct Misc : public MIDIStruct {
 		juce::MidiMessage message;
-
-		int event;
 	};
 	
 	int getTrackNum() const;
+	double getLength() const;
 
 	int getNoteNum(int track) const;
 	int getPitchWheelNum(int track) const;
@@ -73,18 +65,23 @@ public:
 	const Controller getController(int track, uint8_t number, int index) const;
 	const Misc getMisc(int track, int index) const;
 
+	void findMIDIMessages(
+		int track, double startSec, double length,
+		juce::MidiMessageSequence& list) const;
+	void addMIDIMessages(
+		int track, const juce::MidiMessageSequence& list);
+
 private:
-	juce::MidiFile sourceData;
-	int trackNum = 0;
+	juce::Array<juce::OwnedArray<MIDIStruct>> eventList;
 	short timeFormat = 480;
 
-	juce::Array<juce::Array<Note>> noteList;
+	juce::Array<juce::Array<int>> noteList;
 
-	juce::Array<juce::Array<IntParam>> pitchWheelList;
-	juce::Array<juce::Array<AfterTouch>> afterTouchList;
-	juce::Array<juce::Array<IntParam>> channelPressureList;
+	juce::Array<juce::Array<int>> pitchWheelList;
+	juce::Array<juce::Array<int>> afterTouchList;
+	juce::Array<juce::Array<int>> channelPressureList;
 
-	juce::Array<std::unordered_map<uint8_t, juce::Array<Controller>>> controllerList;
+	juce::Array<std::unordered_map<uint8_t, juce::Array<int>>> controllerList;
 
-	juce::Array<juce::Array<Misc>> miscList;
+	juce::Array<juce::Array<int>> miscList;
 };
