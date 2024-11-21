@@ -227,11 +227,11 @@ const SourceMIDITemp::Misc SourceInternalContainer::getMIDIMisc(int track, int i
 }
 
 void SourceInternalContainer::findMIDIMessages(
-	int track, double startSec, double length,
-	juce::MidiMessageSequence& list) const {
+	int track, double startSec, double endSec,
+	juce::MidiMessageSequence& list, int& indexTemp) const {
 	if (!this->midiData) { return; }
 	this->midiData->findMIDIMessages(
-		track, startSec, length, list);
+		track, startSec, endSec, list, indexTemp);
 }
 
 void SourceInternalContainer::addMIDIMessages(

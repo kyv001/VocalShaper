@@ -348,7 +348,8 @@ void SourceItem::readMIDIData(
 	/** Get MIDI Data */
 	juce::MidiMessageSequence temp;
 	this->container->findMIDIMessages(
-		trackIndex, startTime, endTime - startTime, temp);
+		trackIndex, startTime, endTime, temp,
+		this->playbackMIDIIndexTemp);
 
 	/** Copy Data */
 	for (auto i : temp) {

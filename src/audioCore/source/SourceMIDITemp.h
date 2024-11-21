@@ -66,8 +66,8 @@ public:
 	const Misc getMisc(int track, int index) const;
 
 	void findMIDIMessages(
-		int track, double startSec, double length,
-		juce::MidiMessageSequence& list) const;
+		int track, double startSec, double endSec,
+		juce::MidiMessageSequence& list, int& indexTemp) const;
 	void addMIDIMessages(
 		int track, const juce::MidiMessageSequence& list);
 
@@ -84,4 +84,8 @@ private:
 	juce::Array<std::unordered_map<uint8_t, juce::Array<int>>> controllerList;
 
 	juce::Array<juce::Array<int>> miscList;
+
+	int binarySearchStart(int track, int low, int high, double time) const;
+
+	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SourceMIDITemp)
 };

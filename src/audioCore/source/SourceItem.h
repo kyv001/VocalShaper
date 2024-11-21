@@ -92,6 +92,8 @@ private:
 	double playSampleRate = 0;
 	int blockSize = 0;
 
+	mutable int playbackMIDIIndexTemp = -1;
+
 	ChangedCallback callback;
 
 	void updateAudioResampler();

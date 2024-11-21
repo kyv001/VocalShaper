@@ -63,8 +63,8 @@ public:
 
 public:
 	void findMIDIMessages(
-		int track, double startSec, double length,
-		juce::MidiMessageSequence& list) const;
+		int track, double startSec, double endSec,
+		juce::MidiMessageSequence& list, int& indexTemp) const;
 	void addMIDIMessages(
 		int track, const juce::MidiMessageSequence& list);
 
