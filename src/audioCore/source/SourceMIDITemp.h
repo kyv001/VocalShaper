@@ -65,11 +65,20 @@ public:
 	const Controller getController(int track, uint8_t number, int index) const;
 	const Misc getMisc(int track, int index) const;
 
+	/** Second, Lyrics */
+	using LyricsItem = std::tuple<double, juce::String>;
+	using NoteOnTemp = std::unordered_map<uint16_t, int>;
+	static uint16_t makeNoteNumberWithChannel(uint8_t channel, uint8_t number);
 	void findMIDIMessages(
 		int track, double startSec, double endSec,
 		juce::MidiMessageSequence& list, int& indexTemp) const;
 	void addMIDIMessages(
-		int track, const juce::MidiMessageSequence& list);
+		int track, const juce::MidiMessageSequence& list,
+		NoteOnTemp& noteOnTemp, int& indexTemp, LyricsItem& lyricsTemp);
+
+	void clearUnmatchedMIDINotes(int track);
+	static void clearWriteTemps(
+		NoteOnTemp& noteOnTemp, int& indexTemp, LyricsItem& lyricsTemp);
 
 private:
 	juce::Array<juce::OwnedArray<MIDIStruct>> eventList;
@@ -86,6 +95,26 @@ private:
 	juce::Array<juce::Array<int>> miscList;
 
 	int binarySearchStart(int track, int low, int high, double time) const;
+	static void addMIDIMessages(
+		juce::OwnedArray<MIDIStruct>& eventsList,
+		juce::Array<int>& noteTrackIndexList,
+		juce::Array<int>& pitchWheelIndexList,
+		juce::Array<int>& channelPressureIndexList,
+		juce::Array<int>& afterTouchIndexList,
+		std::unordered_map<uint8_t, juce::Array<int>>& controllersIndexList,
+		juce::Array<int>& miscsIndexList,
+		const juce::MidiMessageSequence& list,
+		NoteOnTemp& noteOnTemp, int& indexTemp, LyricsItem& lyricsTemp);
+	static void addMIDIMessage(
+		juce::OwnedArray<MIDIStruct>& eventsList,
+		juce::Array<int>& noteTrackIndexList,
+		juce::Array<int>& pitchWheelIndexList,
+		juce::Array<int>& channelPressureIndexList,
+		juce::Array<int>& afterTouchIndexList,
+		std::unordered_map<uint8_t, juce::Array<int>>& controllersIndexList,
+		juce::Array<int>& miscsIndexList,
+		const juce::MidiMessage& message,
+		NoteOnTemp& noteOnTemp, int& indexTemp, LyricsItem& lyricsTemp);
 
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SourceMIDITemp)
 };

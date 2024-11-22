@@ -235,9 +235,17 @@ void SourceInternalContainer::findMIDIMessages(
 }
 
 void SourceInternalContainer::addMIDIMessages(
-	int track, const juce::MidiMessageSequence& list) {
+	int track, const juce::MidiMessageSequence& list,
+	SourceMIDITemp::NoteOnTemp& noteOnTemp, int& indexTemp,
+	SourceMIDITemp::LyricsItem& lyricsTemp) {
 	if (!this->midiData) { return; }
-	this->midiData->addMIDIMessages(track, list);
+	this->midiData->addMIDIMessages(
+		track, list, noteOnTemp, indexTemp, lyricsTemp);
+}
+
+void SourceInternalContainer::clearUnmatchedMIDINotes(int track) {
+	if (!this->midiData) { return; }
+	this->midiData->clearUnmatchedMIDINotes(track);
 }
 
 void SourceInternalContainer::initAudioFormat() {

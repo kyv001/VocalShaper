@@ -5,7 +5,13 @@
 #include "../Utils.h"
 
 SourceItem::SourceItem(SourceType type)
-	: type(type) {}
+	: type(type) {
+	/** Init MIDI Temp */
+	SourceMIDITemp::clearWriteTemps(
+		this->recordMIDINoteOnTemp,
+		this->recordMIDIIndexTemp,
+		this->recordMIDILyricsTemp);
+}
 
 SourceItem::~SourceItem() {
 	this->releaseContainer();
@@ -305,6 +311,12 @@ void SourceItem::forkIfNeed() {
 			this->memSource = nullptr;
 		}
 
+		/** Clear Write Temp */
+		SourceMIDITemp::clearWriteTemps(
+			this->recordMIDINoteOnTemp,
+			this->recordMIDIIndexTemp,
+			this->recordMIDILyricsTemp);
+
 		/** Fork Source */
 		auto name = this->container->getName();
 		this->container = SourceInternalPool::getInstance()->fork(name);
@@ -420,7 +432,9 @@ void SourceItem::writeMIDIData(
 	}
 
 	/** Write To Internal Data */
-	this->container->addMIDIMessages(trackIndex, temp);
+	this->container->addMIDIMessages(trackIndex, temp,
+		this->recordMIDINoteOnTemp, this->recordMIDIIndexTemp,
+		this->recordMIDILyricsTemp);
 
 	/** Set Flag */
 	this->container->changed();
@@ -531,6 +545,11 @@ void SourceItem::prepareMIDIData() {
 
 void SourceItem::releaseContainer() {
 	if (this->container) {
+		SourceMIDITemp::clearWriteTemps(
+			this->recordMIDINoteOnTemp,
+			this->recordMIDIIndexTemp,
+			this->recordMIDILyricsTemp);
+
 		auto name = this->container->getName();
 		this->container = nullptr;
 		SourceInternalPool::getInstance()->checkSourceReleased(name);
