@@ -76,7 +76,6 @@ public:
 		int track, const juce::MidiMessageSequence& list,
 		NoteOnTemp& noteOnTemp, int& indexTemp, LyricsItem& lyricsTemp);
 
-	void clearUnmatchedMIDINotes(int track);
 	static void clearWriteTemps(
 		NoteOnTemp& noteOnTemp, int& indexTemp, LyricsItem& lyricsTemp);
 

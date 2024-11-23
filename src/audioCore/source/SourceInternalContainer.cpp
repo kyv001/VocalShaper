@@ -243,11 +243,6 @@ void SourceInternalContainer::addMIDIMessages(
 		track, list, noteOnTemp, indexTemp, lyricsTemp);
 }
 
-void SourceInternalContainer::clearUnmatchedMIDINotes(int track) {
-	if (!this->midiData) { return; }
-	this->midiData->clearUnmatchedMIDINotes(track);
-}
-
 void SourceInternalContainer::initAudioFormat() {
 	this->format.clear();
 	this->metaData.clear();

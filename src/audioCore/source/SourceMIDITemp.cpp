@@ -25,6 +25,10 @@ void SourceMIDITemp::setData(const juce::MidiFile& data) {
 }
 
 void SourceMIDITemp::addTrack(const juce::MidiMessageSequence& track) {
+	/** Ensure Note Matched */
+	juce::MidiMessageSequence trackTemp{ track };
+	trackTemp.updateMatchedPairs(utils::regardVel0NoteAsNoteOff());
+
 	/** Track Event Temp */
 	LyricsItem lastLyrics = MIDI_LYRICS_TEMP_INIT;
 	NoteOnTemp noteOnObjectTemp;
@@ -42,7 +46,7 @@ void SourceMIDITemp::addTrack(const juce::MidiMessageSequence& track) {
 	/** Add Events */
 	this->addMIDIMessages(
 		events, noteTrack, pitchWheel, channelPressure, afterTouch, controllers, miscs,
-		track, noteOnObjectTemp, indexTemp, lastLyrics);
+		trackTemp, noteOnObjectTemp, indexTemp, lastLyrics);
 
 	/** Add Track to List */
 	this->eventList.add(std::move(events));
@@ -53,9 +57,6 @@ void SourceMIDITemp::addTrack(const juce::MidiMessageSequence& track) {
 	this->channelPressureList.add(channelPressure);
 	this->controllerList.add(controllers);
 	this->miscList.add(miscs);
-
-	/** Remove Unmatched Notes */
-	this->clearUnmatchedMIDINotes(this->eventList.size() - 1);
 }
 
 const juce::MidiFile SourceMIDITemp::makeMIDIFile() const {
@@ -440,10 +441,6 @@ void SourceMIDITemp::addMIDIMessages(
 	SourceMIDITemp::addMIDIMessages(
 		trackSeq, noteSeq, pitchWheelSeq, channelPressureSeq, afterTouchSeq, controllerSeq, miscSeq,
 		list, noteOnTemp, indexTemp, lyricsTemp);
-}
-
-void SourceMIDITemp::clearUnmatchedMIDINotes(int track) {
-	/** TODO */
 }
 
 void SourceMIDITemp::clearWriteTemps(
