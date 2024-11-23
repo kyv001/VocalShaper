@@ -322,19 +322,19 @@ void SourceMIDITemp::findMIDIMessages(
 
 	/** Check Start Index */
 	if (indexTemp < 0 || indexTemp >= trackSeq.size()) {
-		indexTemp = this->binarySearchStart(track, 0, trackSeq.size() - 1, startSec);
+		indexTemp = SourceMIDITemp::binarySearchStart(trackSeq, 0, trackSeq.size() - 1, startSec);
 	}
 	else {
 		auto current = trackSeq.getUnchecked(indexTemp);
 		if (current->timeSec >= startSec) {
 			if (auto last = trackSeq[indexTemp - 1]) {
 				if (last->timeSec >= startSec) {
-					indexTemp = this->binarySearchStart(track, 0, indexTemp, startSec);
+					indexTemp = SourceMIDITemp::binarySearchStart(trackSeq, 0, indexTemp, startSec);
 				}
 			}
 		}
 		else {
-			indexTemp = this->binarySearchStart(track, indexTemp, trackSeq.size() - 1, startSec);
+			indexTemp = SourceMIDITemp::binarySearchStart(trackSeq, indexTemp, trackSeq.size() - 1, startSec);
 		}
 	}
 	if (indexTemp < 0) { return; }
@@ -454,14 +454,13 @@ void SourceMIDITemp::clearWriteTemps(
 }
 
 int SourceMIDITemp::binarySearchStart(
-	int track, int low, int high, double time) const {
-	auto& trackSeq = this->eventList.getReference(track);
+	const juce::OwnedArray<MIDIStruct>& eventsList, int low, int high, double time) {
 
 	while (low <= high) {
 		int mid = low + (high - low) / 2;
 
-		auto current = trackSeq[mid];
-		auto next = trackSeq[mid + 1];
+		auto current = eventsList[mid];
+		auto next = eventsList[mid + 1];
 		if (!current) { return -1; }
 
 		if (mid == low) {
@@ -494,6 +493,83 @@ int SourceMIDITemp::binarySearchStart(
 	return -1;
 }
 
+int SourceMIDITemp::linearSearchInsert(
+	const juce::OwnedArray<MIDIStruct>& eventsList, int indexStart, double time) {
+	/** First */
+	if (indexStart == 0 && eventsList.size() > 0
+		&& time < eventsList.getFirst()->timeSec) {
+		return 0;
+	}
+
+	/** Search For Each Events */
+	for (int i = indexStart; i < eventsList.size() - 1; i++) {
+		auto current = eventsList[i];
+		auto next = eventsList[i + 1];
+		if (time >= current->timeSec && time < next->timeSec) {
+			return i + 1;
+		}
+	}
+
+	/** Last */
+	return eventsList.size();
+}
+
+int SourceMIDITemp::getIndexTempInsertIndex(int index,
+	juce::OwnedArray<MIDIStruct>& eventsList,
+	const juce::MidiMessage& message) {
+	for (int i = index - 1; i >= 0; i--) {
+		auto current = eventsList[i];
+
+		/** Get Notes */
+		if (message.isNoteOn(!utils::regardVel0NoteAsNoteOff())) {
+			if (auto note = dynamic_cast<Note*>(current)) {
+				return note->eventInListIndex + 1;
+			}
+		}
+		/** Get Lyrics */
+		else if (message.isMetaEvent() && message.getMetaEventType() == MIDI_LYRICS_TYPE) {
+			return -1;
+		}
+		/** Note Off Marker */
+		else if (message.isNoteOff(utils::regardVel0NoteAsNoteOff())) {
+			return -1;
+		}
+		/** Pitch Wheel */
+		else if (message.isPitchWheel()) {
+			if (auto pitchWheel = dynamic_cast<IntParam*>(current)) {
+				return pitchWheel->eventInListIndex + 1;
+			}
+		}
+		/** After Touch */
+		else if (message.isAftertouch()) {
+			if (auto afterTouch = dynamic_cast<AfterTouch*>(current)) {
+				return afterTouch->eventInListIndex + 1;
+			}
+		}
+		/** Channel Pressure */
+		else if (message.isChannelPressure()) {
+			if (auto channelPressure = dynamic_cast<IntParam*>(current)) {
+				return channelPressure->eventInListIndex + 1;
+			}
+		}
+		/** MIDI CC */
+		else if (message.isController()) {
+			if (auto controller = dynamic_cast<Controller*>(current)) {
+				return controller->eventInListIndex + 1;
+			}
+		}
+		/** Other exclude Lyrics */
+		else {
+			if (auto misc = dynamic_cast<Misc*>(current)) {
+				return misc->eventInListIndex + 1;
+			}
+		}
+	}
+
+	/** First */
+	return 0;
+}
+
 void SourceMIDITemp::addMIDIMessages(
 	juce::OwnedArray<MIDIStruct>& eventsList,
 	juce::Array<int>& noteTrackIndexList,
@@ -521,9 +597,30 @@ void SourceMIDITemp::addMIDIMessage(
 	juce::Array<int>& miscsIndexList,
 	const juce::MidiMessage& message,
 	NoteOnTemp& noteOnTemp, int& indexTemp, LyricsItem& lyricsTemp) {
-	/** TODO Select Insert Index And Update Index Temp */
-	int index = eventsList.size();
-	int listIndex = -1;
+	/** Select Insert Index And Update Index Temp */
+	if (indexTemp <= 0 || indexTemp > eventsList.size()) {
+		indexTemp = SourceMIDITemp::linearSearchInsert(eventsList, 0, message.getTimeStamp());
+	}
+	else {
+		auto last = eventsList[indexTemp - 1];
+		if (message.getTimeStamp() < last->timeSec) {
+			indexTemp = SourceMIDITemp::linearSearchInsert(eventsList, 0, message.getTimeStamp());
+		}
+		else {
+			if (auto next = eventsList[indexTemp]) {
+				if (message.getTimeStamp() > next->timeSec) {
+					indexTemp = SourceMIDITemp::linearSearchInsert(eventsList, indexTemp, message.getTimeStamp());
+				}
+			}
+		}
+	}
+
+	/** Get Index Temp Index */
+	int listIndex = SourceMIDITemp::getIndexTempInsertIndex(
+		indexTemp, eventsList, message);
+
+	/** Index List Ptr */
+	juce::Array<int>* indexListPtr = nullptr;
 
 	/** Get Notes */
 	if (message.isNoteOn(!utils::regardVel0NoteAsNoteOff())) {
@@ -540,23 +637,25 @@ void SourceMIDITemp::addMIDIMessage(
 		}
 
 		note->eventOffIndex = -1;
-		noteOnTemp[SourceMIDITemp::makeNoteNumberWithChannel(note->channel, note->pitch)] = index;
+		noteOnTemp[SourceMIDITemp::makeNoteNumberWithChannel(note->channel, note->pitch)] = indexTemp;
 
-		note->eventIndex = index;
+		note->eventIndex = indexTemp;
 		note->eventInListIndex = listIndex;
 
-		eventsList.insert(index, std::move(note));
-		noteTrackIndexList.insert(listIndex, index);
+		eventsList.insert(indexTemp, std::move(note));
+		noteTrackIndexList.insert(listIndex, indexTemp);
 
-		return;
+		indexListPtr = &noteTrackIndexList;
 	}
 	/** Get Lyrics */
-	if (message.isMetaEvent() && message.getMetaEventType() == MIDI_LYRICS_TYPE) {
+	else if (message.isMetaEvent() && message.getMetaEventType() == MIDI_LYRICS_TYPE) {
 		lyricsTemp = { message.getTimeStamp(), message.getTextFromTextMetaEvent() };
+
+		/** Pass Though */
 		return;
 	}
 	/** Note Off Marker */
-	if (message.isNoteOff(utils::regardVel0NoteAsNoteOff())) {
+	else if (message.isNoteOff(utils::regardVel0NoteAsNoteOff())) {
 		auto noteOff = std::make_unique<NoteOffMarker>();
 		noteOff->channel = (uint8_t)message.getChannel();
 		noteOff->timeSec = message.getTimeStamp();
@@ -567,10 +666,10 @@ void SourceMIDITemp::addMIDIMessage(
 				(uint8_t)message.getChannel(), (uint8_t)message.getNoteNumber()));
 			if (tempIt != noteOnTemp.end()) {
 				int noteIndex = tempIt->second;
-				if (noteIndex >= 0 && noteIndex < index) {
+				if (noteIndex >= 0 && noteIndex < indexTemp) {
 					if (auto note = dynamic_cast<Note*>(eventsList[noteIndex])) {
 						note->endSec = noteOff->timeSec;
-						note->eventOffIndex = index;
+						note->eventOffIndex = indexTemp;
 
 						noteOff->eventOnIndex = noteIndex;
 					}
@@ -580,61 +679,59 @@ void SourceMIDITemp::addMIDIMessage(
 			}
 		}
 
-		noteOff->eventIndex = index;
+		noteOff->eventIndex = indexTemp;
 		noteOff->eventInListIndex = listIndex;
 
-		eventsList.insert(index, std::move(noteOff));
-
-		return;
+		eventsList.insert(indexTemp, std::move(noteOff));
 	}
 	/** Pitch Wheel */
-	if (message.isPitchWheel()) {
+	else if (message.isPitchWheel()) {
 		auto param = std::make_unique<IntParam>();
 		param->channel = (uint8_t)message.getChannel();
 		param->timeSec = message.getTimeStamp();
 		param->value = message.getPitchWheelValue();
 
-		param->eventIndex = index;
+		param->eventIndex = indexTemp;
 		param->eventInListIndex = listIndex;
 
-		eventsList.insert(index, std::move(param));
-		pitchWheelIndexList.insert(listIndex, index);
+		eventsList.insert(indexTemp, std::move(param));
+		pitchWheelIndexList.insert(listIndex, indexTemp);
 
-		return;
+		indexListPtr = &pitchWheelIndexList;
 	}
 	/** After Touch */
-	if (message.isAftertouch()) {
+	else if (message.isAftertouch()) {
 		auto param = std::make_unique<AfterTouch>();
 		param->channel = (uint8_t)message.getChannel();
 		param->timeSec = message.getTimeStamp();
 		param->notePitch = (uint8_t)message.getNoteNumber();
 		param->value = (uint8_t)message.getAfterTouchValue();
 
-		param->eventIndex = index;
+		param->eventIndex = indexTemp;
 		param->eventInListIndex = listIndex;
 
-		eventsList.insert(index, std::move(param));
-		afterTouchIndexList.insert(listIndex, index);
+		eventsList.insert(indexTemp, std::move(param));
+		afterTouchIndexList.insert(listIndex, indexTemp);
 
-		return;
+		indexListPtr = &afterTouchIndexList;
 	}
 	/** Channel Pressure */
-	if (message.isChannelPressure()) {
+	else if (message.isChannelPressure()) {
 		auto param = std::make_unique<IntParam>();
 		param->channel = (uint8_t)message.getChannel();
 		param->timeSec = message.getTimeStamp();
 		param->value = message.getChannelPressureValue();
 
-		param->eventIndex = index;
+		param->eventIndex = indexTemp;
 		param->eventInListIndex = listIndex;
 
-		eventsList.insert(index, std::move(param));
-		channelPressureIndexList.insert(listIndex, index);
+		eventsList.insert(indexTemp, std::move(param));
+		channelPressureIndexList.insert(listIndex, indexTemp);
 
-		return;
+		indexListPtr = &channelPressureIndexList;
 	}
 	/** MIDI CC */
-	if (message.isController()) {
+	else if (message.isController()) {
 		auto controller = std::make_unique<Controller>();
 		controller->channel = (uint8_t)message.getChannel();
 		controller->timeSec = message.getTimeStamp();
@@ -643,28 +740,53 @@ void SourceMIDITemp::addMIDIMessage(
 
 		auto& controllerList = controllersIndexList[controller->number];
 
-		controller->eventIndex = index;
+		controller->eventIndex = indexTemp;
 		controller->eventInListIndex = listIndex;
 
-		eventsList.insert(index, std::move(controller));
-		controllerList.insert(listIndex, index);
+		eventsList.insert(indexTemp, std::move(controller));
+		controllerList.insert(listIndex, indexTemp);
 
-		return;
+		indexListPtr = &controllerList;
 	}
 	/** Other exclude Lyrics */
-	{
+	else {
 		auto misc = std::make_unique<Misc>();
 		misc->channel = (message.isSysEx() || message.isMetaEvent())
 			? 0 : (uint8_t)message.getChannel();
 		misc->timeSec = message.getTimeStamp();
 		misc->message = message;
 
-		misc->eventIndex = index;
+		misc->eventIndex = indexTemp;
 		misc->eventInListIndex = listIndex;
 
-		eventsList.insert(index, std::move(misc));
-		miscsIndexList.insert(listIndex, index);
+		eventsList.insert(indexTemp, std::move(misc));
+		miscsIndexList.insert(listIndex, indexTemp);
 
-		return;
+		indexListPtr = &miscsIndexList;
 	}
+
+	/** Increase Events List Index */
+	for (int i = indexTemp + 1; i < eventsList.size(); i++) {
+		auto current = eventsList[i];
+		current->eventIndex++;
+	}
+
+	if (indexListPtr) {
+		/** Increase Index List Index */
+		auto newItem = eventsList[indexTemp];
+		for (int i = indexTemp + 1; i < eventsList.size(); i++) {
+			auto current = eventsList[i];
+			if (typeid(*newItem) == typeid(*current)) {
+				current->eventInListIndex++;
+			}
+		}
+
+		/** Increase Index List Data */
+		for (int i = listIndex + 1; i < indexListPtr->size(); i++) {
+			(indexListPtr->getReference(i))++;
+		}
+	}
+
+	/** Increase Index Temp */
+	indexTemp++;
 }

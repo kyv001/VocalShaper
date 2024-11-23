@@ -94,7 +94,14 @@ private:
 
 	juce::Array<juce::Array<int>> miscList;
 
-	int binarySearchStart(int track, int low, int high, double time) const;
+	static int binarySearchStart(
+		const juce::OwnedArray<MIDIStruct>& eventsList, int low, int high, double time);
+	static int linearSearchInsert(
+		const juce::OwnedArray<MIDIStruct>& eventsList, int indexStart, double time);
+	static int getIndexTempInsertIndex(int index,
+		juce::OwnedArray<MIDIStruct>& eventsList,
+		const juce::MidiMessage& message);
+
 	static void addMIDIMessages(
 		juce::OwnedArray<MIDIStruct>& eventsList,
 		juce::Array<int>& noteTrackIndexList,

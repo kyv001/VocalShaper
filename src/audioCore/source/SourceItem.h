@@ -93,7 +93,7 @@ private:
 	int blockSize = 0;
 
 	mutable int playbackMIDIIndexTemp = -1;
-	int recordMIDIIndexTemp = -1;
+	int recordMIDIIndexTemp = 0;
 	SourceMIDITemp::NoteOnTemp recordMIDINoteOnTemp;
 	SourceMIDITemp::LyricsItem recordMIDILyricsTemp;
 
