@@ -32,8 +32,6 @@ public:
 
 	void prepareAudioPlay(uint64_t ref);
 	void prepareMIDIPlay(uint64_t ref);
-	void prepareAudioRecord(uint64_t ref, int channelNum);
-	void prepareMIDIRecord(uint64_t ref);
 
 	using ChangedCallback = SourceItem::ChangedCallback;
 	void setCallback(uint64_t ref, SourceType type,
@@ -49,9 +47,6 @@ public:
 		int dataOffset, int length) const;
 	void readMIDIData(uint64_t ref, juce::MidiBuffer& buffer, double baseTime,
 		double startTime, double endTime, int trackIndex) const;
-	void writeAudioData(uint64_t ref, juce::AudioBuffer<float>& buffer, int offset,
-		int trackChannelNum);
-	void writeMIDIData(uint64_t ref, const juce::MidiBuffer& buffer, int offset, int trackIndex);
 
 public:
 	int getMIDINoteNum(uint64_t ref, int track) const;

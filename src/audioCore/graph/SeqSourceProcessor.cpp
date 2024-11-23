@@ -516,13 +516,6 @@ int SeqSourceProcessor::getTotalMIDITrackNum() const {
 }
 
 void SeqSourceProcessor::setRecording(bool recording) {
-	if (recording) {
-		this->applyAudioIfNeed();
-		this->applyMIDIIfNeed();
-		SourceManager::getInstance()->prepareAudioRecord(this->audioSourceRef,
-			this->audioChannels.size());
-		SourceManager::getInstance()->prepareMIDIRecord(this->midiSourceRef);
-	}
 	this->recordingFlag = recording;
 
 	/** Sync ARA */
@@ -821,16 +814,6 @@ void SeqSourceProcessor::readMIDIData(
 	SourceManager::getInstance()->readMIDIData(this->midiSourceRef,
 		buffer, baseTime / sampleRate, startTime / sampleRate, endTime / sampleRate,
 		this->currentMIDITrack);
-}
-
-void SeqSourceProcessor::writeAudioData(juce::AudioBuffer<float>& buffer, int offset) {
-	SourceManager::getInstance()->writeAudioData(this->audioSourceRef,
-		buffer, offset, this->audioChannels.size());
-}
-
-void SeqSourceProcessor::writeMIDIData(const juce::MidiBuffer& buffer, int offset) {
-	SourceManager::getInstance()->writeMIDIData(this->midiSourceRef,
-		buffer, offset, this->currentMIDITrack);
 }
 
 bool SeqSourceProcessor::isAudioSaved() const {

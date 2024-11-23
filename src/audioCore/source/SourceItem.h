@@ -29,8 +29,6 @@ public:
 
 	void prepareAudioPlay();
 	void prepareMIDIPlay();
-	void prepareAudioRecord(int channelNum);
-	void prepareMIDIRecord();
 
 	void setSampleRate(int blockSize, double sampleRate);
 
@@ -58,10 +56,6 @@ public:
 		int dataOffset, int length) const;
 	void readMIDIData(juce::MidiBuffer& buffer, double baseTime,
 		double startTime, double endTime, int trackIndex) const;
-	void writeAudioData(juce::AudioBuffer<float>& buffer,
-		int offset, int trackChannelNum);
-	void writeMIDIData(const juce::MidiBuffer& buffer,
-		int offset, int trackIndex);
 
 public:
 	int getMIDINoteNum(int track) const;
@@ -93,16 +87,10 @@ private:
 	int blockSize = 0;
 
 	mutable int playbackMIDIIndexTemp = -1;
-	int recordMIDIIndexTemp = 0;
-	SourceMIDITemp::NoteOnTemp recordMIDINoteOnTemp;
-	SourceMIDITemp::LyricsItem recordMIDILyricsTemp;
 
 	ChangedCallback callback;
 
 	void updateAudioResampler();
-
-	void prepareAudioData(double length, int channelNum);
-	void prepareMIDIData();
 
 	void releaseContainer();
 };

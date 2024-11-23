@@ -5,13 +5,7 @@
 #include "../Utils.h"
 
 SourceItem::SourceItem(SourceType type)
-	: type(type) {
-	/** Init MIDI Temp */
-	SourceMIDITemp::clearWriteTemps(
-		this->recordMIDINoteOnTemp,
-		this->recordMIDIIndexTemp,
-		this->recordMIDILyricsTemp);
-}
+	: type(type) {}
 
 SourceItem::~SourceItem() {
 	this->releaseContainer();
@@ -206,36 +200,6 @@ void SourceItem::prepareMIDIPlay() {
 	/** Nothing To Do */
 }
 
-void SourceItem::prepareAudioRecord(int channelNum) {
-	/** Check Data */
-	if (this->type != SourceType::Audio) {
-		return;
-	}
-
-	/** Init Audio */
-	if (!this->container || !this->container->getAudioData()) {
-		this->prepareAudioData(this->recordInitLength, channelNum);
-	}
-
-	/** Check For Fork */
-	this->forkIfNeed();
-}
-
-void SourceItem::prepareMIDIRecord() {
-	/** Check Data */
-	if (this->type != SourceType::MIDI) {
-		return;
-	}
-
-	/** Init MIDI */
-	if (!this->container || this->container->getTrackNum() == 0) {
-		this->prepareMIDIData();
-	}
-
-	/** Check For Fork */
-	this->forkIfNeed();
-}
-
 void SourceItem::setSampleRate(int blockSize, double sampleRate) {
 	this->playSampleRate = sampleRate;
 	this->blockSize = blockSize;
@@ -311,12 +275,6 @@ void SourceItem::forkIfNeed() {
 			this->memSource = nullptr;
 		}
 
-		/** Clear Write Temp */
-		SourceMIDITemp::clearWriteTemps(
-			this->recordMIDINoteOnTemp,
-			this->recordMIDIIndexTemp,
-			this->recordMIDILyricsTemp);
-
 		/** Fork Source */
 		auto name = this->container->getName();
 		this->container = SourceInternalPool::getInstance()->fork(name);
@@ -370,74 +328,6 @@ void SourceItem::readMIDIData(
 		buffer.addEvent(message,
 			std::floor((time - baseTime) * this->playSampleRate));
 	}
-}
-
-void SourceItem::writeAudioData(
-	juce::AudioBuffer<float>& buffer, int offset,
-	int trackChannelNum) {
-	/** Get Time */
-	int srcLength = buffer.getNumSamples();
-	int srcStartSample = offset;
-	//int bufferStartSample = 0;
-	/*if (srcStartSample < 0) {
-		bufferStartSample -= srcStartSample;
-		srcLength -= bufferStartSample;
-		srcStartSample = 0;
-	}*/
-
-	/** Prepare Resampling */
-	this->prepareAudioRecord(trackChannelNum);
-	if (!this->audioValid()) { return; }
-	auto audioData = this->container->getAudioData();
-	double audioSampleRate = this->container->getAudioSampleRate();
-
-	double resampleRatio = this->playSampleRate / audioSampleRate;
-	int channelNum = std::min(buffer.getNumChannels(), audioData->getNumChannels());
-
-	/** Increase Source Length */
-	int endLength = offset + buffer.getNumSamples();
-	int trueEndLength = std::ceil(endLength / resampleRatio);
-	if (trueEndLength > audioData->getNumSamples()) {
-		audioData->setSize(audioData->getNumChannels(),
-			audioData->getNumSamples() + this->recordInitLength * audioSampleRate,
-			true, true, true);
-		this->updateAudioResampler();
-	}
-
-	/** Copy Data Resampled */
-	utils::bufferOutputResampledFixed(*(audioData), buffer,
-		this->recordBuffer, this->recordBufferTemp,
-		resampleRatio, channelNum, audioSampleRate,
-		0, srcStartSample, srcLength);
-
-	/** Set Flag */
-	this->container->changed();
-}
-
-void SourceItem::writeMIDIData(
-	const juce::MidiBuffer& buffer, int offset, int trackIndex) {
-	/** Prepare Write */
-	this->prepareMIDIRecord();
-	if (!this->midiValid()) { return; }
-
-	/** Create Temp */
-	juce::MidiMessageSequence temp;
-	for (const auto& m : buffer) {
-		double timeStamp = (m.samplePosition + offset) / this->playSampleRate;
-		if (timeStamp >= 0) {
-			auto mes = m.getMessage();
-			mes.setTimeStamp(timeStamp);
-			temp.addEvent(mes);
-		}
-	}
-
-	/** Write To Internal Data */
-	this->container->addMIDIMessages(trackIndex, temp,
-		this->recordMIDINoteOnTemp, this->recordMIDIIndexTemp,
-		this->recordMIDILyricsTemp);
-
-	/** Set Flag */
-	this->container->changed();
 }
 
 int SourceItem::getMIDINoteNum(int track) const {
@@ -527,29 +417,8 @@ void SourceItem::updateAudioResampler() {
 	this->resampleSource = std::move(resSource);
 }
 
-void SourceItem::prepareAudioData(double length, int channelNum) {
-	double sampleRate = 0;
-	if (this->container) {
-		sampleRate = this->container->getAudioSampleRate();
-	}
-	if (sampleRate <= 0) {
-		sampleRate = playSampleRate;
-	}
-
-	this->initAudio(juce::String{}, channelNum, sampleRate, length);
-}
-
-void SourceItem::prepareMIDIData() {
-	this->initMIDI(juce::String{});
-}
-
 void SourceItem::releaseContainer() {
 	if (this->container) {
-		SourceMIDITemp::clearWriteTemps(
-			this->recordMIDINoteOnTemp,
-			this->recordMIDIIndexTemp,
-			this->recordMIDILyricsTemp);
-
 		auto name = this->container->getName();
 		this->container = nullptr;
 		SourceInternalPool::getInstance()->checkSourceReleased(name);

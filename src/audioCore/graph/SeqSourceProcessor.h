@@ -159,8 +159,6 @@ private:
 		int dataOffset, int length) const;
 	void readMIDIData(juce::MidiBuffer& buffer, int baseTime,
 		int startTime, int endTime) const;
-	void writeAudioData(juce::AudioBuffer<float>& buffer, int offset);
-	void writeMIDIData(const juce::MidiBuffer& buffer, int offset);
 
 	friend class SynthThread;
 

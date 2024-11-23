@@ -234,15 +234,6 @@ void SourceInternalContainer::findMIDIMessages(
 		track, startSec, endSec, list, indexTemp);
 }
 
-void SourceInternalContainer::addMIDIMessages(
-	int track, const juce::MidiMessageSequence& list,
-	SourceMIDITemp::NoteOnTemp& noteOnTemp, int& indexTemp,
-	SourceMIDITemp::LyricsItem& lyricsTemp) {
-	if (!this->midiData) { return; }
-	this->midiData->addMIDIMessages(
-		track, list, noteOnTemp, indexTemp, lyricsTemp);
-}
-
 void SourceInternalContainer::initAudioFormat() {
 	this->format.clear();
 	this->metaData.clear();

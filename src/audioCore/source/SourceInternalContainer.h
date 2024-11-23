@@ -65,10 +65,6 @@ public:
 	void findMIDIMessages(
 		int track, double startSec, double endSec,
 		juce::MidiMessageSequence& list, int& indexTemp) const;
-	void addMIDIMessages(
-		int track, const juce::MidiMessageSequence& list,
-		SourceMIDITemp::NoteOnTemp& noteOnTemp, int& indexTemp,
-		SourceMIDITemp::LyricsItem& lyricsTemp);
 
 private:
 	const SourceType type;

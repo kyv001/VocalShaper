@@ -76,9 +76,6 @@ public:
 		int track, const juce::MidiMessageSequence& list,
 		NoteOnTemp& noteOnTemp, int& indexTemp, LyricsItem& lyricsTemp);
 
-	static void clearWriteTemps(
-		NoteOnTemp& noteOnTemp, int& indexTemp, LyricsItem& lyricsTemp);
-
 private:
 	juce::Array<juce::OwnedArray<MIDIStruct>> eventList;
 	short timeFormat = 480;

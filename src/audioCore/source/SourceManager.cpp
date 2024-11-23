@@ -191,20 +191,6 @@ void SourceManager::prepareMIDIPlay(uint64_t ref) {
 	}
 }
 
-void SourceManager::prepareAudioRecord(uint64_t ref, int channelNum) {
-	juce::ScopedWriteLock locker(audioLock::getSourceLock());
-	if (auto ptr = this->getSource(ref, SourceType::Audio)) {
-		ptr->prepareAudioRecord(channelNum);
-	}
-}
-
-void SourceManager::prepareMIDIRecord(uint64_t ref) {
-	juce::ScopedWriteLock locker(audioLock::getSourceLock());
-	if (auto ptr = this->getSource(ref, SourceType::MIDI)) {
-		ptr->prepareMIDIRecord();
-	}
-}
-
 void SourceManager::setCallback(
 	uint64_t ref, SourceType type,
 	const ChangedCallback& callback) {
@@ -248,19 +234,6 @@ void SourceManager::readMIDIData(uint64_t ref, juce::MidiBuffer& buffer, double 
 	double startTime, double endTime, int trackIndex) const {
 	if (auto ptr = this->getSourceFast(ref, SourceType::MIDI)) {
 		ptr->readMIDIData(buffer, baseTime, startTime, endTime, trackIndex);
-	}
-}
-
-void SourceManager::writeAudioData(uint64_t ref, juce::AudioBuffer<float>& buffer, int offset,
-	int trackChannelNum) {
-	if (auto ptr = this->getSourceFast(ref, SourceType::Audio)) {
-		ptr->writeAudioData(buffer, offset, trackChannelNum);
-	}
-}
-
-void SourceManager::writeMIDIData(uint64_t ref, const juce::MidiBuffer& buffer, int offset, int trackIndex) {
-	if (auto ptr = this->getSourceFast(ref, SourceType::MIDI)) {
-		ptr->writeMIDIData(buffer, offset, trackIndex);
 	}
 }
 

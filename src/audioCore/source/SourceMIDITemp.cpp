@@ -443,13 +443,6 @@ void SourceMIDITemp::addMIDIMessages(
 		list, noteOnTemp, indexTemp, lyricsTemp);
 }
 
-void SourceMIDITemp::clearWriteTemps(
-	NoteOnTemp& noteOnTemp, int& indexTemp, LyricsItem& lyricsTemp) {
-	noteOnTemp.clear();
-	indexTemp = -1;
-	lyricsTemp = MIDI_LYRICS_TEMP_INIT;
-}
-
 int SourceMIDITemp::binarySearchStart(
 	const juce::OwnedArray<MIDIStruct>& eventsList, int low, int high, double time) {
 
