@@ -9,6 +9,7 @@
 #include "misc/Renderer.h"
 #include "misc/Device.h"
 #include "misc/AudioLock.h"
+#include "misc/RecordTemp.h"
 #include "source/SourceManager.h"
 #include "source/SourceIO.h"
 #include "project/ProjectInfoData.h"
@@ -95,6 +96,7 @@ AudioCore::~AudioCore() {
 	PlayPosition::releaseInstance();
 	Plugin::releaseInstance();
 	ARADataIOThread::releaseInstance();
+	RecordTemp::releaseInstance();
 	SourceIO::releaseInstance();
 	SourceManager::releaseInstance();
 	UICallback::releaseInstance();

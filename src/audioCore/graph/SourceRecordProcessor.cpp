@@ -1,9 +1,12 @@
 ﻿#include "SourceRecordProcessor.h"
 #include "MainGraph.h"
+#include "../misc/RecordTemp.h"
 #include "../uiCallback/UICallback.h"
 
 SourceRecordProcessor::SourceRecordProcessor(MainGraph* parent)
-	: parent(parent) {}
+	: parent(parent) {
+	[[maybe_unused]] auto recTemp = RecordTemp::getInstance();
+}
 
 SourceRecordProcessor::~SourceRecordProcessor() {}
 
@@ -20,8 +23,10 @@ void SourceRecordProcessor::processBlock(
 	auto playPosition = playHead->getPosition();
 	if (!playPosition->getIsPlaying() || !playPosition->getIsRecording()) { return; }
 	int timeInSamples = playPosition->getTimeInSamples().orFallback(0);
+	double timeInSeconds = playPosition->getTimeInSeconds().orFallback(0);
 
-	/** TODO Record Data Temp */
+	/** Record Data Temp */
+	RecordTemp::getInstance()->recordData(timeInSeconds, buffer, midiMessages);
 
 	/** TODO Callback */
 	/*if (trackIndexList.size() > 0 && buffer.getNumSamples() > 0) {
