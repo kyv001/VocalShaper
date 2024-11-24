@@ -23,7 +23,7 @@ bool ActionDispatcher::dispatch(std::unique_ptr<ActionBase> action) {
 	if (!action) { return false; }
 
 	if (dynamic_cast<ActionUndoableBase*>(action.get())) {
-    	juce::String name = action->getName();
+		juce::String name = action->getName();
 		//this->manager->beginNewTransaction(action->getName());
 		return this->manager->perform(
 			dynamic_cast<ActionUndoableBase*>(action.release()), name);
