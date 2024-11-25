@@ -17,7 +17,7 @@ void RecordTemp::setInputSampleRate(double sampleRate) {
 void RecordTemp::setInputChannelNum(int channels) {
 	juce::GenericScopedLock locker(this->lock);
 	this->audioBuffer.setSize(channels,
-		this->audioBuffer.getNumSamples(), true, true, true);
+		std::max(this->audioBuffer.getNumSamples(), AUDIO_BUFFER_MIN), true, true, true);
 }
 
 void RecordTemp::recordData(double timeSec,
@@ -77,7 +77,7 @@ void RecordTemp::clearAudio() {
 
 bool RecordTemp::tryToEnsureAudioBufferSamplesAllocated(uint64_t sampleNum) {
 	while (this->audioBuffer.getNumSamples() < sampleNum) {
-		uint16_t num = (uint64_t)(this->audioBuffer.getNumSamples()) * 2;
+		uint64_t num = (uint64_t)(this->audioBuffer.getNumSamples()) * 2;
 		if (num > INT_MAX) {
 			this->audioBuffer.setSize(this->audioBuffer.getNumChannels(),
 				INT_MAX, false, true, true);
@@ -85,7 +85,7 @@ bool RecordTemp::tryToEnsureAudioBufferSamplesAllocated(uint64_t sampleNum) {
 		}
 
 		this->audioBuffer.setSize(this->audioBuffer.getNumChannels(),
-			(int)num, false, true, true);
+			std::max((int)num, AUDIO_BUFFER_MIN), false, true, true);
 	}
 
 	return this->audioBuffer.getNumSamples() >= sampleNum;
