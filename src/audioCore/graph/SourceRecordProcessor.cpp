@@ -13,6 +13,7 @@ SourceRecordProcessor::~SourceRecordProcessor() {}
 void SourceRecordProcessor::prepareToPlay(
 	double sampleRate, int maximumExpectedSamplesPerBlock) {
 	this->setRateAndBufferSizeDetails(sampleRate, maximumExpectedSamplesPerBlock);
+	RecordTemp::getInstance()->setInputSampleRate(sampleRate);
 }
 
 void SourceRecordProcessor::processBlock(
@@ -42,4 +43,8 @@ double SourceRecordProcessor::getTailLengthSeconds() const {
 		return playHead->getPosition()->getTimeInSeconds().orFallback(0);
 	}
 	return 0;
+}
+
+void SourceRecordProcessor::numChannelsChanged() {
+	RecordTemp::getInstance()->setInputChannelNum(this->getTotalNumInputChannels());
 }

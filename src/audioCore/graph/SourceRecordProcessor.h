@@ -61,6 +61,8 @@ private:
 	MainGraph* const parent;
 	LimitedCall limitedCall;
 
+	void numChannelsChanged() override;
+
 	JUCE_DECLARE_WEAK_REFERENCEABLE(SourceRecordProcessor)
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SourceRecordProcessor)
 };
