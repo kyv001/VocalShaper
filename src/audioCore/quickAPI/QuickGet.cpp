@@ -634,13 +634,13 @@ namespace quickAPI {
 		return false;
 	}
 
-	bool getSeqTrackRecording(int index) {
+	RecordState getSeqTrackRecording(int index) {
 		if (auto graph = AudioCore::getInstance()->getGraph()) {
 			if (auto track = graph->getSourceProcessor(index)) {
 				return track->getRecording();
 			}
 		}
-		return false;
+		return RecordState::NotRecording;
 	}
 
 	const juce::Array<float> getSeqTrackOutputLevel(int index) {

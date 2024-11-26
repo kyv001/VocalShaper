@@ -21,10 +21,10 @@ void SeqTrackRecComponent::paint(juce::Graphics& g) {
 
 	/** Color */
 	auto& laf = this->getLookAndFeel();
-	juce::Colour backgroundColor = laf.findColour(this->rec
+	juce::Colour backgroundColor = laf.findColour((this->rec > 0)
 		? juce::TextButton::ColourIds::buttonOnColourId
 		: juce::TextButton::ColourIds::buttonColourId);
-	juce::Colour iconColor = laf.findColour(this->rec
+	juce::Colour iconColor = laf.findColour((this->rec > 0)
 		? juce::TextButton::ColourIds::textColourOnId
 		: juce::TextButton::ColourIds::textColourOffId);
 
@@ -96,5 +96,7 @@ void SeqTrackRecComponent::update(int index) {
 }
 
 void SeqTrackRecComponent::changeRec() {
-	CoreActions::setSeqRec(this->index, !(this->rec));
+	/** TODO Change Recording State */
+	CoreActions::setSeqRec(this->index,
+		static_cast<quickAPI::RecordState>((this->rec > 0) ? 0 : 0x12));
 }

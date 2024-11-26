@@ -18,7 +18,7 @@ public:
 
 private:
 	int index = -1;
-	bool rec = false;
+	int rec = 0;
 
 	void changeRec();
 

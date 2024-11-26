@@ -515,19 +515,20 @@ int SeqSourceProcessor::getTotalMIDITrackNum() const {
 	return SourceManager::getInstance()->getMIDITrackNum(this->midiSourceRef);
 }
 
-void SeqSourceProcessor::setRecording(bool recording) {
-	this->recordingFlag = recording;
-
+void SeqSourceProcessor::setRecording(RecordState recordState) {
 	/** Sync ARA */
-	if (!recording) {
+	if (this->recordingFlag != RecordState::NotRecording
+		&& this->recordingFlag != recordState) {
 		this->syncARAContext();
 	}
+	
+	this->recordingFlag = recordState;
 
 	/** Callback */
 	UICallbackAPI<int>::invoke(UICallbackType::SeqRecChanged, this->index);
 }
 
-bool SeqSourceProcessor::getRecording() const {
+SeqSourceProcessor::RecordState SeqSourceProcessor::getRecording() const {
 	return this->recordingFlag;
 }
 
@@ -597,7 +598,7 @@ void SeqSourceProcessor::processBlock(
 	if (!position->getIsPlaying()) { isPlaying = false; }
 
 	/** Clear MIDI Buffer */
-	if ((isPlaying && position->getIsRecording()) || (!this->recordingFlag)) {
+	if ((isPlaying && position->getIsRecording()) || (this->recordingFlag == RecordState::NotRecording)) {
 		midiMessages.clear();
 	}
 
@@ -744,7 +745,7 @@ bool SeqSourceProcessor::parse(
 	}
 	this->setCurrentMIDITrack(mes->miditrack());
 
-	this->setRecording(mes->recording());
+	this->setRecording(static_cast<RecordState>(mes->recordstate()));
 	this->setMute(mes->muted());
 
 	return true;
@@ -794,7 +795,7 @@ std::unique_ptr<google::protobuf::Message> SeqSourceProcessor::serialize(
 	}
 	mes->set_miditrack(this->getCurrentMIDITrack());
 
-	mes->set_recording(this->getRecording());
+	mes->set_recordstate(static_cast<vsp4::SeqTrack::RecordState>(this->getRecording()));
 	mes->set_muted(this->getMute());
 
 	return std::unique_ptr<google::protobuf::Message>(mes.release());

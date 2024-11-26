@@ -11,6 +11,11 @@ public:
 	void recordData(double timeSec,
 		const juce::AudioBuffer<float>& buffer, const juce::MidiBuffer& midiMessages);
 
+	void setRecordMIDI(bool recordMIDI);
+	void setRecordAudio(bool recordAudio);
+	bool isRecordMIDI() const;
+	bool isRecordAudio() const;
+
 	void clearAll();
 	void clearMIDI();
 	void clearAudio();

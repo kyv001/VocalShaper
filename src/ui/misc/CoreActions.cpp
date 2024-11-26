@@ -427,7 +427,7 @@ void CoreActions::setSeqMuteAll(bool mute) {
 	}
 }
 
-void CoreActions::setSeqRec(int index, bool rec) {
+void CoreActions::setSeqRec(int index, quickAPI::RecordState rec) {
 	auto action = std::unique_ptr<ActionBase>(new ActionSetSequencerTrackRecording{ index, rec });
 	ActionDispatcher::getInstance()->dispatch(std::move(action));
 }

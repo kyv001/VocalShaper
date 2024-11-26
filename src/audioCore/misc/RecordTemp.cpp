@@ -56,6 +56,32 @@ void RecordTemp::recordData(double timeSec,
 	}
 }
 
+void RecordTemp::setRecordMIDI(bool recordMIDI) {
+	juce::GenericScopedLock locker(this->lock);
+	this->recordMIDI = recordMIDI;
+	if (!recordMIDI) {
+		this->clearMIDI();
+	}
+}
+
+void RecordTemp::setRecordAudio(bool recordAudio) {
+	juce::GenericScopedLock locker(this->lock);
+	this->recordAudio = recordAudio;
+	if (!recordAudio) {
+		this->clearAudio();
+	}
+}
+
+bool RecordTemp::isRecordMIDI() const {
+	juce::GenericScopedLock locker(this->lock);
+	return this->recordMIDI;
+}
+
+bool RecordTemp::isRecordAudio() const {
+	juce::GenericScopedLock locker(this->lock);
+	return this->recordAudio;
+}
+
 void RecordTemp::clearAll() {
 	juce::GenericScopedLock locker(this->lock);
 	this->clearAudio();

@@ -969,7 +969,7 @@ class ActionSetSequencerTrackRecording final : public ActionUndoableBase {
 public:
 	ActionSetSequencerTrackRecording() = delete;
 	ActionSetSequencerTrackRecording(
-		int track, bool recording);
+		int track, quickAPI::RecordState recordState);
 
 	bool doAction() override;
 	bool undo() override;
@@ -980,9 +980,9 @@ public:
 private:
 	ACTION_DATABLOCK{
 		const int track;
-		const bool recording;
+		const quickAPI::RecordState recordState;
 
-		bool oldRecording = false;
+		quickAPI::RecordState oldRecordState = quickAPI::RecordState::NotRecording;
 	} ACTION_DB;
 
 	JUCE_LEAK_DETECTOR(ActionSetSequencerTrackRecording)

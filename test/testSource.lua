@@ -29,7 +29,7 @@ AC.addSequencerBlock(0, 0, 300, 0);
 AC.removeSequencerBlock(0, 0);
 
 -- Seq Recording
-AC.setSequencerTrackRecording(0, true);
+AC.setSequencerTrackRecording(0, 0x21);
 
 -- Audio Save Config
 AC.setAudioSaveBitsPerSample(".wav", 32);
