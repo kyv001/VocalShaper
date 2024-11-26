@@ -20,7 +20,10 @@ private:
 	int index = -1;
 	int rec = 0;
 
+	void changeRecQuick();
 	void changeRec();
+
+	juce::PopupMenu createMenu() const;
 
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SeqTrackRecComponent)
 };
