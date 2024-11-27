@@ -1792,6 +1792,52 @@ bool ActionSetSequencerTrackRecording::undo() {
 	ACTION_RESULT(false);
 }
 
+ActionSetSequencerTrackInputMonitoring::ActionSetSequencerTrackInputMonitoring(
+	int track, bool inputMonitoring)
+	: ACTION_DB{ track, inputMonitoring } {}
+
+bool ActionSetSequencerTrackInputMonitoring::doAction() {
+	ACTION_CHECK_RENDERING(
+		"Don't do this while rendering.");
+
+	ACTION_UNSAVE_PROJECT();
+
+	ACTION_WRITE_TYPE(ActionSetSequencerTrackInputMonitoring);
+	ACTION_WRITE_DB();
+
+	if (auto graph = AudioCore::getInstance()->getGraph()) {
+		if (auto track = graph->getSourceProcessor(ACTION_DATA(track))) {
+			ACTION_DATA(oldInputMonitoring) = track->getInputMonitoring();
+
+			track->setInputMonitoring(ACTION_DATA(inputMonitoring));
+
+			this->output("Sequencer Track Input Monitoring: [" + juce::String(ACTION_DATA(track)) + "] " + juce::String{ track->getInputMonitoring() ? "ON" : "OFF" } + "\n");
+			ACTION_RESULT(true);
+		}
+	}
+	ACTION_RESULT(false);
+}
+
+bool ActionSetSequencerTrackInputMonitoring::undo() {
+	ACTION_CHECK_RENDERING(
+		"Don't do this while rendering.");
+
+	ACTION_UNSAVE_PROJECT();
+
+	ACTION_WRITE_TYPE_UNDO(ActionSetSequencerTrackInputMonitoring);
+	ACTION_WRITE_DB();
+
+	if (auto graph = AudioCore::getInstance()->getGraph()) {
+		if (auto track = graph->getSourceProcessor(ACTION_DATA(track))) {
+			track->setInputMonitoring(ACTION_DATA(oldInputMonitoring));
+
+			this->output("Undo Sequencer Track Input Monitoring: [" + juce::String(ACTION_DATA(track)) + "] " + juce::String{ track->getInputMonitoring() ? "ON" : "OFF" } + "\n");
+			ACTION_RESULT(true);
+		}
+	}
+	ACTION_RESULT(false);
+}
+
 ActionSetInstrOffline::ActionSetInstrOffline(
 	int instr, bool offline)
 	: ACTION_DB{ instr, offline } {}

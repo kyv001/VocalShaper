@@ -988,6 +988,29 @@ private:
 	JUCE_LEAK_DETECTOR(ActionSetSequencerTrackRecording)
 };
 
+class ActionSetSequencerTrackInputMonitoring final : public ActionUndoableBase {
+public:
+	ActionSetSequencerTrackInputMonitoring() = delete;
+	ActionSetSequencerTrackInputMonitoring(
+		int track, bool inputMonitoring);
+
+	bool doAction() override;
+	bool undo() override;
+	const juce::String getName() override {
+		return "Set Sequencer Track Input Monitoring";
+	};
+
+private:
+	ACTION_DATABLOCK{
+		const int track;
+		const bool inputMonitoring;
+
+		bool oldInputMonitoring = false;
+	} ACTION_DB;
+
+	JUCE_LEAK_DETECTOR(ActionSetSequencerTrackInputMonitoring)
+};
+
 class ActionSetInstrOffline final : public ActionUndoableBase {
 public:
 	ActionSetInstrOffline() = delete;

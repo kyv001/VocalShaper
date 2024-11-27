@@ -548,6 +548,14 @@ bool SeqSourceProcessor::getMute() const {
 	return this->isMute;
 }
 
+void SeqSourceProcessor::setInputMonitoring(bool inputMonitoring) {
+	this->inputMonitoring = inputMonitoring;
+}
+
+bool SeqSourceProcessor::getInputMonitoring() const {
+	return this->inputMonitoring;
+}
+
 const juce::Array<float> SeqSourceProcessor::getOutputLevels() const {
 	juce::ScopedReadLock locker(audioLock::getLevelMeterLock());
 	return this->outputLevels;
@@ -578,10 +586,13 @@ void SeqSourceProcessor::processBlock(
 	if (buffer.getNumChannels() <= 0) { return; }
 	if (buffer.getNumSamples() <= 0) { return; }
 
-	/** Clear Audio Channel */
-	auto dspBlock = juce::dsp::AudioBlock<float>(buffer).getSubsetChannelBlock(
-		0, buffer.getNumChannels());
-	dspBlock.fill(0);
+	if (!this->inputMonitoring) {
+		/** Clear MIDI Buffer */
+		midiMessages.clear();
+
+		/** Clear Audio Buffer */
+		vMath::zeroAllAudioData(buffer);
+	}
 
 	/** Play Flag */
 	bool isPlaying = true;
@@ -596,11 +607,6 @@ void SeqSourceProcessor::processBlock(
 
 	/** Check Play State */
 	if (!position->getIsPlaying()) { isPlaying = false; }
-
-	/** Clear MIDI Buffer */
-	if ((isPlaying && position->getIsRecording()) || (this->recordingFlag == RecordState::NotRecording)) {
-		midiMessages.clear();
-	}
 
 	if (isPlaying && !(this->isMute)) {
 		/** Get Time */
@@ -746,6 +752,7 @@ bool SeqSourceProcessor::parse(
 	this->setCurrentMIDITrack(mes->miditrack());
 
 	this->setRecording(static_cast<RecordState>(mes->recordstate()));
+	this->setInputMonitoring(mes->inputmonitoring());
 	this->setMute(mes->muted());
 
 	return true;
@@ -796,6 +803,7 @@ std::unique_ptr<google::protobuf::Message> SeqSourceProcessor::serialize(
 	mes->set_miditrack(this->getCurrentMIDITrack());
 
 	mes->set_recordstate(static_cast<vsp4::SeqTrack::RecordState>(this->getRecording()));
+	mes->set_inputmonitoring(this->getInputMonitoring());
 	mes->set_muted(this->getMute());
 
 	return std::unique_ptr<google::protobuf::Message>(mes.release());

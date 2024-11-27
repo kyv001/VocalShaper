@@ -85,6 +85,9 @@ public:
 	void setMute(bool mute);
 	bool getMute() const;
 
+	void setInputMonitoring(bool inputMonitoring);
+	bool getInputMonitoring() const;
+
 	const juce::Array<float> getOutputLevels() const;
 
 	void syncARAContext();
@@ -151,6 +154,7 @@ private:
 	std::atomic<RecordState> recordingFlag = RecordState::NotRecording;
 
 	std::atomic_bool isMute = false;
+	std::atomic_bool inputMonitoring = false;
 
 	juce::Array<float> outputLevels;
 
