@@ -110,6 +110,21 @@ AUDIOCORE_FUNC(removeSequencerTrackOutput) {
 	return CommandFuncResult{ true, "" };
 }
 
+AUDIOCORE_FUNC(removeSequencerTrackInputFromDevice) {
+	auto action = std::unique_ptr<ActionBase>(new ActionRemoveSequencerTrackInputFromDevice{
+		(int)luaL_checkinteger(L, 1), (int)luaL_checkinteger(L, 2),
+		(int)luaL_checkinteger(L, 3) });
+	ActionDispatcher::getInstance()->dispatch(std::move(action));
+	return CommandFuncResult{ true, "" };
+}
+
+AUDIOCORE_FUNC(removeSequencerTrackMidiInput) {
+	auto action = std::unique_ptr<ActionBase>(new ActionRemoveSequencerTrackMidiInput{
+		(int)luaL_checkinteger(L, 1) });
+	ActionDispatcher::getInstance()->dispatch(std::move(action));
+	return CommandFuncResult{ true, "" };
+}
+
 AUDIOCORE_FUNC(removeSequencerBlock) {
 	auto action = std::unique_ptr<ActionBase>(new ActionRemoveSequencerBlock{
 		(int)luaL_checkinteger(L, 1), (int)luaL_checkinteger(L, 2) });
@@ -133,5 +148,7 @@ void regCommandRemove(lua_State* L) {
 	LUA_ADD_AUDIOCORE_FUNC_DEFAULT_NAME(L, removeSequencerTrack);
 	LUA_ADD_AUDIOCORE_FUNC_DEFAULT_NAME(L, removeSequencerTrackMidiOutputToMixer);
 	LUA_ADD_AUDIOCORE_FUNC_DEFAULT_NAME(L, removeSequencerTrackOutput);
+	LUA_ADD_AUDIOCORE_FUNC_DEFAULT_NAME(L, removeSequencerTrackInputFromDevice);
+	LUA_ADD_AUDIOCORE_FUNC_DEFAULT_NAME(L, removeSequencerTrackMidiInput);
 	LUA_ADD_AUDIOCORE_FUNC_DEFAULT_NAME(L, removeSequencerBlock);
 }

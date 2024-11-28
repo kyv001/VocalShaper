@@ -28,6 +28,13 @@ AC.saveMIDI(0, "test.mid");
 AC.addSequencerBlock(0, 0, 300, 0);
 AC.removeSequencerBlock(0, 0);
 
+-- Link Seq Audio Input
+AC.addSequencerTrackInputFromDevice(0, 0, 0);
+AC.addSequencerTrackInputFromDevice(0, 0, 1);
+
+-- Link Seq MIDI Input
+AC.addSequencerTrackMidiInput(0);
+
 -- Seq Recording
 AC.setSequencerTrackRecording(0, 0x21);
 

@@ -611,6 +611,20 @@ namespace quickAPI {
 		return 0;
 	}
 
+	bool getSeqTrackMIDIInputFromDevice(int index) {
+		if (auto graph = AudioCore::getInstance()->getGraph()) {
+			return graph->getSourceMidiInputFromDeviceConnections(index).size() > 0;
+		}
+		return false;
+	}
+
+	const juce::Array<AudioLink> getSeqTrackAudioInputFromDevice(int index) {
+		if (auto graph = AudioCore::getInstance()->getGraph()) {
+			return graph->getSourceInputFromDeviceConnections(index);
+		}
+		return {};
+	}
+
 	const juce::Array<MIDILink> getSeqTrackMIDIOutputToMixer(int index) {
 		if (auto graph = AudioCore::getInstance()->getGraph()) {
 			return graph->getSourceMidiOutputToTrackConnections(index);

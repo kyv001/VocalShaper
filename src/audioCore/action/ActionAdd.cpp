@@ -162,6 +162,48 @@ bool ActionAddMixerTrackInputFromDevice::undo() {
 	ACTION_RESULT(false);
 }
 
+ActionAddSequencerTrackInputFromDevice::ActionAddSequencerTrackInputFromDevice(
+	int srcc, int dst, int dstc)
+	: ACTION_DB{ srcc, dst, dstc } {
+}
+
+bool ActionAddSequencerTrackInputFromDevice::doAction() {
+	ACTION_CHECK_RENDERING(
+		"Don't do this while rendering.");
+
+	ACTION_UNSAVE_PROJECT();
+
+	ACTION_WRITE_TYPE(ActionAddSequencerTrackInputFromDevice);
+	ACTION_WRITE_DB();
+
+	if (auto graph = AudioCore::getInstance()->getGraph()) {
+		graph->setAudioI2SrcConnection(
+			ACTION_DATA(dst), ACTION_DATA(srcc), ACTION_DATA(dstc));
+
+		this->output("[Device] " + juce::String(ACTION_DATA(srcc)) + " - " + juce::String(ACTION_DATA(dst)) + ", " + juce::String(ACTION_DATA(dstc)) + "\n");
+		ACTION_RESULT(true);
+	}
+	ACTION_RESULT(false);
+}
+
+bool ActionAddSequencerTrackInputFromDevice::undo() {
+	ACTION_CHECK_RENDERING(
+		"Don't do this while rendering.");
+
+	ACTION_UNSAVE_PROJECT();
+
+	ACTION_WRITE_TYPE_UNDO(ActionAddSequencerTrackInputFromDevice);
+
+	if (auto graph = AudioCore::getInstance()->getGraph()) {
+		graph->removeAudioI2SrcConnection(
+			ACTION_DATA(dst), ACTION_DATA(srcc), ACTION_DATA(dstc));
+
+		this->output("Undo [Device] " + juce::String(ACTION_DATA(srcc)) + " - " + juce::String(ACTION_DATA(dst)) + ", " + juce::String(ACTION_DATA(dstc)) + "\n");
+		ACTION_RESULT(true);
+	}
+	ACTION_RESULT(false);
+}
+
 ActionAddMixerTrackOutput::ActionAddMixerTrackOutput(
 	int src, int srcc, int dstc)
 	: ACTION_DB{ src, srcc, dstc } {}
@@ -353,6 +395,46 @@ bool ActionAddMixerTrackMidiInput::undo() {
 
 	if (auto graph = AudioCore::getInstance()->getGraph()) {
 		graph->removeMIDII2TrkConnection(ACTION_DATA(dst));
+
+		this->output(juce::String("Undo [MIDI Input]") + " - " + juce::String(ACTION_DATA(dst)) + "\n");
+		ACTION_RESULT(true);
+	}
+	ACTION_RESULT(false);
+}
+
+ActionAddSequencerTrackMidiInput::ActionAddSequencerTrackMidiInput(int dst)
+	: ACTION_DB{ dst } {
+}
+
+bool ActionAddSequencerTrackMidiInput::doAction() {
+	ACTION_CHECK_RENDERING(
+		"Don't do this while rendering.");
+
+	ACTION_UNSAVE_PROJECT();
+
+	ACTION_WRITE_TYPE(ActionAddSequencerTrackMidiInput);
+	ACTION_WRITE_DB();
+
+	if (auto graph = AudioCore::getInstance()->getGraph()) {
+		graph->setMIDII2SrcConnection(ACTION_DATA(dst));
+
+		this->output(juce::String("[MIDI Input]") + " - " + juce::String(ACTION_DATA(dst)) + "\n");
+		ACTION_RESULT(true);
+	}
+	ACTION_RESULT(false);
+}
+
+bool ActionAddSequencerTrackMidiInput::undo() {
+	ACTION_CHECK_RENDERING(
+		"Don't do this while rendering.");
+
+	ACTION_UNSAVE_PROJECT();
+
+	ACTION_WRITE_TYPE_UNDO(ActionAddSequencerTrackMidiInput);
+	ACTION_WRITE_DB();
+
+	if (auto graph = AudioCore::getInstance()->getGraph()) {
+		graph->removeMIDII2SrcConnection(ACTION_DATA(dst));
 
 		this->output(juce::String("Undo [MIDI Input]") + " - " + juce::String(ACTION_DATA(dst)) + "\n");
 		ACTION_RESULT(true);

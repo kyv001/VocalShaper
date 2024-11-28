@@ -125,6 +125,8 @@ namespace quickAPI {
 	const juce::AudioChannelSet getSeqTrackChannelSet(int index);
 	int getSeqTrackInputChannelNum(int index);
 	int getSeqTrackOutputChannelNum(int index);
+	bool getSeqTrackMIDIInputFromDevice(int index);
+	const juce::Array<AudioLink> getSeqTrackAudioInputFromDevice(int index);
 	const juce::Array<MIDILink> getSeqTrackMIDIOutputToMixer(int index);
 	const juce::Array<AudioLink> getSeqTrackAudioOutputToMixer(int index);
 	bool getSeqTrackMute(int index);

@@ -57,6 +57,7 @@ void MainGraph::setAudioLayout(int inputChannelNum, int outputChannelNum) {
 	this->audioOutputNode->getProcessor()->setBusesLayout(outputLayout);
 
 	/** Auto Remove Connections */
+	this->removeIllegalAudioI2SrcConnections();
 	this->removeIllegalAudioI2TrkConnections();
 	this->removeIllegalAudioTrk2OConnections();
 
@@ -142,6 +143,16 @@ void MainGraph::clearGraph() {
 
 	/** Lock */
 	juce::ScopedWriteLock locker(audioLock::getSourceLock());
+
+	for (auto& i : this->midiI2SrcConnectionList) {
+		this->removeConnection(i);
+	}
+	this->midiI2SrcConnectionList.clear();
+
+	for (auto& i : this->audioI2SrcConnectionList) {
+		this->removeConnection(i);
+	}
+	this->audioI2SrcConnectionList.clear();
 
 	for (auto& i : this->midiSrc2TrkConnectionList) {
 		this->removeConnection(i);
@@ -231,6 +242,16 @@ bool MainGraph::parse(
 
 	auto& connections = mes->connections();
 
+	auto& midiI2Src = connections.midii2src();
+	for (auto& i : midiI2Src) {
+		this->setMIDII2SrcConnection(i.dst());
+	}
+
+	auto& audioI2Src = connections.audioi2src();
+	for (auto& i : audioI2Src) {
+		this->setAudioI2SrcConnection(i.dst(), i.srcchannel(), i.dstchannel());
+	}
+
 	auto& midiSrc2Track = connections.midisrc2track();
 	for (auto& i : midiSrc2Track) {
 		this->setMIDISrc2TrkConnection(i.src(), i.dst());
@@ -294,6 +315,32 @@ std::unique_ptr<google::protobuf::Message> MainGraph::serialize(
 	}
 
 	auto connections = mes->mutable_connections();
+
+	auto midiI2Src = connections->mutable_midii2src();
+	for (auto& i : this->midiI2SrcConnectionList) {
+		auto dstNode = this->getNodeForId(i.destination.nodeID);
+		if (!dstNode) { return nullptr; }
+
+		auto cmes = std::make_unique<vsp4::MIDIInputConnection>();
+		cmes->set_dst(this->findSource(dynamic_cast<SeqSourceProcessor*>(dstNode->getProcessor())));
+
+		midiI2Src->AddAllocated(cmes.release());
+	}
+
+	auto audioI2Src = connections->mutable_audioi2src();
+	for (auto& i : this->audioI2SrcConnectionList) {
+		auto dstNode = this->getNodeForId(i.destination.nodeID);
+		int srcChannel = i.source.channelIndex;
+		int dstChannel = i.destination.channelIndex;
+		if (!dstNode) { return nullptr; }
+
+		auto cmes = std::make_unique<vsp4::AudioInputConnection>();
+		cmes->set_dst(this->findSource(dynamic_cast<SeqSourceProcessor*>(dstNode->getProcessor())));
+		cmes->set_srcchannel(srcChannel);
+		cmes->set_dstchannel(dstChannel);
+
+		audioI2Src->AddAllocated(cmes.release());
+	}
 
 	auto midiSrc2Track = connections->mutable_midisrc2track();
 	for (auto& i : this->midiSrc2TrkConnectionList) {
