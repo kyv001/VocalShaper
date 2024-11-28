@@ -40,6 +40,10 @@ SeqTrackComponent::SeqTrackComponent(
 	this->muteButton = std::make_unique<SeqTrackMuteComponent>();
 	this->addChildComponent(this->muteButton.get());
 
+	/** Input Monitoring Button */
+	this->inputMonitoringButton = std::make_unique<SeqTrackInputMonitoringComponent>();
+	this->addChildComponent(this->inputMonitoringButton.get());
+
 	/** Record Button */
 	this->recButton = std::make_unique<SeqTrackRecComponent>();
 	this->addChildComponent(this->recButton.get());
@@ -143,6 +147,7 @@ void SeqTrackComponent::update(int index) {
 		this->trackName->setButtonText(juce::String{ index } + " - " + name);
 
 		this->updateMute();
+		this->updateInputMonitoring();
 		this->updateRec();
 
 		this->updateInstr();
@@ -166,6 +171,10 @@ void SeqTrackComponent::updateBlock(int blockIndex) {
 
 void SeqTrackComponent::updateMute() {
 	this->muteButton->update(this->index);
+}
+
+void SeqTrackComponent::updateInputMonitoring() {
+	this->inputMonitoringButton->update(this->index);
 }
 
 void SeqTrackComponent::updateRec() {
@@ -297,30 +306,37 @@ void SeqTrackComponent::resized() {
 	}
 
 	/** IO */
+	/** Input Monitoring Button */
+	juce::Rectangle<int> inputMonitoringRect(
+		leftX + buttonSplitWidth, topY + contentLineSplitHeight,
+		ioLineHeight, ioLineHeight);
+	this->inputMonitoringButton->setBounds(inputMonitoringRect);
+	this->inputMonitoringButton->setVisible(isIOLineShown);
+
 	/** Record Button */
 	juce::Rectangle<int> recRect(
-		leftX + buttonSplitWidth, topY + contentLineSplitHeight,
+		inputMonitoringRect.getRight() + buttonSplitWidth, inputMonitoringRect.getY(),
 		ioLineHeight, ioLineHeight);
 	this->recButton->setBounds(recRect);
 	this->recButton->setVisible(isIOLineShown);
 
 	/** Mute Button */
 	juce::Rectangle<int> muteRect(
-		recRect.getRight() + buttonSplitWidth, recRect.getY(),
+		recRect.getRight() + buttonSplitWidth, inputMonitoringRect.getY(),
 		ioLineHeight, ioLineHeight);
 	this->muteButton->setBounds(muteRect);
 	this->muteButton->setVisible(isIOLineShown);
 
 	/** MIDI Output */
 	juce::Rectangle<int> midiOutputRect(
-		muteRect.getRight() + buttonSplitWidth, recRect.getY(),
+		muteRect.getRight() + buttonSplitWidth, inputMonitoringRect.getY(),
 		ioLineHeight, ioLineHeight);
 	this->midiOutput->setBounds(midiOutputRect);
 	this->midiOutput->setVisible(isIOLineShown);
 
 	/** Audio Output */
 	juce::Rectangle<int> audioOutputRect(
-		midiOutputRect.getRight() + ioLineSplitWidth, recRect.getY(),
+		midiOutputRect.getRight() + ioLineSplitWidth, inputMonitoringRect.getY(),
 		ioLineHeight, ioLineHeight);
 	this->audioOutput->setBounds(audioOutputRect);
 	this->audioOutput->setVisible(isIOLineShown);

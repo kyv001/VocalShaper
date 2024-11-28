@@ -56,6 +56,12 @@ void SeqView::TrackList::updateMute(int index) {
 	}
 }
 
+void SeqView::TrackList::updateInputMonitoring(int index) {
+	if (index >= 0 && index < this->list.size()) {
+		this->list[index]->updateInputMonitoring();
+	}
+}
+
 void SeqView::TrackList::updateRec(int index) {
 	if (index >= 0 && index < this->list.size()) {
 		this->list[index]->updateRec();
@@ -428,6 +434,13 @@ SeqView::SeqView()
 		[comp = SeqView::SafePointer(this)](int index) {
 			if (comp) {
 				comp->updateMute(index);
+			}
+		}
+	);
+	CoreCallbacks::getInstance()->addSeqInputMonitoringChanged(
+		[comp = SeqView::SafePointer(this)](int index) {
+			if (comp) {
+				comp->updateInputMonitoring(index);
 			}
 		}
 	);
@@ -809,6 +822,10 @@ void SeqView::updateTempo() {
 
 void SeqView::updateMute(int index) {
 	this->trackList->updateMute(index);
+}
+
+void SeqView::updateInputMonitoring(int index) {
+	this->trackList->updateInputMonitoring(index);
 }
 
 void SeqView::updateRec(int index) {

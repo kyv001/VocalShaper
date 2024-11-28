@@ -550,6 +550,9 @@ bool SeqSourceProcessor::getMute() const {
 
 void SeqSourceProcessor::setInputMonitoring(bool inputMonitoring) {
 	this->inputMonitoring = inputMonitoring;
+
+	/** Callback */
+	UICallbackAPI<int>::invoke(UICallbackType::SeqInputMonitoringChanged, this->index);
 }
 
 bool SeqSourceProcessor::getInputMonitoring() const {

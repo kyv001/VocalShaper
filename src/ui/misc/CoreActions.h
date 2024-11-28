@@ -90,6 +90,7 @@ public:
 	static void setSeqMute(int index, bool mute);
 	static void setSeqSolo(int index);
 	static void setSeqMuteAll(bool mute);
+	static void setSeqInputMonitoring(int index, bool inputMonitoring);
 	static void setSeqRec(int index, quickAPI::RecordState rec);
 	static void setSeqMIDITrack(int index, int midiTrack);
 	static void setSeqAudioRef(int index, const juce::String& path,

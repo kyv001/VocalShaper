@@ -427,6 +427,11 @@ void CoreActions::setSeqMuteAll(bool mute) {
 	}
 }
 
+void CoreActions::setSeqInputMonitoring(int index, bool inputMonitoring) {
+	auto action = std::unique_ptr<ActionBase>(new ActionSetSequencerTrackInputMonitoring{ index, inputMonitoring });
+	ActionDispatcher::getInstance()->dispatch(std::move(action));
+}
+
 void CoreActions::setSeqRec(int index, quickAPI::RecordState rec) {
 	auto action = std::unique_ptr<ActionBase>(new ActionSetSequencerTrackRecording{ index, rec });
 	ActionDispatcher::getInstance()->dispatch(std::move(action));

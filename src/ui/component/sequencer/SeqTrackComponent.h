@@ -2,6 +2,7 @@
 
 #include <JuceHeader.h>
 #include "SeqTrackMuteComponent.h"
+#include "SeqTrackInputMonitoringComponent.h"
 #include "SeqTrackRecComponent.h"
 #include "SeqTrackIOComponent.h"
 #include "SeqTrackLevelMeter.h"
@@ -34,6 +35,7 @@ public:
 	void update(int index);
 	void updateBlock(int blockIndex);
 	void updateMute();
+	void updateInputMonitoring();
 	void updateRec();
 	void updateInstr();
 	void updateHPos(double pos, double itemSize);
@@ -76,6 +78,7 @@ private:
 
 	std::unique_ptr<juce::TextButton> trackName = nullptr;
 	std::unique_ptr<SeqTrackMuteComponent> muteButton = nullptr;
+	std::unique_ptr<SeqTrackInputMonitoringComponent> inputMonitoringButton = nullptr;
 	std::unique_ptr<SeqTrackRecComponent> recButton = nullptr;
 
 	std::unique_ptr<RightClickableTextButton> instrButton = nullptr;

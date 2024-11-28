@@ -38,6 +38,8 @@ public:
 	void addSeqMuteChanged(const SeqMuteChangedCallback& callback);
 	using SeqRecChangedCallback = std::function<void(int)>;
 	void addSeqRecChanged(const SeqRecChangedCallback& callback);
+	using SeqInputMonitoringChangedCallback = std::function<void(int)>;
+	void addSeqInputMonitoringChanged(const SeqInputMonitoringChangedCallback& callback);
 	using SeqDataRefChangedCallback = std::function<void(int)>;
 	void addSeqDataRefChanged(const SeqDataRefChangedCallback& callback);
 	using PluginSearchMesCallback = std::function<void(const juce::String&)>;
@@ -67,6 +69,7 @@ public:
 	void invokeTempoChanged() const;
 	void invokeSeqMuteChanged(int index) const;
 	void invokeSeqRecChanged(int index) const;
+	void invokeSeqInputMonitoringChanged(int index) const;
 	void invokeSeqDataRefChanged(int index) const;
 	void invokePluginSearchMes(const juce::String& mes) const;
 	void invokeSynthStatus(int index, bool status) const;
@@ -91,6 +94,7 @@ private:
 	juce::Array<SeqBlockChangedCallback> seqBlockChanged;
 	juce::Array<TempoChangedCallback> tempoChanged;
 	juce::Array<SeqMuteChangedCallback> seqMuteChanged;
+	juce::Array<SeqInputMonitoringChangedCallback> seqInputMonitoringChanged;
 	juce::Array<SeqRecChangedCallback> seqRecChanged;
 	juce::Array<SeqDataRefChangedCallback> seqDataRefChanged;
 	juce::Array<PluginSearchMesCallback> pluginSearchMesChanged;

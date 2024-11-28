@@ -70,6 +70,10 @@ CoreCallbacks::CoreCallbacks() {
 		[](int index) {
 			CoreCallbacks::getInstance()->invokeSeqMuteChanged(index);
 		});
+	UICallbackAPI<int>::set(UICallbackType::SeqInputMonitoringChanged,
+		[](int index) {
+			CoreCallbacks::getInstance()->invokeSeqInputMonitoringChanged(index);
+		});
 	UICallbackAPI<int>::set(UICallbackType::SeqRecChanged,
 		[](int index) {
 			CoreCallbacks::getInstance()->invokeSeqRecChanged(index);
@@ -162,6 +166,10 @@ void CoreCallbacks::addSeqMuteChanged(const SeqMuteChangedCallback& callback) {
 
 void CoreCallbacks::addSeqRecChanged(const SeqRecChangedCallback& callback) {
 	this->seqRecChanged.add(callback);
+}
+
+void CoreCallbacks::addSeqInputMonitoringChanged(const SeqInputMonitoringChangedCallback& callback) {
+	this->seqInputMonitoringChanged.add(callback);
 }
 
 void CoreCallbacks::addSeqDataRefChanged(const SeqDataRefChangedCallback& callback) {
@@ -289,6 +297,12 @@ void CoreCallbacks::invokeSeqMuteChanged(int index) const {
 
 void CoreCallbacks::invokeSeqRecChanged(int index) const {
 	for (auto& i : this->seqRecChanged) {
+		i(index);
+	}
+}
+
+void CoreCallbacks::invokeSeqInputMonitoringChanged(int index) const {
+	for (auto& i : this->seqInputMonitoringChanged) {
 		i(index);
 	}
 }

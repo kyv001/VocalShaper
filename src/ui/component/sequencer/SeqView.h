@@ -22,6 +22,7 @@ public:
 	void updateBlock(int track, int index);
 	void updateTempo();
 	void updateMute(int index);
+	void updateInputMonitoring(int index);
 	void updateRec(int index);
 	void updateInstr(int index);
 	void updateLevelMeter() override;
@@ -63,6 +64,7 @@ private:
 		void update(int index);
 		void updateBlock(int track, int index);
 		void updateMute(int index);
+		void updateInputMonitoring(int index);
 		void updateRec(int index);
 		void updateInstr(int index);
 		void updateMixerTrack();
