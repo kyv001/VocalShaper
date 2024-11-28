@@ -35,12 +35,15 @@ void SeqTrackLevelMeter::updateLevelMeter() {
 void SeqTrackLevelMeter::paint(juce::Graphics& g) {
 	/** Size */
 	auto screenSize = utils::getScreenSize(this);
-	int paddingWidth = screenSize.getWidth() * 0.0025;
-	int paddingHeight = screenSize.getHeight() * 0.0025;
+	float paddingWidth = screenSize.getWidth() * 0.002;
+	float paddingHeight = screenSize.getHeight() * 0.002;
 
 	int barNum = this->values.size();
-	float splitHeight = screenSize.getHeight() * 0.0035 / barNum;
-	float lineThickness = screenSize.getHeight() * 0.001;
+	float splitWidth = screenSize.getWidth() * 0.0025 / barNum;
+	float lineThickness = screenSize.getHeight() * 0.00075;
+
+	int showRMSLineHeight = screenSize.getHeight() * 0.085;
+	bool shouldShowRMSLine = (this->getHeight() >= showRMSLineHeight);
 
 	/** Color */
 	auto& laf = this->getLookAndFeel();
@@ -62,14 +65,16 @@ void SeqTrackLevelMeter::paint(juce::Graphics& g) {
 		paddingWidth, paddingHeight,
 		this->getWidth() - paddingWidth * 2,
 		this->getHeight() - paddingHeight * 2);
-	for (auto i : rmsLine) {
-		float xPos = rmsArea.getRight() - (i / rmsNum) * rmsArea.getWidth();
+	if (shouldShowRMSLine) {
+		for (auto i : rmsLine) {
+			float yPos = rmsArea.getY() + (i / rmsNum) * rmsArea.getHeight();
 
-		juce::Rectangle<float> line(
-			xPos - lineThickness / 2, rmsArea.getY(),
-			lineThickness, rmsArea.getHeight());
-		g.setColour(textColor);
-		g.fillRect(line);
+			juce::Rectangle<float> line(
+				rmsArea.getX(), yPos - lineThickness / 2,
+				rmsArea.getWidth(), lineThickness);
+			g.setColour(textColor);
+			g.fillRect(line);
+		}
 	}
 
 	/** Bar */
@@ -80,17 +85,17 @@ void SeqTrackLevelMeter::paint(juce::Graphics& g) {
 		juce::Colours::red };
 
 	if (barNum > 0) {
-		float barHeight = (rmsArea.getHeight() - (barNum - 1) * splitHeight) / barNum;
+		float barWidth = (rmsArea.getWidth() - (barNum - 1) * splitWidth) / barNum;
 		for (int i = 0; i < barNum; i++) {
 			float value = this->values[i];
 			float percent = std::max(utils::getLogLevelPercent(value, rmsNum), 0.f);
 
 			for (int j = levelSegs.size() - 1; j >= 0; j--) {
-				float width = std::min(percent, levelSegs[j]) * rmsArea.getWidth();
+				float height = std::min(percent, levelSegs[j]) * rmsArea.getHeight();
 				juce::Rectangle<float> barRect(
-					rmsArea.getX(),
-					rmsArea.getY() + (barHeight + splitHeight) * i,
-					width, barHeight);
+					rmsArea.getX() + (barWidth + splitWidth) * i,
+					rmsArea.getBottom() - height,
+					barWidth, height);
 
 				g.setColour(levelColors[j]);
 				g.fillRect(barRect);

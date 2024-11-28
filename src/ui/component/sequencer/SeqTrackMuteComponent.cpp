@@ -137,4 +137,3 @@ juce::PopupMenu SeqTrackMuteComponent::createMenu() const {
 
 	return menu;
 }
-

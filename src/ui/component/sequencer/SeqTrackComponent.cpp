@@ -38,11 +38,11 @@ SeqTrackComponent::SeqTrackComponent(
 
 	/** Mute Button */
 	this->muteButton = std::make_unique<SeqTrackMuteComponent>();
-	this->addAndMakeVisible(this->muteButton.get());
+	this->addChildComponent(this->muteButton.get());
 
 	/** Record Button */
 	this->recButton = std::make_unique<SeqTrackRecComponent>();
-	this->addAndMakeVisible(this->recButton.get());
+	this->addChildComponent(this->recButton.get());
 
 	/** Instr Button */
 	this->instrButton = std::make_unique<RightClickableTextButton>("-",
@@ -111,7 +111,7 @@ SeqTrackComponent::SeqTrackComponent(
 
 	/** Level Meter */
 	this->levelMeter = std::make_unique<SeqTrackLevelMeter>();
-	this->addChildComponent(this->levelMeter.get());
+	this->addAndMakeVisible(this->levelMeter.get());
 
 	/** Content */
 	this->content = std::make_unique<SeqTrackContentViewer>(
@@ -225,13 +225,14 @@ void SeqTrackComponent::resized() {
 	float trackColorWidth = screenSize.getWidth() * 0.005;
 
 	int paddingHeight = screenSize.getHeight() * 0.015;
-	int paddingWidth = screenSize.getWidth() * 0.0075;
+	int paddingWidth = screenSize.getWidth() * 0.005;
 	float lineThickness = screenSize.getHeight() * 0.0025;
+
+	int levelMeterWidth = screenSize.getWidth() * 0.0085;
 
 	int nameWidth = screenSize.getWidth() * 0.065;
 	int nameHeight = screenSize.getHeight() * 0.025;
 
-	int muteButtonHeight = screenSize.getHeight() * 0.02;
 	int buttonSplitWidth = screenSize.getWidth() * 0.0035;
 
 	int compressModeHeight = paddingHeight * 2 + nameHeight;
@@ -242,7 +243,7 @@ void SeqTrackComponent::resized() {
 
 	int contentLineSplitHeight = screenSize.getHeight() * 0.0075;
 
-	int ioLineHeight = screenSize.getHeight() * 0.015;
+	int ioLineHeight = screenSize.getHeight() * 0.020;
 	int ioLineSplitWidth = screenSize.getWidth() * 0.0025;
 
 	int ioLineShownHeight = compressModeHeight + lineSplitHeight + ioLineHeight;
@@ -251,33 +252,28 @@ void SeqTrackComponent::resized() {
 	int instrLineShownHeight = ioLineShownHeight + contentLineSplitHeight + instrLineHeight;
 	bool isInstrLineShown = this->getHeight() >= instrLineShownHeight;
 
+	/** Level Meter */
+	juce::Rectangle<int> levelMeterRect(
+		headWidth - levelMeterWidth, 0,
+		levelMeterWidth, this->getHeight());
+	this->levelMeter->setBounds(levelMeterRect);
+
 	int topY = 0;
+	int leftX = trackColorWidth + paddingWidth, rightX = levelMeterRect.getX() - paddingWidth;
 
 	/** Track Name */
 	juce::Rectangle<int> nameRect(
-		paddingWidth + trackColorWidth, isCompressMode ? lineThickness : paddingHeight,
-		headWidth - paddingWidth * 2 - trackColorWidth - muteButtonHeight * 2 - buttonSplitWidth * 2,
+		leftX, isCompressMode ? lineThickness : paddingHeight,
+		rightX - leftX,
 		isCompressMode ? (this->getHeight() - lineThickness * 2) : nameHeight);
 	this->trackName->setBounds(nameRect);
-
-	/** Mute Button */
-	juce::Rectangle<int> muteRect(
-		nameRect.getRight() + buttonSplitWidth, nameRect.getCentreY() - muteButtonHeight / 2,
-		muteButtonHeight, muteButtonHeight);
-	this->muteButton->setBounds(muteRect);
-
-	/** Record Button */
-	juce::Rectangle<int> recRect(
-		muteRect.getRight() + buttonSplitWidth, nameRect.getCentreY() - muteButtonHeight / 2,
-		muteButtonHeight, muteButtonHeight);
-	this->recButton->setBounds(recRect);
 
 	topY = nameRect.getBottom();
 
 	/** Instr Button */
 	juce::Rectangle<int> instrLineRect(
-		paddingWidth + trackColorWidth, topY + lineSplitHeight,
-		headWidth - paddingWidth * 2 - trackColorWidth, instrLineHeight);
+		leftX, topY + lineSplitHeight,
+		rightX - leftX, instrLineHeight);
 	auto instrRect = instrLineRect.withTrimmedRight(instrLineHeight * 2);
 	this->instrButton->setBounds(instrRect);
 	this->instrButton->setVisible(isInstrLineShown);
@@ -301,24 +297,33 @@ void SeqTrackComponent::resized() {
 	}
 
 	/** IO */
+	/** Record Button */
+	juce::Rectangle<int> recRect(
+		leftX + buttonSplitWidth, topY + contentLineSplitHeight,
+		ioLineHeight, ioLineHeight);
+	this->recButton->setBounds(recRect);
+	this->recButton->setVisible(isIOLineShown);
+
+	/** Mute Button */
+	juce::Rectangle<int> muteRect(
+		recRect.getRight() + buttonSplitWidth, recRect.getY(),
+		ioLineHeight, ioLineHeight);
+	this->muteButton->setBounds(muteRect);
+	this->muteButton->setVisible(isIOLineShown);
+
+	/** MIDI Output */
 	juce::Rectangle<int> midiOutputRect(
-		paddingWidth + trackColorWidth, topY + contentLineSplitHeight,
+		muteRect.getRight() + buttonSplitWidth, recRect.getY(),
 		ioLineHeight, ioLineHeight);
 	this->midiOutput->setBounds(midiOutputRect);
 	this->midiOutput->setVisible(isIOLineShown);
 
+	/** Audio Output */
 	juce::Rectangle<int> audioOutputRect(
-		midiOutputRect.getRight() + ioLineSplitWidth, midiOutputRect.getY(),
+		midiOutputRect.getRight() + ioLineSplitWidth, recRect.getY(),
 		ioLineHeight, ioLineHeight);
 	this->audioOutput->setBounds(audioOutputRect);
 	this->audioOutput->setVisible(isIOLineShown);
-
-	/** Level Meter */
-	juce::Rectangle<int> levelRect(
-		audioOutputRect.getRight() + ioLineSplitWidth, midiOutputRect.getY(),
-		headWidth - paddingWidth - audioOutputRect.getRight() - ioLineSplitWidth, ioLineHeight);
-	this->levelMeter->setBounds(levelRect);
-	this->levelMeter->setVisible(isIOLineShown);
 
 	if (isIOLineShown) {
 		topY = midiOutputRect.getBottom();
