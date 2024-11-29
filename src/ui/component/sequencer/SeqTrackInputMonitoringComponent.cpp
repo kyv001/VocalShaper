@@ -84,7 +84,7 @@ void SeqTrackInputMonitoringComponent::mouseUp(const juce::MouseEvent& event) {
 			this->changeInputMonitoring();
 		}
 		else if (event.mods.isRightButtonDown()) {
-			this->changeInputMonitoring();
+			this->showMenu();
 		}
 	}
 }
@@ -92,12 +92,60 @@ void SeqTrackInputMonitoringComponent::mouseUp(const juce::MouseEvent& event) {
 void SeqTrackInputMonitoringComponent::update(int index) {
 	this->index = index;
 	if (index > -1) {
+		/** Get Input Monitoring State */
 		this->inputMonitoring = quickAPI::getSeqTrackInputMonitoring(index);
 
+		/** Get Input Connections */
+		this->midiInput = quickAPI::getSeqTrackMIDIInputFromDevice(index);
+		this->audioInput = quickAPI::getSeqTrackAudioInputFromDevice(index);
+
+		/** Repaint */
 		this->repaint();
 	}
 }
 
 void SeqTrackInputMonitoringComponent::changeInputMonitoring() {
 	CoreActions::setSeqInputMonitoring(this->index, !(this->inputMonitoring));
+}
+
+enum SeqInputMonitoringButtonActionType {
+	MIDIInput = 1, AudioInput
+};
+
+void SeqTrackInputMonitoringComponent::showMenu() {
+	auto menu = this->createMenu();
+	int result = menu.show();
+
+	switch (result) {
+	case SeqInputMonitoringButtonActionType::MIDIInput:
+		this->changeMIDIInput();
+		break;
+	case SeqInputMonitoringButtonActionType::AudioInput:
+		this->changeAudioInput();
+		break;
+	}
+}
+
+void SeqTrackInputMonitoringComponent::changeMIDIInput() {
+	CoreActions::setSeqMIDIInputFromDevice(this->index, !this->midiInput);
+}
+
+void SeqTrackInputMonitoringComponent::changeAudioInput() {
+	juce::Array<std::tuple<int, int>> links;
+	for (auto& [src, srcc, dst, dstc] : this->audioInput) {
+		links.add({ srcc, dstc });
+	}
+
+	CoreActions::setSeqAudioInputFromDeviceGUI(this->index, true, links);
+}
+
+juce::PopupMenu SeqTrackInputMonitoringComponent::createMenu() {
+	juce::PopupMenu menu;
+
+	menu.addItem(SeqInputMonitoringButtonActionType::MIDIInput,
+		TRANS("MIDI Input"), true, this->midiInput);
+	menu.addItem(SeqInputMonitoringButtonActionType::AudioInput,
+		TRANS("Audio Input"), true, (this->audioInput.size() > 0));
+
+	return menu;
 }

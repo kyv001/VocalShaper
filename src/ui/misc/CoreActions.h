@@ -85,6 +85,8 @@ public:
 	static void insertSeq(int index, int type);
 	static void setSeqColor(int index, const juce::Colour& color);
 	static void setSeqName(int index, const juce::String& name);
+	static void setSeqMIDIInputFromDevice(int index, bool input);
+	static void setSeqAudioInputFromDevice(int index, int channel, int srcChannel, bool input);
 	static void setSeqMIDIOutputToMixer(int index, int mixerIndex, bool output);
 	static void setSeqAudioOutputToMixer(int index, int channel, int mixerIndex, int dstChannel, bool output);
 	static void setSeqMute(int index, bool mute);
@@ -167,6 +169,8 @@ public:
 	static void insertSeqGUI();
 	static void setSeqColorGUI(int index);
 	static void setSeqNameGUI(int index);
+	static void setSeqAudioInputFromDeviceGUI(int index, bool input,
+		const juce::Array<std::tuple<int, int>>& links);
 	static void setSeqAudioOutputToMixerGUI(int index, int mixerIndex, bool output,
 		const juce::Array<std::tuple<int, int>>& links);
 	static void setSeqMIDITrackGUI(int index);

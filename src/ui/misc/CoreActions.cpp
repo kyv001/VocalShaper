@@ -392,6 +392,20 @@ void CoreActions::setSeqName(int index, const juce::String& name) {
 	ActionDispatcher::getInstance()->dispatch(std::move(action));
 }
 
+void CoreActions::setSeqMIDIInputFromDevice(int index, bool input) {
+	auto action = input
+		? std::unique_ptr<ActionBase>(new ActionAddSequencerTrackMidiInput{ index })
+		: std::unique_ptr<ActionBase>(new ActionRemoveSequencerTrackMidiInput{ index });
+	ActionDispatcher::getInstance()->dispatch(std::move(action));
+}
+
+void CoreActions::setSeqAudioInputFromDevice(int index, int channel, int srcChannel, bool input) {
+	auto action = input
+		? std::unique_ptr<ActionBase>(new ActionAddSequencerTrackInputFromDevice{ srcChannel, index, channel })
+		: std::unique_ptr<ActionBase>(new ActionRemoveSequencerTrackInputFromDevice{ srcChannel, index, channel });
+	ActionDispatcher::getInstance()->dispatch(std::move(action));
+}
+
 void CoreActions::setSeqMIDIOutputToMixer(
 	int index, int mixerIndex, bool output) {
 	auto action = output
@@ -1000,6 +1014,37 @@ void CoreActions::setSeqNameGUI(int index) {
 
 	/** Ask For Name */
 	CoreActions::askForNameGUIAsync(callback, defaultName);
+}
+
+void CoreActions::setSeqAudioInputFromDeviceGUI(int index, bool input,
+	const juce::Array<std::tuple<int, int>>& links) {
+	/** Callback */
+	auto callback = [index](int srcc, int dstc, bool input) {
+		CoreActions::setSeqAudioInputFromDevice(index, dstc, srcc, input);
+		};
+
+	/** Remove */
+	if (!input) {
+		for (auto& [srcc, dstc] : links) {
+			callback(srcc, dstc, false);
+		}
+		return;
+	}
+
+	/** Name */
+	juce::String deviceName = quickAPI::getAudioDeviceName(true);
+	juce::String trackName = TRANS("Sequencer Track") + " #" + juce::String{ index } + " " + quickAPI::getSeqTrackName(index);
+
+	/** Channels */
+	int deviceTotalChannels = quickAPI::getAudioDeviceChannelNum(true);
+	int trackTotalChannels = quickAPI::getSeqTrackInputChannelNum(index);
+	auto deviceChannelSet = juce::AudioChannelSet::discreteChannels(deviceTotalChannels);
+	auto trackChannelSet = quickAPI::getSeqTrackChannelSet(index);
+
+	/** Ask For Channels */
+	CoreActions::askForAudioChannelLinkGUIAsync(callback, links,
+		deviceChannelSet, trackChannelSet, deviceTotalChannels, trackTotalChannels,
+		deviceName, trackName, true);
 }
 
 void CoreActions::setSeqAudioOutputToMixerGUI(int index, int mixerIndex, bool output,
