@@ -139,6 +139,36 @@ void SourceInternalContainer::setAudio(
 	}
 }
 
+void SourceInternalContainer::writeAudio(AudioWriteType type, const juce::AudioSampleBuffer& buffer,
+	double startTime, double length, double sampleRate) {
+	if (this->type == SourceType::Audio) {
+		/** Init Audio */
+		if (!this->audioData) {
+			this->initAudioData(buffer.getNumChannels(), sampleRate, startTime + length);
+		}
+		
+		/** TODO Write Data */
+
+		/** Set Flag */
+		this->changed();
+	}
+}
+
+void SourceInternalContainer::writeMIDI(MIDIWriteType type, const juce::MidiMessageSequence& sequence,
+	double startTime, double length) {
+	if (this->type == SourceType::MIDI) {
+		/** Init Audio */
+		if (!this->midiData) {
+			this->initMidiData();
+		}
+
+		/** TODO Write Data */
+
+		/** Set Flag */
+		this->changed();
+	}
+}
+
 void SourceInternalContainer::setAudioFormat(const AudioFormat& format) {
 	if (this->type == SourceType::Audio) {
 		std::tie(this->format, this->metaData, this->bitsPerSample, this->quality) = format;

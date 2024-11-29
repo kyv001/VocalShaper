@@ -23,6 +23,13 @@ public:
 	const juce::MidiMessageSequence makeMIDITrack(int trackIndex) const;
 	const juce::MidiFile makeMIDIFile() const;
 
+	using AudioWriteType = SourceInternalContainer::AudioWriteType;
+	using MIDIWriteType = SourceInternalContainer::MIDIWriteType;
+	void writeAudio(AudioWriteType type, const juce::AudioSampleBuffer& buffer,
+		double startTime, double length, double sampleRate);
+	void writeMIDI(MIDIWriteType type, const juce::MidiMessageSequence& sequence,
+		double startTime, double length);
+
 	void changed();
 	void saved();
 	bool isSaved() const;

@@ -162,6 +162,47 @@ const juce::MidiFile SourceItem::makeMIDIFile() const {
 	return this->container->makeMIDIFile();
 }
 
+void SourceItem::writeAudio(AudioWriteType type, const juce::AudioSampleBuffer& buffer,
+	double startTime, double length, double sampleRate) {
+	/** Check Type */
+	if (this->type != SourceType::Audio) { return; }
+
+	/** Init or Fork */
+	if (this->container) {
+		this->forkIfNeed();
+	}
+	else {
+		this->initAudio(juce::String{},
+			buffer.getNumChannels(), sampleRate, startTime + length);
+	}
+
+	/** Write Data */
+	this->container->writeAudio(type, buffer, startTime, length, sampleRate);
+
+	/** Callback */
+	this->invokeCallback();
+}
+
+void SourceItem::writeMIDI(MIDIWriteType type, const juce::MidiMessageSequence& sequence,
+	double startTime, double length) {
+	/** Check Type */
+	if (this->type != SourceType::MIDI) { return; }
+
+	/** Init or Fork */
+	if (this->container) {
+		this->forkIfNeed();
+	}
+	else {
+		this->initMIDI(juce::String{});
+	}
+
+	/** Write Data */
+	this->container->writeMIDI(type, sequence, startTime, length);
+
+	/** Callback */
+	this->invokeCallback();
+}
+
 void SourceItem::changed() {
 	if (!this->container) { return; }
 	this->container->changed();
