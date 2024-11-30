@@ -611,6 +611,20 @@ namespace quickAPI {
 		return 0;
 	}
 
+	bool getSeqTrackMIDIInputFromDevice(int index) {
+		if (auto graph = AudioCore::getInstance()->getGraph()) {
+			return graph->getSourceMidiInputFromDeviceConnections(index).size() > 0;
+		}
+		return false;
+	}
+
+	const juce::Array<AudioLink> getSeqTrackAudioInputFromDevice(int index) {
+		if (auto graph = AudioCore::getInstance()->getGraph()) {
+			return graph->getSourceInputFromDeviceConnections(index);
+		}
+		return {};
+	}
+
 	const juce::Array<MIDILink> getSeqTrackMIDIOutputToMixer(int index) {
 		if (auto graph = AudioCore::getInstance()->getGraph()) {
 			return graph->getSourceMidiOutputToTrackConnections(index);
@@ -634,13 +648,22 @@ namespace quickAPI {
 		return false;
 	}
 
-	bool getSeqTrackRecording(int index) {
+	bool getSeqTrackInputMonitoring(int index) {
+		if (auto graph = AudioCore::getInstance()->getGraph()) {
+			if (auto track = graph->getSourceProcessor(index)) {
+				return track->getInputMonitoring();
+			}
+		}
+		return false;
+	}
+
+	RecordState getSeqTrackRecording(int index) {
 		if (auto graph = AudioCore::getInstance()->getGraph()) {
 			if (auto track = graph->getSourceProcessor(index)) {
 				return track->getRecording();
 			}
 		}
-		return false;
+		return RecordState::NotRecording;
 	}
 
 	const juce::Array<float> getSeqTrackOutputLevel(int index) {

@@ -2,6 +2,7 @@
 
 #include <JuceHeader.h>
 #include "../graph/PluginDecorator.h"
+#include "../graph/SeqSourceProcessor.h"
 #include "../source/SourceMIDITemp.h"
 #include "../Utils.h"
 
@@ -116,6 +117,7 @@ namespace quickAPI {
 	const juce::AudioChannelSet getEffectChannelSet(int trackIndex, int index);
 	int getEffectInputChannelNum(int trackIndex, int index);
 
+	using RecordState = SeqSourceProcessor::RecordState;
 	int getSeqTrackNum();
 	const juce::String getSeqTrackName(int index);
 	const juce::Colour getSeqTrackColor(int index);
@@ -123,10 +125,13 @@ namespace quickAPI {
 	const juce::AudioChannelSet getSeqTrackChannelSet(int index);
 	int getSeqTrackInputChannelNum(int index);
 	int getSeqTrackOutputChannelNum(int index);
+	bool getSeqTrackMIDIInputFromDevice(int index);
+	const juce::Array<AudioLink> getSeqTrackAudioInputFromDevice(int index);
 	const juce::Array<MIDILink> getSeqTrackMIDIOutputToMixer(int index);
 	const juce::Array<AudioLink> getSeqTrackAudioOutputToMixer(int index);
 	bool getSeqTrackMute(int index);
-	bool getSeqTrackRecording(int index);
+	bool getSeqTrackInputMonitoring(int index);
+	RecordState getSeqTrackRecording(int index);
 	const juce::Array<float> getSeqTrackOutputLevel(int index);
 	const juce::String getSeqTrackType(int index);
 	bool isSeqTrackHasAudioData(int index);

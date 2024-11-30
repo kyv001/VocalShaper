@@ -134,6 +134,14 @@ countries: cn
 "Offline" = "离线"
 "Select MIDI Track" = "选择 MIDI 轨道"
 
+"No MIDI Recording" = "不录制 MIDI"
+"MIDI New Track Mode" = "MIDI 新轨道模式"
+"MIDI Insert Mode" = "MIDI 插入模式"
+"MIDI Cover Mode" = "MIDI 覆盖模式"
+"No Audio Recording" = "不录制音频"
+"Audio Insert Mode" = "音频插入模式"
+"Audio Cover Mode" = "音频覆盖模式"
+
 "Type:" = "类型："
 "Instrument:" = "乐器："
 "Instrument Offline:" = "乐器离线："

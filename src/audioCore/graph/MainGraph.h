@@ -28,6 +28,10 @@ public:
 	void setTrackBypass(int index, bool bypass);
 	bool getTrackBypass(int index) const;
 
+	void setMIDII2SrcConnection(int sourceIndex);
+	void removeMIDII2SrcConnection(int sourceIndex);
+	void setAudioI2SrcConnection(int sourceIndex, int srcChannel, int dstChannel);
+	void removeAudioI2SrcConnection(int sourceIndex, int srcChannel, int dstChannel);
 	void setMIDISrc2TrkConnection(int sourceIndex, int trackIndex);
 	void removeMIDISrc2TrkConnection(int sourceIndex, int trackIndex);
 	void setAudioSrc2TrkConnection(int sourceIndex, int trackIndex, int srcChannel, int dstChannel);
@@ -43,6 +47,8 @@ public:
 	void setMIDITrk2OConnection(int trackIndex);
 	void removeMIDITrk2OConnection(int trackIndex);
 
+	bool isMIDII2SrcConnected(int sourceIndex) const;
+	bool isAudioI2SrcConnected(int sourceIndex, int srcChannel, int dstChannel) const;
 	bool isMIDISrc2TrkConnected(int sourceIndex, int trackIndex) const;
 	bool isAudioSrc2TrkConnected(int sourceIndex, int trackIndex, int srcChannel, int dstChannel) const;
 	bool isMIDII2TrkConnected(int trackIndex) const;
@@ -61,8 +67,10 @@ public:
 	utils::MidiConnectionList getTrackMidiInputFromDeviceConnections(int index) const;
 	utils::MidiConnectionList getTrackMidiOutputToDeviceConnections(int index) const;
 
+	utils::AudioConnectionList getSourceInputFromDeviceConnections(int index) const;
 	utils::AudioConnectionList getSourceOutputToTrackConnections(int index) const;
 
+	utils::MidiConnectionList getSourceMidiInputFromDeviceConnections(int index) const;
 	utils::MidiConnectionList getSourceMidiOutputToTrackConnections(int index) const;
 
 	/**
@@ -127,6 +135,8 @@ private:
 	juce::Array<juce::AudioProcessorGraph::Node::Ptr> audioSourceNodeList;
 	juce::Array<juce::AudioProcessorGraph::Node::Ptr> trackNodeList;
 
+	juce::Array<juce::AudioProcessorGraph::Connection> midiI2SrcConnectionList;
+	juce::Array<juce::AudioProcessorGraph::Connection> audioI2SrcConnectionList;
 	juce::Array<juce::AudioProcessorGraph::Connection> midiSrc2TrkConnectionList;
 	juce::Array<juce::AudioProcessorGraph::Connection> audioSrc2TrkConnectionList;
 	juce::Array<juce::AudioProcessorGraph::Connection> midiI2TrkConnectionList;
@@ -143,6 +153,7 @@ private:
 
 	mutable double totalLengthTemp = 0;
 
+	void removeIllegalAudioI2SrcConnections();
 	void removeIllegalAudioI2TrkConnections();
 	void removeIllegalAudioTrk2OConnections();
 

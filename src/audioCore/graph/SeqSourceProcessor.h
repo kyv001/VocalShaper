@@ -69,11 +69,24 @@ public:
 	int getCurrentMIDITrack() const;
 	int getTotalMIDITrackNum() const;
 
-	void setRecording(bool recording);
-	bool getRecording() const;
+	enum RecordState {
+		NotRecording = 0,
+
+		MIDINewTrackMode = 0x01,
+		MIDIInsertMode = 0x02,
+		MIDICoverMode = 0x03,
+
+		AudioInsertMode = 0x10,
+		AudioCoverMode = 0x20
+	};
+	void setRecording(RecordState recordState);
+	RecordState getRecording() const;
 
 	void setMute(bool mute);
 	bool getMute() const;
+
+	void setInputMonitoring(bool inputMonitoring);
+	bool getInputMonitoring() const;
 
 	const juce::Array<float> getOutputLevels() const;
 
@@ -138,9 +151,10 @@ private:
 	uint64_t audioSourceRef = 0, midiSourceRef = 0;
 	std::atomic_int currentMIDITrack = 0;
 
-	std::atomic_bool recordingFlag = false;
+	std::atomic<RecordState> recordingFlag = RecordState::NotRecording;
 
 	std::atomic_bool isMute = false;
+	std::atomic_bool inputMonitoring = false;
 
 	juce::Array<float> outputLevels;
 

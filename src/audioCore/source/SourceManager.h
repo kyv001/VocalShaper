@@ -30,6 +30,13 @@ public:
 	const juce::MidiMessageSequence makeMIDITrack(uint64_t ref, int trackIndex) const;
 	const juce::MidiFile makeMIDIFile(uint64_t ref) const;
 
+	using AudioWriteType = SourceItem::AudioWriteType;
+	using MIDIWriteType = SourceItem::MIDIWriteType;
+	void writeAudio(uint64_t ref, AudioWriteType type, const juce::AudioSampleBuffer& buffer,
+		double startTime, double length, double sampleRate);
+	void writeMIDI(uint64_t ref, MIDIWriteType type, const juce::MidiMessageSequence& sequence,
+		double startTime, double length);
+
 	void prepareAudioPlay(uint64_t ref);
 	void prepareMIDIPlay(uint64_t ref);
 

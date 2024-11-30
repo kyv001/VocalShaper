@@ -515,19 +515,20 @@ int SeqSourceProcessor::getTotalMIDITrackNum() const {
 	return SourceManager::getInstance()->getMIDITrackNum(this->midiSourceRef);
 }
 
-void SeqSourceProcessor::setRecording(bool recording) {
-	this->recordingFlag = recording;
-
+void SeqSourceProcessor::setRecording(RecordState recordState) {
 	/** Sync ARA */
-	if (!recording) {
+	if (this->recordingFlag != RecordState::NotRecording
+		&& this->recordingFlag != recordState) {
 		this->syncARAContext();
 	}
+	
+	this->recordingFlag = recordState;
 
 	/** Callback */
 	UICallbackAPI<int>::invoke(UICallbackType::SeqRecChanged, this->index);
 }
 
-bool SeqSourceProcessor::getRecording() const {
+SeqSourceProcessor::RecordState SeqSourceProcessor::getRecording() const {
 	return this->recordingFlag;
 }
 
@@ -545,6 +546,17 @@ void SeqSourceProcessor::setMute(bool mute) {
 
 bool SeqSourceProcessor::getMute() const {
 	return this->isMute;
+}
+
+void SeqSourceProcessor::setInputMonitoring(bool inputMonitoring) {
+	this->inputMonitoring = inputMonitoring;
+
+	/** Callback */
+	UICallbackAPI<int>::invoke(UICallbackType::SeqInputMonitoringChanged, this->index);
+}
+
+bool SeqSourceProcessor::getInputMonitoring() const {
+	return this->inputMonitoring;
 }
 
 const juce::Array<float> SeqSourceProcessor::getOutputLevels() const {
@@ -577,10 +589,13 @@ void SeqSourceProcessor::processBlock(
 	if (buffer.getNumChannels() <= 0) { return; }
 	if (buffer.getNumSamples() <= 0) { return; }
 
-	/** Clear Audio Channel */
-	auto dspBlock = juce::dsp::AudioBlock<float>(buffer).getSubsetChannelBlock(
-		0, buffer.getNumChannels());
-	dspBlock.fill(0);
+	if (!this->inputMonitoring) {
+		/** Clear MIDI Buffer */
+		midiMessages.clear();
+
+		/** Clear Audio Buffer */
+		vMath::zeroAllAudioData(buffer);
+	}
 
 	/** Play Flag */
 	bool isPlaying = true;
@@ -595,11 +610,6 @@ void SeqSourceProcessor::processBlock(
 
 	/** Check Play State */
 	if (!position->getIsPlaying()) { isPlaying = false; }
-
-	/** Clear MIDI Buffer */
-	if ((isPlaying && position->getIsRecording()) || (!this->recordingFlag)) {
-		midiMessages.clear();
-	}
 
 	if (isPlaying && !(this->isMute)) {
 		/** Get Time */
@@ -744,7 +754,8 @@ bool SeqSourceProcessor::parse(
 	}
 	this->setCurrentMIDITrack(mes->miditrack());
 
-	this->setRecording(mes->recording());
+	this->setRecording(static_cast<RecordState>(mes->recordstate()));
+	this->setInputMonitoring(mes->inputmonitoring());
 	this->setMute(mes->muted());
 
 	return true;
@@ -794,7 +805,8 @@ std::unique_ptr<google::protobuf::Message> SeqSourceProcessor::serialize(
 	}
 	mes->set_miditrack(this->getCurrentMIDITrack());
 
-	mes->set_recording(this->getRecording());
+	mes->set_recordstate(static_cast<vsp4::SeqTrack::RecordState>(this->getRecording()));
+	mes->set_inputmonitoring(this->getInputMonitoring());
 	mes->set_muted(this->getMute());
 
 	return std::unique_ptr<google::protobuf::Message>(mes.release());

@@ -1,15 +1,15 @@
-﻿#include "SeqTrackMuteComponent.h"
+#include "SeqTrackInputMonitoringComponent.h"
 #include "../../lookAndFeel/LookAndFeelFactory.h"
 #include "../../misc/CoreActions.h"
 #include "../../Utils.h"
 #include "../../../audioCore/AC_API.h"
 
-SeqTrackMuteComponent::SeqTrackMuteComponent() {
+SeqTrackInputMonitoringComponent::SeqTrackInputMonitoringComponent() {
 	this->setLookAndFeel(
-		LookAndFeelFactory::getInstance()->getLAFFor(LookAndFeelFactory::MuteButton));
+		LookAndFeelFactory::getInstance()->getLAFFor(LookAndFeelFactory::InputMonitoringButton));
 }
 
-void SeqTrackMuteComponent::paint(juce::Graphics& g) {
+void SeqTrackInputMonitoringComponent::paint(juce::Graphics& g) {
 	/** Size */
 	auto screenSize = utils::getScreenSize(this);
 	float lineThickness = screenSize.getHeight() * 0.001;
@@ -21,10 +21,10 @@ void SeqTrackMuteComponent::paint(juce::Graphics& g) {
 
 	/** Color */
 	auto& laf = this->getLookAndFeel();
-	juce::Colour backgroundColor = laf.findColour(this->mute
+	juce::Colour backgroundColor = laf.findColour(this->inputMonitoring
 		? juce::TextButton::ColourIds::buttonOnColourId
 		: juce::TextButton::ColourIds::buttonColourId);
-	juce::Colour textColor = laf.findColour(this->mute
+	juce::Colour textColor = laf.findColour(this->inputMonitoring
 		? juce::TextButton::ColourIds::textColourOnId
 		: juce::TextButton::ColourIds::textColourOffId);
 
@@ -43,15 +43,15 @@ void SeqTrackMuteComponent::paint(juce::Graphics& g) {
 	g.drawRect(buttonRect, lineThickness);
 
 	g.setFont(textFont);
-	g.drawFittedText("M", buttonRect.toNearestInt(),
+	g.drawFittedText("I", buttonRect.toNearestInt(),
 		juce::Justification::centred, 1, 0.f);
 }
 
-void SeqTrackMuteComponent::mouseDrag(const juce::MouseEvent& event) {
+void SeqTrackInputMonitoringComponent::mouseDrag(const juce::MouseEvent& event) {
 	this->mouseMove(event);
 }
 
-void SeqTrackMuteComponent::mouseMove(const juce::MouseEvent& event) {
+void SeqTrackInputMonitoringComponent::mouseMove(const juce::MouseEvent& event) {
 	/** Size */
 	auto screenSize = utils::getScreenSize(this);
 	float lineThickness = screenSize.getHeight() * 0.001;
@@ -68,7 +68,7 @@ void SeqTrackMuteComponent::mouseMove(const juce::MouseEvent& event) {
 		: juce::MouseCursor::NormalCursor);
 }
 
-void SeqTrackMuteComponent::mouseUp(const juce::MouseEvent& event) {
+void SeqTrackInputMonitoringComponent::mouseUp(const juce::MouseEvent& event) {
 	/** Size */
 	auto screenSize = utils::getScreenSize(this);
 	float lineThickness = screenSize.getHeight() * 0.001;
@@ -81,7 +81,7 @@ void SeqTrackMuteComponent::mouseUp(const juce::MouseEvent& event) {
 
 	if (buttonRect.contains(event.position)) {
 		if (event.mods.isLeftButtonDown()) {
-			this->changeMute();
+			this->changeInputMonitoring();
 		}
 		else if (event.mods.isRightButtonDown()) {
 			this->showMenu();
@@ -89,51 +89,63 @@ void SeqTrackMuteComponent::mouseUp(const juce::MouseEvent& event) {
 	}
 }
 
-void SeqTrackMuteComponent::update(int index) {
+void SeqTrackInputMonitoringComponent::update(int index) {
 	this->index = index;
 	if (index > -1) {
-		this->mute = quickAPI::getSeqTrackMute(index);
+		/** Get Input Monitoring State */
+		this->inputMonitoring = quickAPI::getSeqTrackInputMonitoring(index);
 
+		/** Get Input Connections */
+		this->midiInput = quickAPI::getSeqTrackMIDIInputFromDevice(index);
+		this->audioInput = quickAPI::getSeqTrackAudioInputFromDevice(index);
+
+		/** Repaint */
 		this->repaint();
 	}
 }
 
-void SeqTrackMuteComponent::changeMute() {
-	CoreActions::setSeqMute(this->index, !(this->mute));
+void SeqTrackInputMonitoringComponent::changeInputMonitoring() {
+	CoreActions::setSeqInputMonitoring(this->index, !(this->inputMonitoring));
 }
 
-enum MixerMuteActionType {
-	Mute = 1, Solo, MuteAll, UnmuteAll
+enum SeqInputMonitoringButtonActionType {
+	MIDIInput = 1, AudioInput
 };
 
-void SeqTrackMuteComponent::showMenu() {
+void SeqTrackInputMonitoringComponent::showMenu() {
 	auto menu = this->createMenu();
 	int result = menu.show();
 
 	switch (result) {
-	case MixerMuteActionType::Mute:
-		this->changeMute();
+	case SeqInputMonitoringButtonActionType::MIDIInput:
+		this->changeMIDIInput();
 		break;
-	case MixerMuteActionType::Solo:
-		CoreActions::setSeqSolo(this->index);
-		break;
-	case MixerMuteActionType::MuteAll:
-		CoreActions::setSeqMuteAll(true);
-		break;
-	case MixerMuteActionType::UnmuteAll:
-		CoreActions::setSeqMuteAll(false);
+	case SeqInputMonitoringButtonActionType::AudioInput:
+		this->changeAudioInput();
 		break;
 	}
 }
 
-juce::PopupMenu SeqTrackMuteComponent::createMenu() const {
+void SeqTrackInputMonitoringComponent::changeMIDIInput() {
+	CoreActions::setSeqMIDIInputFromDevice(this->index, !this->midiInput);
+}
+
+void SeqTrackInputMonitoringComponent::changeAudioInput() {
+	juce::Array<std::tuple<int, int>> links;
+	for (auto& [src, srcc, dst, dstc] : this->audioInput) {
+		links.add({ srcc, dstc });
+	}
+
+	CoreActions::setSeqAudioInputFromDeviceGUI(this->index, true, links);
+}
+
+juce::PopupMenu SeqTrackInputMonitoringComponent::createMenu() {
 	juce::PopupMenu menu;
 
-	menu.addItem(MixerMuteActionType::Mute, TRANS("Mute"), true, this->mute);
-	menu.addItem(MixerMuteActionType::Solo, TRANS("Solo"));
-	menu.addSeparator();
-	menu.addItem(MixerMuteActionType::MuteAll, TRANS("Mute All"));
-	menu.addItem(MixerMuteActionType::UnmuteAll, TRANS("Unmute All"));
+	menu.addItem(SeqInputMonitoringButtonActionType::MIDIInput,
+		TRANS("MIDI Input"), true, this->midiInput);
+	menu.addItem(SeqInputMonitoringButtonActionType::AudioInput,
+		TRANS("Audio Input"), true, (this->audioInput.size() > 0));
 
 	return menu;
 }

@@ -29,6 +29,7 @@
 #include "editor/EditorSwitchBarLookAndFeel.h"
 #include "editor/PianoLookAndFeel.h"
 #include "editor/MidiContentLookAndFeel.h"
+#include "base/InputMonitoringButtonLookAndFeel.h"
 #include "../misc/ColorMap.h"
 #include <FlowUI.h>
 
@@ -95,7 +96,8 @@ void LookAndFeelFactory::initialise() {
 		new EditorLookAndFeel{},
 		new EditorSwitchBarLookAndFeel{},
 		new PianoLookAndFeel{},
-		new MidiContentLookAndFeel{}
+		new MidiContentLookAndFeel{},
+		new InputMonitoringButtonLookAndFeel{}
 	};
 }
 

@@ -222,7 +222,7 @@ AUDIOCORE_FUNC(setAudioSaveQualityOptionIndex) {
 
 AUDIOCORE_FUNC(setSequencerTrackRecording) {
 	auto action = std::unique_ptr<ActionBase>(new ActionSetSequencerTrackRecording{
-		(int)luaL_checkinteger(L, 1), (bool)lua_toboolean(L, 2) });
+		(int)luaL_checkinteger(L, 1), (quickAPI::RecordState)luaL_checkinteger(L, 2) });
 	ActionDispatcher::getInstance()->dispatch(std::move(action));
 	return CommandFuncResult{ true, "" };
 }

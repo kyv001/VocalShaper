@@ -15,7 +15,7 @@ public:
 		Mixer, Scroller, ColorEditor, SideChain, LevelMeter,
 		MuteButton, RecButton, Effect, Seq, TimeRuler, SeqTrack,
 		SeqTrackName, InstrName, SeqBlock, Editor, EditorSwitchBar,
-		Piano, MidiContent,
+		Piano, MidiContent, InputMonitoringButton,
 
 		TotalTypeNum
 	};

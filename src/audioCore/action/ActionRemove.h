@@ -105,6 +105,26 @@ private:
 	JUCE_LEAK_DETECTOR(ActionRemoveMixerTrackInputFromDevice)
 };
 
+class ActionRemoveSequencerTrackInputFromDevice final : public ActionUndoableBase {
+public:
+	ActionRemoveSequencerTrackInputFromDevice() = delete;
+	ActionRemoveSequencerTrackInputFromDevice(
+		int srcc, int dst, int dstc);
+
+	bool doAction() override;
+	bool undo() override;
+	const juce::String getName() override {
+		return "Remove Sequencer Track Input From Device";
+	};
+
+private:
+	ACTION_DATABLOCK{
+		const int srcc, dst, dstc;
+	} ACTION_DB;
+
+	JUCE_LEAK_DETECTOR(ActionRemoveSequencerTrackInputFromDevice)
+};
+
 class ActionRemoveMixerTrackOutput final : public ActionUndoableBase {
 public:
 	ActionRemoveMixerTrackOutput() = delete;
@@ -244,6 +264,25 @@ private:
 	} ACTION_DB;
 
 	JUCE_LEAK_DETECTOR(ActionRemoveMixerTrackMidiInput)
+};
+
+class ActionRemoveSequencerTrackMidiInput final : public ActionUndoableBase {
+public:
+	ActionRemoveSequencerTrackMidiInput() = delete;
+	ActionRemoveSequencerTrackMidiInput(int index);
+
+	bool doAction() override;
+	bool undo() override;
+	const juce::String getName() override {
+		return "Remove Sequencer Track Midi Input";
+	};
+
+private:
+	ACTION_DATABLOCK{
+		const int index;
+	} ACTION_DB;
+
+	JUCE_LEAK_DETECTOR(ActionRemoveSequencerTrackMidiInput)
 };
 
 class ActionRemoveMixerTrackMidiOutput final : public ActionUndoableBase {

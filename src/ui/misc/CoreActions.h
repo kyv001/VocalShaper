@@ -85,12 +85,15 @@ public:
 	static void insertSeq(int index, int type);
 	static void setSeqColor(int index, const juce::Colour& color);
 	static void setSeqName(int index, const juce::String& name);
+	static void setSeqMIDIInputFromDevice(int index, bool input);
+	static void setSeqAudioInputFromDevice(int index, int channel, int srcChannel, bool input);
 	static void setSeqMIDIOutputToMixer(int index, int mixerIndex, bool output);
 	static void setSeqAudioOutputToMixer(int index, int channel, int mixerIndex, int dstChannel, bool output);
 	static void setSeqMute(int index, bool mute);
 	static void setSeqSolo(int index);
 	static void setSeqMuteAll(bool mute);
-	static void setSeqRec(int index, bool rec);
+	static void setSeqInputMonitoring(int index, bool inputMonitoring);
+	static void setSeqRec(int index, quickAPI::RecordState rec);
 	static void setSeqMIDITrack(int index, int midiTrack);
 	static void setSeqAudioRef(int index, const juce::String& path,
 		const std::function<void(uint64_t)>& callback = {});
@@ -166,6 +169,8 @@ public:
 	static void insertSeqGUI();
 	static void setSeqColorGUI(int index);
 	static void setSeqNameGUI(int index);
+	static void setSeqAudioInputFromDeviceGUI(int index, bool input,
+		const juce::Array<std::tuple<int, int>>& links);
 	static void setSeqAudioOutputToMixerGUI(int index, int mixerIndex, bool output,
 		const juce::Array<std::tuple<int, int>>& links);
 	static void setSeqMIDITrackGUI(int index);
