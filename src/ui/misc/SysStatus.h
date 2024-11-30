@@ -8,7 +8,7 @@ public:
 	~SysStatus();
 
 	struct CPUPercTemp final {
-		std::array<uint64_t, 3> cpuTemp;
+		std::array<uint64_t, 2> cpuTemp;
 	};
 
 	double getCPUUsage(CPUPercTemp& temp);
@@ -17,6 +17,8 @@ public:
 
 private:
 	void* hProcess = nullptr;/**< For Windows Only */
+	void* ptrProcessorInfo = nullptr;
+	int nProcessors = 0;
 
 public:
 	static SysStatus* getInstance();
