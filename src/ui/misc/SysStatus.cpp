@@ -1,7 +1,9 @@
 ﻿#include "SysStatus.h"
+#include <cstdlib>
 
 #if JUCE_WINDOWS
 #include <Windows.h>
+#include <Winternl.h>
 #include <Psapi.h>
 #else //JUCE_WINDOWS
 #include <iostream>
@@ -15,29 +17,51 @@ SysStatus::SysStatus() {
 #if JUCE_WINDOWS
 	this->hProcess = GetCurrentProcess();
 
+	SYSTEM_BASIC_INFORMATION basicInfo{};
+	NtQuerySystemInformation(SystemBasicInformation, &basicInfo, sizeof(basicInfo), NULL);
+	this->nProcessors = basicInfo.NumberOfProcessors;
+
+	this->ptrProcessorInfo = malloc(sizeof(SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION) * this->nProcessors);
+
 #endif //JUCE_WINDOWS
 }
 
-SysStatus::~SysStatus() {}
+SysStatus::~SysStatus() {
+
+#if JUCE_WINDOWS
+	if (this->ptrProcessorInfo) {
+		free(this->ptrProcessorInfo);
+	}
+
+#endif //JUCE_WINDOWS
+
+}
 
 double SysStatus::getCPUUsage(CPUPercTemp& temp) {
 #if JUCE_WINDOWS
-	FILETIME newIdleTime, newKernelTime, newUserTime;
-	GetSystemTimes(&newIdleTime, &newKernelTime, &newUserTime);
+	uint64_t nSumIdleTime = 0;
+	uint64_t nSumTotalTime = 0;
 
-	uint64_t newIdleTimeTemp = (*(ULARGE_INTEGER*)&newIdleTime).QuadPart;
-	uint64_t newKernelTimeTemp = (*(ULARGE_INTEGER*)&newKernelTime).QuadPart;
-	uint64_t newUserTimeTemp = (*(ULARGE_INTEGER*)&newUserTime).QuadPart;
+	NtQuerySystemInformation(SystemProcessorPerformanceInformation, this->ptrProcessorInfo, sizeof(SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION) * this->nProcessors, NULL);
 
-	uint64_t idle = newIdleTimeTemp - temp.cpuTemp[0];
-	uint64_t kernel = newKernelTimeTemp - temp.cpuTemp[1];
-	uint64_t user = newUserTimeTemp - temp.cpuTemp[2];
+	SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION* info = (SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION*)this->ptrProcessorInfo;
 
-	temp.cpuTemp[0] = newIdleTimeTemp;
-	temp.cpuTemp[1] = newKernelTimeTemp;
-	temp.cpuTemp[2] = newUserTimeTemp;
+	for (int i = 0; i < this->nProcessors; i++) {
+		nSumIdleTime += info[i].IdleTime.QuadPart;
+		nSumTotalTime += info[i].KernelTime.QuadPart + info[i].UserTime.QuadPart;
+	}
 
-	return (kernel + user) / (double)(idle + kernel + user);
+	uint64_t nDeltaCPUIdleTime = nSumIdleTime - temp.cpuTemp[1];
+	uint64_t nDeltaCPUTotalTime = nSumTotalTime - temp.cpuTemp[0];
+
+	temp.cpuTemp[1] = nSumIdleTime;
+	temp.cpuTemp[0] = nSumTotalTime;
+
+	if (nDeltaCPUTotalTime) {
+		return (100 - ((nDeltaCPUIdleTime * 100.0) / nDeltaCPUTotalTime)) / 100.0;
+	}
+
+	return 0;
 
 #else //JUCE_WINDOWS
 	long total = 0, idle = 0;
